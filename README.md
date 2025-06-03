@@ -17,6 +17,10 @@ AISecretary is a collection of MCP servers designed to automate the tasks of a v
 
 ## Getting Started
 
+Below is a list of configuration guides for each supported service:
+
+- [Outlook](setups/Microsoft.md)
+
 Run the following command for each server you want to start (replace `server.py` with the actual server file):
 
 ```
