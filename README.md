@@ -20,7 +20,7 @@ AISecretary is a collection of MCP servers designed to automate the tasks of a v
 Run the following command for each server you want to start (replace `server.py` with the actual server file):
 
 ```
-uvx mcpo --port 9000 -- python server.py
+uvx mcpo --port 9000 -- uv run mcp run server.py
 ```
 
 Then, open OpenWebUI on your machine and go to **Settings > Tools > +**. Enter the following URL:
