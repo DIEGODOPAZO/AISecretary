@@ -49,4 +49,5 @@ def get_access_token_microsoft(scopes=SCOPES):
     else:
         raise Exception(f"Error en la autenticación: {result.get('error_description')}")
 
-get_access_token_microsoft()
+if __name__ == "__main__":
+    get_access_token_microsoft()

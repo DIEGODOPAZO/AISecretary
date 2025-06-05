@@ -1,67 +1,64 @@
-import json
 from utils.auth_microsoft import get_access_token_microsoft
-import requests
+from utils.microsoft_api_requests import get_request_microsoft_api
+import urllib.parse
 # server.py
 from mcp.server.fastmcp import FastMCP
 
 # Create an MCP server
 mcp = FastMCP("AISecretary")
-
+token = get_access_token_microsoft()
 
 @mcp.tool()
-def get_emails_outlook(number_emails: int) -> str:
+def get_last_emails_outlook(number_emails: int) -> str:
     """
-    Gets emails from the Outlook mailbox.
+    Gets the last {number_emails} emails from the Outlook mailbox that were sent to the user.
     params:
         number_emails (int): The number of emails to retrieve.
     returns:
         str: A JSON string containing the emails.
     """
-    token = get_access_token_microsoft()
-    url = f"https://graph.microsoft.com/v1.0/me/messages?$top={number_emails}&$orderby=receivedDateTime desc"
-    headers = {
-        "Authorization": f"Bearer {token}",
-        "Accept": "application/json"
+    params = {
+        "$top": number_emails,
+        "$orderBy": "receivedDateTime DESC"
     }
+    return get_request_microsoft_api(params, token)
 
-    response = requests.get(url, headers=headers)
-    response.raise_for_status()  # Lanza excepción si algo va mal
+@mcp.tool()
+def get_important_emails_outlook(number_emails: int = 10) -> str:
+    """
+    Gets the important emails from the Outlook mailbox that were sent to the user.
+    params:
+        number_emails (int): The number of important emails to retrieve, by default 10.
+    returns:
+        str: A JSON string containing the important emails.
+    """
+    
+    params = {
+        "$filter": "receivedDateTime ge 2016-01-01T00:00:00Z and importance eq 'high'",
+        "$top": number_emails,
+        "$orderBy": "receivedDateTime DESC"
+    }
+    
+    return get_request_microsoft_api(params, token)
 
-    messages = response.json().get("value", [])
-    simplified_messages = []
-
-    for msg in messages:
-        simplified = {
-            "id": msg.get("id"),
-            "subject": msg.get("subject"),
-            "from": {
-                "name": msg.get("from", {}).get("emailAddress", {}).get("name"),
-                "address": msg.get("from", {}).get("emailAddress", {}).get("address")
-            },
-            "toRecipients": [
-                {
-                    "name": r.get("emailAddress", {}).get("name"),
-                    "address": r.get("emailAddress", {}).get("address")
-                } for r in msg.get("toRecipients", [])
-            ],
-            "ccRecipients": [
-                {
-                    "name": r.get("emailAddress", {}).get("name"),
-                    "address": r.get("emailAddress", {}).get("address")
-                } for r in msg.get("ccRecipients", [])
-            ],
-            "receivedDateTime": msg.get("receivedDateTime"),
-            "sentDateTime": msg.get("sentDateTime"),
-            "isRead": msg.get("isRead"),
-            "hasAttachments": msg.get("hasAttachments"),
-            "bodyPreview": msg.get("bodyPreview"),
-            "importance": msg.get("importance"),
-            "conversationId": msg.get("conversationId"),
-            "internetMessageId": msg.get("internetMessageId")
-        }
-        simplified_messages.append(simplified)
-
-    return json.dumps(simplified_messages, indent=2)
+@mcp.tool()
+def get_emails_from_mail_sender(sender_email: str, number_emails: int = 10) -> str:
+    """
+    Gets the emails from a specific sender's email address.
+    params:
+        sender_email (str): The email address of the sender.
+        number_emails (int): The number of emails to retrieve, by default 10.
+    returns:
+        str: A JSON string containing the emails from the specified sender.
+    """
+   
+    params = {
+        "$filter": f"receivedDateTime ge 2016-01-01T00:00:00Z and from/emailAddress/address eq '{sender_email}'",
+        "$top": number_emails,
+        "$orderBy": "receivedDateTime DESC"
+    }
+    
+    return get_request_microsoft_api(params, token)
 
 if __name__ == "__main__":
     # Start the MCP server
