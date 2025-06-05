@@ -1,5 +1,5 @@
 from utils.auth_microsoft import get_access_token_microsoft
-from utils.microsoft_api_requests import get_request_microsoft_api
+from utils.microsoft_api_requests import get_request_microsoft_api, get_folder_names
 
 # server.py
 from mcp.server.fastmcp import FastMCP
@@ -10,11 +10,12 @@ token = get_access_token_microsoft()
 filter_dateTime = "receivedDateTime ge 2016-01-01T00:00:00Z" # Needed to have the params of orderBy in the filter
 
 @mcp.tool()
-def get_last_emails_outlook(number_emails: int) -> str:
+def get_last_emails_outlook(number_emails: int, folder_name: str = None) -> str:
     """
     Gets the last {number_emails} emails from the Outlook mailbox that were sent to the user.
     params:
         number_emails (int): The number of emails to retrieve.
+        folder_name (str): The name of the folder to retrieve emails from, if None, retrieves from all folders.
     returns:
         str: A JSON string containing the emails.
     """
@@ -22,7 +23,7 @@ def get_last_emails_outlook(number_emails: int) -> str:
         "$top": number_emails,
         "$orderBy": "receivedDateTime DESC"
     }
-    return get_request_microsoft_api(params, token)
+    return get_request_microsoft_api(params, token, foldername=folder_name)
 
 @mcp.tool()
 def get_important_emails_outlook(number_emails: int = 10) -> str:
@@ -97,6 +98,16 @@ def get_unread_emails_outlook(number_emails: int = 10) -> str:
     }
     
     return get_request_microsoft_api(params, token)
+
+@mcp.tool()
+def get_user_folders() -> str:
+    """
+    Gets the folders of the Outlook mailbox.
+    returns:
+        str: A JSON string containing the folders.
+    """
+    return get_folder_names(token)
+    
 if __name__ == "__main__":
     # Start the MCP server
     mcp.run()
