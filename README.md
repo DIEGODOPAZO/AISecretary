@@ -17,23 +17,50 @@ AISecretary is a collection of MCP servers designed to automate the tasks of a v
 
 ## Getting Started
 
-Below is a list of configuration guides for each supported service:
+Follow the instructions below to configure and run the server:
+
+### Service Setup
+
+Refer to the appropriate setup guide for your service:
 
 - [Outlook](setups/Microsoft.md)
 
-Run the following command for each server you want to start (replace `server.py` with the actual server file):
+---
 
+### Running the Server
+
+Run the following command to start the server (replace `server.py` with your actual server file):
+
+#### Recommended: Using Claude Desktop
+
+If you have Claude Desktop installed:
+
+```bash
+uv run mcp install server.py
 ```
+
+#### Alternative: Running with OpenWebUI
+
+If you're using platforms like OpenWebUI:
+
+```bash
 uvx mcpo --port 9000 -- uv run mcp run server.py
 ```
 
-Then, open OpenWebUI on your machine and go to **Settings > Tools > +**. Enter the following URL:
+Then open **OpenWebUI**, go to:
+
+```
+Settings > Tools > [+]
+```
+
+Add the following URL:
 
 ```
 http://127.0.0.1:9000
 ```
 
-Now you can interact with AISecretary from the OpenWebUI interface.
+You can now interact with **AISecretary** through the OpenWebUI interface.
+
 
 ## Adding New Servers
 
