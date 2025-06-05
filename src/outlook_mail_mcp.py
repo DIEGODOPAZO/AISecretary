@@ -1,12 +1,13 @@
 from utils.auth_microsoft import get_access_token_microsoft
 from utils.microsoft_api_requests import get_request_microsoft_api
-import urllib.parse
+
 # server.py
 from mcp.server.fastmcp import FastMCP
 
 # Create an MCP server
 mcp = FastMCP("AISecretary")
 token = get_access_token_microsoft()
+filter_dateTime = "receivedDateTime ge 2016-01-01T00:00:00Z" # Needed to have the params of orderBy in the filter
 
 @mcp.tool()
 def get_last_emails_outlook(number_emails: int) -> str:
@@ -34,7 +35,7 @@ def get_important_emails_outlook(number_emails: int = 10) -> str:
     """
     
     params = {
-        "$filter": "receivedDateTime ge 2016-01-01T00:00:00Z and importance eq 'high'",
+        "$filter": f"{filter_dateTime} and importance eq 'high'",
         "$top": number_emails,
         "$orderBy": "receivedDateTime DESC"
     }
@@ -53,7 +54,26 @@ def get_emails_from_mail_sender(sender_email: str, number_emails: int = 10) -> s
     """
    
     params = {
-        "$filter": f"receivedDateTime ge 2016-01-01T00:00:00Z and from/emailAddress/address eq '{sender_email}'",
+        "$filter": f"{filter_dateTime} and from/emailAddress/address eq '{sender_email}'",
+        "$top": number_emails,
+        "$orderBy": "receivedDateTime DESC"
+    }
+    
+    return get_request_microsoft_api(params, token)
+
+@mcp.tool()
+def get_emails_with_keyword(keyword: str, number_emails: int = 10) -> str:
+    """
+    Gets the emails that contain a specific keyword in the subject or body.
+    params:
+        keyword (str): The keyword to search for in the emails.
+        number_emails (int): The number of emails to retrieve, by default 10.
+    returns:
+        str: A JSON string containing the emails that match the keyword.
+    """
+    
+    params = {
+        "$seach": f"{keyword}",
         "$top": number_emails,
         "$orderBy": "receivedDateTime DESC"
     }
