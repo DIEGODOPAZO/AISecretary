@@ -80,6 +80,23 @@ def get_emails_with_keyword(keyword: str, number_emails: int = 10) -> str:
     
     return get_request_microsoft_api(params, token)
 
+@mcp.tool()
+def get_unread_emails_outlook(number_emails: int = 10) -> str:
+    """
+    Gets the unread emails from the Outlook mailbox that were sent to the user.
+    params:
+        number_emails (int): The number of unread emails to retrieve, by default 10.
+    returns:
+        str: A JSON string containing the unread emails.
+    """
+    
+    params = {
+        "$filter": f"{filter_dateTime} and isRead eq false",
+        "$top": number_emails,
+        "$orderBy": "receivedDateTime DESC"
+    }
+    
+    return get_request_microsoft_api(params, token)
 if __name__ == "__main__":
     # Start the MCP server
     mcp.run()
