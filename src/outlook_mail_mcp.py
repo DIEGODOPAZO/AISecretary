@@ -5,17 +5,17 @@ from utils.microsoft_api_requests import get_request_microsoft_api, get_folder_n
 from mcp.server.fastmcp import FastMCP
 
 # Create an MCP server
-mcp = FastMCP("AISecretary")
-token = get_access_token_microsoft()
+mcp = FastMCP("AISecretary", dependencies=["mcp[cli]", "msal"])
+
 filter_dateTime = "receivedDateTime ge 2016-01-01T00:00:00Z" # Needed to have the params of orderBy in the filter
 
 @mcp.tool()
-def get_last_emails_outlook(number_emails: int, folder_name: str = None) -> str:
+def get_last_emails_outlook(number_emails: int, folder_id: str = "ALL") -> str:
     """
     Gets the last {number_emails} emails from the Outlook mailbox that were sent to the user.
     params:
         number_emails (int): The number of emails to retrieve.
-        folder_name (str): The name of the folder to retrieve emails from, if None, retrieves from all folders.
+        folder_id (str): The id of the folder from which to retrieve the emails. You can get the folder ids using the get_user_folders resource. If the string ALL is provided, it will search in all the folders.
     returns:
         str: A JSON string containing the emails.
     """
@@ -23,14 +23,16 @@ def get_last_emails_outlook(number_emails: int, folder_name: str = None) -> str:
         "$top": number_emails,
         "$orderBy": "receivedDateTime DESC"
     }
-    return get_request_microsoft_api(params, token, foldername=folder_name)
+
+    return get_request_microsoft_api(params, folder_id=folder_id)
 
 @mcp.tool()
-def get_important_emails_outlook(number_emails: int = 10) -> str:
+def get_important_emails_outlook(number_emails: int = 10, folder_id: str = "ALL") -> str:
     """
     Gets the important emails from the Outlook mailbox that were sent to the user.
     params:
         number_emails (int): The number of important emails to retrieve, by default 10.
+        folder_id (str): The id of the folder from which to retrieve the emails. You can get the folder ids using the get_user_folders resource. If the string ALL is provided, it will search in all the folders.
     returns:
         str: A JSON string containing the important emails.
     """
@@ -40,8 +42,7 @@ def get_important_emails_outlook(number_emails: int = 10) -> str:
         "$top": number_emails,
         "$orderBy": "receivedDateTime DESC"
     }
-    
-    return get_request_microsoft_api(params, token)
+    return get_request_microsoft_api(params, folder_id=folder_id)
 
 @mcp.tool()
 def get_emails_from_mail_sender(sender_email: str, number_emails: int = 10) -> str:
@@ -59,16 +60,17 @@ def get_emails_from_mail_sender(sender_email: str, number_emails: int = 10) -> s
         "$top": number_emails,
         "$orderBy": "receivedDateTime DESC"
     }
-    
+
     return get_request_microsoft_api(params, token)
 
 @mcp.tool()
-def get_emails_with_keyword(keyword: str, number_emails: int = 10) -> str:
+def get_emails_with_keyword(keyword: str, number_emails: int = 10, folder_id: str = "ALL") -> str:
     """
     Gets the emails that contain a specific keyword in the subject or body.
     params:
         keyword (str): The keyword to search for in the emails.
         number_emails (int): The number of emails to retrieve, by default 10.
+        folder_id (str): The id of the folder from which to retrieve the emails. You can get the folder ids using the get_user_folders resource. If the string ALL is provided, it will search in all the folders.
     returns:
         str: A JSON string containing the emails that match the keyword.
     """
@@ -79,14 +81,15 @@ def get_emails_with_keyword(keyword: str, number_emails: int = 10) -> str:
         "$orderBy": "receivedDateTime DESC"
     }
     
-    return get_request_microsoft_api(params, token)
+    return get_request_microsoft_api(params, folder_id=folder_id)
 
 @mcp.tool()
-def get_unread_emails_outlook(number_emails: int = 10) -> str:
+def get_unread_emails_outlook(number_emails: int = 10, folder_id: str = "ALL") -> str:
     """
     Gets the unread emails from the Outlook mailbox that were sent to the user.
     params:
         number_emails (int): The number of unread emails to retrieve, by default 10.
+        folder_id (str): The id of the folder from which to retrieve the emails. You can get the folder ids using the get_user_folders resource. If the string ALL is provided, it will search in all the folders.
     returns:
         str: A JSON string containing the unread emails.
     """
@@ -96,18 +99,21 @@ def get_unread_emails_outlook(number_emails: int = 10) -> str:
         "$top": number_emails,
         "$orderBy": "receivedDateTime DESC"
     }
-    
-    return get_request_microsoft_api(params, token)
 
-@mcp.tool()
+    return get_request_microsoft_api(params, folder_id=folder_id)
+
+@mcp.resource("usersfolders://userFoldersInformation}")
 def get_user_folders() -> str:
     """
     Gets the folders of the Outlook mailbox.
     returns:
         str: A JSON string containing the folders.
     """
-    return get_folder_names(token)
+
+    return get_folder_names()
     
+
 if __name__ == "__main__":
     # Start the MCP server
+    token = get_access_token_microsoft()
     mcp.run()

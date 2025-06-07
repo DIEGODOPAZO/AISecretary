@@ -1,7 +1,10 @@
 import requests
 import json
 
-def get_folder_names(token: str) -> str:
+from utils.auth_microsoft import get_access_token_microsoft
+
+def get_folder_names() -> str:
+    token = get_access_token_microsoft()
     headers = {
         "Authorization": f"Bearer {token}",
         "Accept": "application/json"
@@ -17,27 +20,24 @@ def get_folder_names(token: str) -> str:
         simplified = {
             "id": folder.get("id"),
             "displayName": folder.get("displayName"),
-            "parentFolderId": folder.get("parentFolderId"),
-            "childFolderCount": folder.get("childFolderCount"),
-            "totalItemCount": folder.get("totalItemCount"),
-            "unreadItemCount": folder.get("unreadItemCount"),
-            "wellKnownName": folder.get("wellKnownName")  # opcional
+            "totalItemCount": folder.get("totalItemCount")
         }
         simplified_folders.append(simplified)
 
     return json.dumps(simplified_folders, indent=2) 
 
 
-def get_request_microsoft_api(params: dict, token: str, foldername=None) -> str:
+def get_request_microsoft_api(params: dict, folder_id: str = "ALL") -> str:
+    token = get_access_token_microsoft()
     headers = {
         "Authorization": f"Bearer {token}",
         "Accept": "application/json"
     }
 
-    if foldername:
-        base_url = f"https://graph.microsoft.com/v1.0/me/mailFolders/{foldername}/messages"
-    else:
+    if folder_id == "ALL":
         base_url = "https://graph.microsoft.com/v1.0/me/messages"
+    else:
+        base_url = f"https://graph.microsoft.com/v1.0/me/mailFolders/{folder_id}/messages"
 
     response = requests.get(base_url, headers=headers, params=params)
     response.raise_for_status()  # Lanza excepción si algo va mal
