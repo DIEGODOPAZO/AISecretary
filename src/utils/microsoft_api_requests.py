@@ -114,4 +114,4 @@ def get_full_message_and_attachments(message_id: str) -> str:
                 })
 
 
-    return json.dumps(microsoft_simplify_message(msg_data, full=True, attachments=attachments), indent=2)
+    return json.dumps(microsoft_simplify_message(msg_data, full=True, attachments=attachments, attachments_download_path=downloaded_attachments), indent=2)

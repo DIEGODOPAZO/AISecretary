@@ -4,7 +4,7 @@ import msal
 from dotenv import load_dotenv
 
 # Cargar variables desde .env
-load_dotenv()
+load_dotenv(dotenv_path=Path(__file__).resolve().parents[2] / ".env")
 
 # Leer variables del entorno
 CLIENT_ID = os.getenv("CLIENT_ID")

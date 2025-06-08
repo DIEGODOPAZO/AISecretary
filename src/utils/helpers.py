@@ -9,7 +9,7 @@ def microsoft_get(url: str, token: str, params: dict = None) -> dict:
     response.raise_for_status()
     return response.json()
 
-def microsoft_simplify_message(msg: dict, full: bool = False, attachments: list = None) -> dict:
+def microsoft_simplify_message(msg: dict, full: bool = False, attachments: list = None, attachments_download_path: list = None) -> dict:
     data = {
         "id": msg.get("id"),
         "subject": msg.get("subject"),
@@ -53,6 +53,9 @@ def microsoft_simplify_message(msg: dict, full: bool = False, attachments: list 
             ]
         else:
             data["attachments"] = []
+            
+        if attachments_download_path:
+            data["attachments_download_path"] = attachments_download_path
 
     else:
         data["bodyPreview"] = msg.get("bodyPreview")
