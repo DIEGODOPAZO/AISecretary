@@ -1,5 +1,5 @@
 from utils.auth_microsoft import get_access_token_microsoft
-from utils.microsoft_api_requests import get_request_microsoft_api, get_folder_names
+from utils.microsoft_api_requests import get_request_microsoft_api, get_folder_names, mark_as_read_microsoft_api
 
 # server.py
 from mcp.server.fastmcp import FastMCP
@@ -87,6 +87,17 @@ def get_emails_with_keyword(keyword: str, number_emails: int = 10, folder_id: st
     
     return get_request_microsoft_api(params, folder_id=folder_id, unread_only=unread_only)
 
+@mcp.tool()
+def mark_email_as_read(email_id: str) -> str:
+    """
+    Marks an email as read.
+    params:
+        email_id (str): The id of the email to mark as read.
+    returns:
+        str: A confirmation message.
+    """
+    return mark_as_read_microsoft_api(email_id)
+
 @mcp.resource("usersfolders://userFoldersInformation}")
 def get_user_folders() -> str:
     """
@@ -94,7 +105,6 @@ def get_user_folders() -> str:
     returns:
         str: A JSON string containing the folders.
     """
-
     return get_folder_names()
 
 

@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 import msal
 from dotenv import load_dotenv
 
@@ -10,8 +11,8 @@ CLIENT_ID = os.getenv("CLIENT_ID")
 TENANT_ID = os.getenv("TENANT_ID", "common")
 AUTHORITY = f"https://login.microsoftonline.com/{TENANT_ID}"
 
-SCOPES = os.getenv("SCOPES", "User.Read,Mail.Read").split(",")
-TOKEN_CACHE_FILE = os.getenv("TOKEN_CACHE_FILE", "token_cache_microsoft.json")
+SCOPES = os.getenv("SCOPES", "User.Read,Mail.ReadWrite").split(",")
+TOKEN_CACHE_FILE = Path(os.getenv("TOKEN_CACHE_FILE"))
 
 def load_cache():
     """Carga la caché del token desde un archivo (si existe)."""
@@ -37,6 +38,7 @@ def get_access_token_microsoft(scopes=SCOPES):
     )
 
     accounts = app.get_accounts()
+
     if accounts:
         result = app.acquire_token_silent(scopes, account=accounts[0])
     else:
@@ -44,10 +46,10 @@ def get_access_token_microsoft(scopes=SCOPES):
 
     save_cache(cache)
 
-    if "access_token" in result:
+    if result and "access_token" in result:
         return result["access_token"]
     else:
-        raise Exception(f"Error en la autenticación: {result.get('error_description')}")
+        raise Exception(f"Error in the authentication: {result.get('error_description') if result else 'No token found'}")
 
 if __name__ == "__main__":
     get_access_token_microsoft()
