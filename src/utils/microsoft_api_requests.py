@@ -18,7 +18,7 @@ def get_folder_names() -> str:
 
     for folder in folders:
         simplified = {
-            "id": folder.get("id"),
+            "folder_id": folder.get("id"),
             "displayName": folder.get("displayName"),
             "totalItemCount": folder.get("totalItemCount")
         }
@@ -27,7 +27,7 @@ def get_folder_names() -> str:
     return json.dumps(simplified_folders, indent=2) 
 
 
-def get_request_microsoft_api(params: dict, folder_id: str = "ALL") -> str:
+def get_request_microsoft_api(params: dict, folder_id: str = "ALL", unread_only: bool = False) -> str:
     token = get_access_token_microsoft()
     headers = {
         "Authorization": f"Bearer {token}",
@@ -38,6 +38,15 @@ def get_request_microsoft_api(params: dict, folder_id: str = "ALL") -> str:
         base_url = "https://graph.microsoft.com/v1.0/me/messages"
     else:
         base_url = f"https://graph.microsoft.com/v1.0/me/mailFolders/{folder_id}/messages"
+
+    if unread_only:
+        # add the filer"isRead eq false" to the existing filters
+        existing_filter = params.get("$filter", "")
+        unread_filter = "isRead eq false"
+        if existing_filter:
+            params["$filter"] = f"{existing_filter} and {unread_filter}"
+        else:
+            params["$filter"] = unread_filter
 
     response = requests.get(base_url, headers=headers, params=params)
     response.raise_for_status()  # Lanza excepción si algo va mal
