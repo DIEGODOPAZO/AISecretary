@@ -12,7 +12,7 @@ TENANT_ID = os.getenv("TENANT_ID", "common")
 AUTHORITY = f"https://login.microsoftonline.com/{TENANT_ID}"
 
 SCOPES = os.getenv("SCOPES", "User.Read,Mail.ReadWrite").split(",")
-TOKEN_CACHE_FILE = Path(os.getenv("TOKEN_CACHE_FILE"))
+TOKEN_CACHE_FILE = Path(os.getenv("TOKEN_CACHE_FILE")).resolve()
 
 def load_cache():
     """Carga la caché del token desde un archivo (si existe)."""
