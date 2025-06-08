@@ -3,8 +3,13 @@ from pathlib import Path
 import msal
 from dotenv import load_dotenv
 
-# Cargar variables desde .env
-load_dotenv(dotenv_path=Path(__file__).resolve().parents[2] / ".env")
+
+# Load .env from the root of the proyect (2 levels up)
+dotenv_path = Path(__file__).resolve().parents[2] / ".env"
+load_dotenv(dotenv_path=dotenv_path)
+
+# Dir of the .env file, used for relative paths
+ENV_BASE_DIR = dotenv_path.parent
 
 # Leer variables del entorno
 CLIENT_ID = os.getenv("CLIENT_ID")
@@ -12,7 +17,10 @@ TENANT_ID = os.getenv("TENANT_ID", "common")
 AUTHORITY = f"https://login.microsoftonline.com/{TENANT_ID}"
 
 SCOPES = os.getenv("SCOPES", "User.Read,Mail.ReadWrite").split(",")
-TOKEN_CACHE_FILE = Path(os.getenv("TOKEN_CACHE_FILE")).resolve()
+
+# Use the relative path from the .env file to the token cache file
+raw_token_cache_path = os.getenv("TOKEN_CACHE_FILE")
+TOKEN_CACHE_FILE = (ENV_BASE_DIR / raw_token_cache_path).resolve()
 
 def load_cache():
     """Carga la caché del token desde un archivo (si existe)."""
