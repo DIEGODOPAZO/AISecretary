@@ -1,0 +1,10 @@
+[project]
+name = "aisecretary"
+version = "0.1.0"
+description = "A virtual secretary made out of MCP servers"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "mcp[cli]>=1.9.3",
+    "msal>=1.32.3",
+]

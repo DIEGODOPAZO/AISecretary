@@ -11,7 +11,17 @@ ENV/
 env.bak/
 venv.bak/
 
-# Installer logs
+# uv-specific
+.uv/
+src/.uv/
+
+# dotenv / secrets
+.env
+.env.*
+src/.env
+
+# Logs
+*.log
 pip-log.txt
 pip-delete-this-directory.txt
 
@@ -27,17 +37,7 @@ coverage.xml
 *.cover
 *.py,cover
 
-# Jupyter Notebook checkpoints
-.ipynb_checkpoints
-
-# VS Code settings
-.vscode/
-
-# OS files
-.DS_Store
-Thumbs.db
-
-# Python egg files
+# Python packaging
 *.egg
 *.egg-info/
 dist/
@@ -51,16 +51,14 @@ lib/
 lib64/
 __pypackages__/
 
-# Logs
-*.log
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints
 
-# dotenv environment variables file
-.env
-.env.*
-src/.env
+# VS Code settings
+.vscode/
 
-# MCP/uv specific
-src/.uv/
-.uv/
+# OS files
+.DS_Store
+Thumbs.db
 
-token*
+src/token_cache_microsoft.json
