@@ -1,3 +1,5 @@
+import base64
+import os
 import requests
 import json
 
@@ -135,5 +137,86 @@ def mark_as_read_microsoft_api(message_id: str) -> str:
         "conversationId": msg.get("conversationId"),
         "internetMessageId": msg.get("internetMessageId")
     }
+
+    return json.dumps(simplified, indent=2)
+
+def get_full_message_and_attachments(message_id: str) -> str:
+    token = get_access_token_microsoft()
+    
+    base_url = f"https://graph.microsoft.com/v1.0/me/messages/{message_id}"
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Accept": "application/json"
+    }
+
+    msg_response = requests.get(base_url, headers=headers)
+    msg_response.raise_for_status()
+    msg_data = msg_response.json()
+
+    # Obtener adjuntos
+    attachments_url = f"{base_url}/attachments"
+    att_response = requests.get(attachments_url, headers=headers)
+    att_response.raise_for_status()
+    attachments = att_response.json().get("value", [])
+
+    # Crear directorio para guardar archivos
+    download_dir = download_dir = os.path.join(os.path.expanduser("~"), "Downloads", "attachments")
+
+    os.makedirs(download_dir, exist_ok=True)
+
+    downloaded_attachments = []
+
+    for att in attachments:
+        if att.get("@odata.type") == "#microsoft.graph.fileAttachment":
+            name = att.get("name")
+            content_type = att.get("contentType")
+            content_bytes = att.get("contentBytes")
+
+            if name and content_bytes:
+                file_path = os.path.join(download_dir, name)
+                with open(file_path, "wb") as f:
+                    f.write(base64.b64decode(content_bytes))
+
+                downloaded_attachments.append({
+                    "name": name,
+                    "contentType": content_type,
+                    "path": file_path
+                })
+
+    # Simplificar respuesta
+    simplified = {
+        "id": msg_data.get("id"),
+        "subject": msg_data.get("subject"),
+        "from": {
+            "name": msg_data.get("from", {}).get("emailAddress", {}).get("name"),
+            "address": msg_data.get("from", {}).get("emailAddress", {}).get("address")
+        },
+        "toRecipients": [
+            {
+                "name": r.get("emailAddress", {}).get("name"),
+                "address": r.get("emailAddress", {}).get("address")
+            } for r in msg_data.get("toRecipients", [])
+        ],
+        "ccRecipients": [
+            {
+                "name": r.get("emailAddress", {}).get("name"),
+                "address": r.get("emailAddress", {}).get("address")
+            } for r in msg_data.get("ccRecipients", [])
+        ],
+        "receivedDateTime": msg_data.get("receivedDateTime"),
+        "sentDateTime": msg_data.get("sentDateTime"),
+        "isRead": msg_data.get("isRead"),
+        "hasAttachments": msg_data.get("hasAttachments"),
+        "body": {
+            "contentType": msg_data.get("body", {}).get("contentType"),
+            "content": msg_data.get("body", {}).get("content")
+        },
+        "importance": msg_data.get("importance"),
+        "conversationId": msg_data.get("conversationId"),
+        "internetMessageId": msg_data.get("internetMessageId"),
+        "attachments": downloaded_attachments
+    }
+
+    return json.dumps(simplified, indent=2)
 
     return json.dumps(simplified, indent=2)

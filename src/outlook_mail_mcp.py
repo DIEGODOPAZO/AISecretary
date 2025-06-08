@@ -1,5 +1,5 @@
 from utils.auth_microsoft import get_access_token_microsoft
-from utils.microsoft_api_requests import get_request_microsoft_api, get_folder_names, mark_as_read_microsoft_api
+from utils.microsoft_api_requests import get_request_microsoft_api, get_folder_names, mark_as_read_microsoft_api, get_full_message_and_attachments
 
 # server.py
 from mcp.server.fastmcp import FastMCP
@@ -97,6 +97,18 @@ def mark_email_as_read(email_id: str) -> str:
         str: A confirmation message.
     """
     return mark_as_read_microsoft_api(email_id)
+
+@mcp.tool()
+def get_full_email_and_attachments(email_id: str) -> str:
+    """
+    Gets the full email and its attachments.
+    params:
+        email_id (str): The id of the email to retrieve.
+    returns:
+        str: A JSON string containing the full email and its attachments names, the files will be downloaded.
+    """
+
+    return get_full_message_and_attachments(email_id)
 
 @mcp.resource("usersfolders://userFoldersInformation}")
 def get_user_folders() -> str:
