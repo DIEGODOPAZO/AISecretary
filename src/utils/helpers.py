@@ -9,6 +9,27 @@ def microsoft_get(url: str, token: str, params: dict = None) -> dict:
     response.raise_for_status()
     return response.json()
 
+def microsoft_delete(url: str, token: str) -> str:
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Accept": "application/json"    
+    }
+    response = requests.delete(url, headers=headers)
+
+    if response.status_code == 204:
+        return "Message correctly deleted"
+    else:
+        return "Error deleting message: " + response.text
+
+def microsoft_patch(url: str, token: str, data: dict) -> dict:  
+    headers = {
+        'Authorization': f'Bearer {token}',
+        'Content-Type': 'application/json'
+    }
+    response = requests.patch(url, headers=headers, json=data)
+    response.raise_for_status() 
+    return response.json()
+
 def microsoft_simplify_message(msg: dict, full: bool = False, attachments: list = None, attachments_download_path: list = None) -> dict:
     data = {
         "id": msg.get("id"),

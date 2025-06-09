@@ -1,5 +1,4 @@
-from utils.auth_microsoft import get_access_token_microsoft
-from utils.microsoft_api_requests import get_request_microsoft_api, get_folder_names, mark_as_read_microsoft_api, get_full_message_and_attachments
+from utils.microsoft_api_requests import get_request_microsoft_api, get_folder_names, mark_as_read_microsoft_api, get_full_message_and_attachments, delete_message_microsoft_api
 
 # server.py
 from mcp.server.fastmcp import FastMCP
@@ -110,6 +109,18 @@ def get_full_email_and_attachments(email_id: str) -> str:
 
     return get_full_message_and_attachments(email_id)
 
+@mcp.tool()
+def delete_email(email_id: str) -> str:
+    """
+    Deletes an email from the Outlook mailbox.
+    params:
+        email_id (str): The id of the email to delete.
+    returns:
+        str: A confirmation message.
+    """
+    return delete_message_microsoft_api(email_id)
+
+
 @mcp.resource("usersfolders://userFoldersInformation}")
 def get_user_folders() -> str:
     """
@@ -122,5 +133,4 @@ def get_user_folders() -> str:
 
 if __name__ == "__main__":
     # Start the MCP server
-    token = get_access_token_microsoft()
     mcp.run()

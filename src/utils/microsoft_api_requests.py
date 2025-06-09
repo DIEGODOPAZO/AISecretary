@@ -4,7 +4,7 @@ import requests
 import json
 
 from utils.auth_microsoft import get_access_token_microsoft
-from utils.helpers import microsoft_get, microsoft_simplify_message  
+from utils.helpers import microsoft_get, microsoft_simplify_message, microsoft_delete, microsoft_patch
 
 def get_folder_names() -> str:
     token = get_access_token_microsoft()
@@ -50,26 +50,20 @@ def get_request_microsoft_api(params: dict, folder_id: str = "ALL", unread_only:
 
     return json.dumps(simplified_messages, indent=2)
 
+
+
 def mark_as_read_microsoft_api(message_id: str) -> str:
     token = get_access_token_microsoft()
     url = f'https://graph.microsoft.com/v1.0/me/messages/{message_id}'
-
-    headers = {
-        'Authorization': f'Bearer {token}',
-        'Content-Type': 'application/json'
-    }
     data = {
         "isRead": True
     }
-    response = requests.patch(url, headers=headers, json=data)
-    response.raise_for_status()  # Lanza excepción si la petición falla
+    
+    microsoft_patch(url, token, data)
+    # Gets the updated messag
+    response = microsoft_get(url, token)
 
-    # Recuperar el mensaje actualizado para devolverlo en el formato deseado
-    get_response = requests.get(url, headers=headers)
-    get_response.raise_for_status()
-    msg = get_response.json()
-
-    return json.dumps(microsoft_simplify_message(msg), indent=2)
+    return json.dumps(microsoft_simplify_message(response), indent=2)
 
 
 def get_full_message_and_attachments(message_id: str) -> str:
@@ -90,7 +84,7 @@ def get_full_message_and_attachments(message_id: str) -> str:
     attachments = att_response.json().get("value", [])
 
     # Create the directory to save attachments
-    download_dir = download_dir = os.path.join(os.path.expanduser("~"), "Downloads", "attachments")
+    download_dir = os.path.join(os.path.expanduser("~"), "Downloads", "attachments")
 
     os.makedirs(download_dir, exist_ok=True)
 
@@ -115,3 +109,10 @@ def get_full_message_and_attachments(message_id: str) -> str:
 
 
     return json.dumps(microsoft_simplify_message(msg_data, full=True, attachments=attachments, attachments_download_path=downloaded_attachments), indent=2)
+
+
+def delete_message_microsoft_api(message_id: str) -> str:
+    token = get_access_token_microsoft()
+    url = f'https://graph.microsoft.com/v1.0/me/messages/{message_id}'
+
+    return microsoft_delete(url, token)
