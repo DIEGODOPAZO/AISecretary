@@ -70,6 +70,7 @@ To add support for new tools, create a new Python file following the structure o
 
 - [Python original sdk](https://github.com/modelcontextprotocol/python-sdk): Explains how to use MCP with different models and tools.
 - [OpenWebUI](https://docs.openwebui.com/openapi-servers/mcp/): Detailed guide on integrating MCP servers with OpenWebUI.
+- [Anthropic](https://modelcontextprotocol.io/quickstart/user): Detailed guide on integrating MCP servers with Claude Desktop.
 
 ## License
 
