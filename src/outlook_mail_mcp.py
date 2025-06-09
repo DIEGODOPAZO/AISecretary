@@ -131,6 +131,18 @@ def get_user_folders() -> str:
     return get_folder_names()
 
 
+
+@mcp.prompt()
+def search_emails_by_mail(user_mail: str, number_emails: int = 10, unread_only: bool = False) -> str:
+   return f"Search emails by mail: {user_mail}, number of emails: {number_emails}, unread only: {unread_only}. Use the get_emails_from_mail_sender tool to retrieve the emails."
+
+@mcp.prompt()
+def search_emails_by_keyword(keyword: str, number_emails: int = 10, folder_id: str = "ALL", unread_only: bool = False) -> str:
+    return f"Search emails by keyword: {keyword}, number of emails: {number_emails}, folder id: {folder_id}, unread only: {unread_only}. Use the get_emails_with_keyword tool to retrieve the emails."
+@mcp.prompt()
+def search_emails_by_important(number_emails: int = 10, folder_id: str = "ALL", unread_only: bool = False) -> str:
+    return f"Search important emails, number of emails: {number_emails}, folder id: {folder_id}, unread only: {unread_only}. Use the get_important_emails_outlook tool to retrieve the emails."
+
 if __name__ == "__main__":
     # Start the MCP server
     mcp.run()
