@@ -1,6 +1,8 @@
+import base64
 import requests
-
+import os
 def microsoft_get(url: str, token: str, params: dict = None) -> dict:
+    """Sends a GET request to the Microsoft Graph API."""
     headers = {
         "Authorization": f"Bearer {token}",
         "Accept": "application/json"
@@ -10,6 +12,7 @@ def microsoft_get(url: str, token: str, params: dict = None) -> dict:
     return response.json()
 
 def microsoft_delete(url: str, token: str) -> str:
+    """Sends a DELETE request to the Microsoft Graph API."""
     headers = {
         "Authorization": f"Bearer {token}",
         "Accept": "application/json"    
@@ -22,11 +25,13 @@ def microsoft_delete(url: str, token: str) -> str:
         return "Error deleting message: " + response.text
 
 def microsoft_post(url: str, token: str, data: dict) -> dict:
+    """Sends a POST request to the Microsoft Graph API."""
     response = requests.post(url, headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"}, json=data)
     response.raise_for_status()
 
     return response.json()
-def microsoft_patch(url: str, token: str, data: dict) -> dict:  
+def microsoft_patch(url: str, token: str, data: dict) -> dict: 
+    """Sends a PATCH request to the Microsoft Graph API.""" 
     headers = {
         'Authorization': f'Bearer {token}',
         'Content-Type': 'application/json'
@@ -35,7 +40,25 @@ def microsoft_patch(url: str, token: str, data: dict) -> dict:
     response.raise_for_status() 
     return response.json()
 
+
+def read_file_and_encode_base64(file_path: str) -> tuple[str, str]:
+    """Reads a file and encodes its content to base64."""
+    if not os.path.isfile(file_path):
+        raise FileNotFoundError(f"The file '{file_path}' does not exist.")
+
+    filename = os.path.basename(file_path)
+    
+    with open(file_path, "rb") as file:
+        file_content = file.read()
+        encoded_content = base64.b64encode(file_content).decode("utf-8")
+    
+    return filename, encoded_content
+
+
 def microsoft_simplify_message(msg: dict, full: bool = False, attachments: list = None, attachments_download_path: list = None) -> dict:
+    """
+    Simplifies a Microsoft Graph API message object to a more manageable format.
+    """
     data = {
         "id": msg.get("id"),
         "subject": msg.get("subject"),

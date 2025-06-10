@@ -1,10 +1,11 @@
-from utils.microsoft_api_requests import get_request_microsoft_api, get_folder_names, mark_as_read_microsoft_api, get_full_message_and_attachments, delete_message_microsoft_api, create_draft_microsoft_api
+from typing import Optional
+from utils.microsoft_api_requests import *
 
 # server.py
 from mcp.server.fastmcp import FastMCP
 
 # Create an MCP server
-mcp = FastMCP("AISecretary", dependencies=["mcp[cli]", "msal"])
+mcp = FastMCP("AISecretary-Outlook-Mail", dependencies=["mcp[cli]", "msal"])
 
 filter_dateTime = "receivedDateTime ge 2016-01-01T00:00:00Z" # Needed to have the params of orderBy in the filter
 
@@ -122,15 +123,17 @@ def delete_email(email_id: str) -> str:
 
 
 @mcp.tool()
-def create_draft_email(
+def create_edit_draft_email(
+    draft_id: Optional[str],
     subject: str,
     body: str,
     to_recipients: list[str] = None,
-    cc_recipients: list[str] = None,
+    cc_recipients: list[str] = None
 ) -> str:
     """
     Creates a draft email in the Outlook mailbox.
     params:
+        draft_id (Optional[str]): The id of the draft email to edit. If None, a new draft will be created.
         subject (str): The subject of the email.
         body (str): The body of the email.
         to_recipients (list[str]): List of email addresses to send the email to.
@@ -139,11 +142,32 @@ def create_draft_email(
         str: The id of the created draft email or a error message.
     """
  
-    return create_draft_microsoft_api(
+    return create_edit_draft_microsoft_api(
         subject=subject,
         body=body,
         to_recipients=to_recipients,
-        cc_recipients=cc_recipients
+        cc_recipients=cc_recipients,
+        draft_id=draft_id
+    )
+@mcp.tool()
+def add_attachment_to_draft_email(
+    draft_id: str,
+    attachment_path: str,
+    content_type: str = "application/octet-stream"
+) -> str:
+    """
+    Adds an attachment to a draft email.
+    params:
+        draft_id (str): The id of the draft email to which the attachment will be added.
+        attachment_path (str): The path to the attachment file.
+    returns:
+        str: A confirmation message or an error message.
+    """
+   
+    return add_attachment_to_draft_microsoft_api(
+        draft_id=draft_id,
+        attachment_path=attachment_path,
+        content_type=content_type
     )
 
 

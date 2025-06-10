@@ -4,7 +4,7 @@ import requests
 import json
 
 from utils.auth_microsoft import get_access_token_microsoft
-from utils.helpers import microsoft_get, microsoft_simplify_message, microsoft_delete, microsoft_patch, microsoft_post
+from utils.helpers import *
 
 def get_folder_names() -> str:
     token = get_access_token_microsoft()
@@ -118,7 +118,7 @@ def delete_message_microsoft_api(message_id: str) -> str:
     return microsoft_delete(url, token)
 
 
-def create_draft_microsoft_api(subject: str, body: str, to_recipients: list[str] = None, cc_recipients: list[str] = None) -> str:
+def create_edit_draft_microsoft_api(subject: str, body: str, to_recipients: list[str] = None, cc_recipients: list[str] = None, draft_id: str = None) -> str:
     token = get_access_token_microsoft()
     url = "https://graph.microsoft.com/v1.0/me/messages"
 
@@ -132,4 +132,51 @@ def create_draft_microsoft_api(subject: str, body: str, to_recipients: list[str]
         "ccRecipients": [{"emailAddress": {"address": email}} for email in cc_recipients] if cc_recipients else []
     }
 
-    return json.dumps(microsoft_post(url, token, data), indent=2)
+    if draft_id:
+        url = f"{url}/{draft_id}"
+        response = microsoft_patch(url, token, data)
+    else:
+        response = microsoft_post(url, token, data)
+    
+    return json.dumps(response, indent=2)
+
+
+def add_attachment_to_draft_microsoft_api(draft_id: str, attachment_path: str, content_type: str) -> str:
+    token = get_access_token_microsoft()
+    url = f"https://graph.microsoft.com/v1.0/me/messages/{draft_id}/attachments"
+    try:
+        attachment_name, attachment_content = read_file_and_encode_base64(attachment_path)
+    except FileNotFoundError as e:
+        return json.dumps({"error": str(e)}, indent=2)
+    
+    data = {
+        "@odata.type": "#microsoft.graph.fileAttachment",
+        "name": attachment_name,
+        "contentBytes": attachment_content,
+        "contentType": content_type
+    }
+
+    response = microsoft_post(url, token, data)
+    response_data = {
+        "attachment_id": response.get("id"),
+        "name": response.get("name"),
+        "contentType": response.get("contentType"),
+        "size": response.get("size")
+    }
+    return json.dumps(response_data, indent=2)
+
+def edit_draft_microsoft_api(draft_id: str, subject: str, body: str, to_recipients: str, cc_recipients: str = None) -> str:
+    token = get_access_token_microsoft()
+    url = f"https://graph.microsoft.com/v1.0/me/messages/{draft_id}"
+
+    data = {
+        "subject": subject,
+        "body": {
+            "contentType": "HTML",
+            "content": body
+        },
+        "toRecipients": [{"emailAddress": {"address": email}} for email in to_recipients] if to_recipients else [],
+        "ccRecipients": [{"emailAddress": {"address": email}} for email in cc_recipients] if cc_recipients else []
+    }
+
+    return json.dumps(microsoft_patch(url, token, data), indent=2)
