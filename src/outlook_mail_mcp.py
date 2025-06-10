@@ -1,4 +1,4 @@
-from utils.microsoft_api_requests import get_request_microsoft_api, get_folder_names, mark_as_read_microsoft_api, get_full_message_and_attachments, delete_message_microsoft_api
+from utils.microsoft_api_requests import get_request_microsoft_api, get_folder_names, mark_as_read_microsoft_api, get_full_message_and_attachments, delete_message_microsoft_api, create_draft_microsoft_api
 
 # server.py
 from mcp.server.fastmcp import FastMCP
@@ -119,6 +119,32 @@ def delete_email(email_id: str) -> str:
         str: A confirmation message.
     """
     return delete_message_microsoft_api(email_id)
+
+
+@mcp.tool()
+def create_draft_email(
+    subject: str,
+    body: str,
+    to_recipients: list[str] = None,
+    cc_recipients: list[str] = None,
+) -> str:
+    """
+    Creates a draft email in the Outlook mailbox.
+    params:
+        subject (str): The subject of the email.
+        body (str): The body of the email.
+        to_recipients (list[str]): List of email addresses to send the email to.
+        cc_recipients (list[str]): List of email addresses to CC.
+    returns:
+        str: The id of the created draft email or a error message.
+    """
+ 
+    return create_draft_microsoft_api(
+        subject=subject,
+        body=body,
+        to_recipients=to_recipients,
+        cc_recipients=cc_recipients
+    )
 
 
 @mcp.resource("usersfolders://userFoldersInformation}")

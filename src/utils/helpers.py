@@ -21,6 +21,11 @@ def microsoft_delete(url: str, token: str) -> str:
     else:
         return "Error deleting message: " + response.text
 
+def microsoft_post(url: str, token: str, data: dict) -> dict:
+    response = requests.post(url, headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"}, json=data)
+    response.raise_for_status()
+
+    return response.json()
 def microsoft_patch(url: str, token: str, data: dict) -> dict:  
     headers = {
         'Authorization': f'Bearer {token}',
