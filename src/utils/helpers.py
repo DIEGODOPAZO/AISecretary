@@ -30,6 +30,7 @@ def microsoft_post(url: str, token: str, data: dict) -> dict:
     response.raise_for_status()
 
     return response.json()
+
 def microsoft_patch(url: str, token: str, data: dict) -> dict: 
     """Sends a PATCH request to the Microsoft Graph API.""" 
     headers = {

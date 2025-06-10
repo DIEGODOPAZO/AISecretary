@@ -161,7 +161,7 @@ def add_attachment_to_draft_email(
         draft_id (str): The id of the draft email to which the attachment will be added.
         attachment_path (str): The path to the attachment file.
     returns:
-        str: A confirmation message or an error message.
+        str: The information about the attachment or an error message.
     """
    
     return add_attachment_to_draft_microsoft_api(
@@ -170,6 +170,17 @@ def add_attachment_to_draft_email(
         content_type=content_type
     )
 
+
+@mcp.tool()
+def send_draft_email(draft_id: str) -> str:
+    """
+    Sends a draft email.
+    params:
+        draft_id (str): The id of the draft email to send.
+    returns:
+        str: A confirmation message or an error message.
+    """
+    return send_draft_email_microsoft_api(draft_id)
 
 @mcp.resource("usersfolders://userFoldersInformation}")
 def get_user_folders() -> str:

@@ -180,3 +180,13 @@ def edit_draft_microsoft_api(draft_id: str, subject: str, body: str, to_recipien
     }
 
     return json.dumps(microsoft_patch(url, token, data), indent=2)
+
+def send_draft_email_microsoft_api(draft_id: str) -> str:
+    token = get_access_token_microsoft()
+    url = f"https://graph.microsoft.com/v1.0/me/messages/{draft_id}/send"
+
+    response = requests.post(url, headers={"Authorization": f"Bearer {token}"})
+    if response.status_code == 202:
+        return json.dumps({"message": "Draft email sent successfully."}, indent=2)
+    else:
+        return json.dumps({"error": response.text}, indent=2)
