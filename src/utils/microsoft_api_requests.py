@@ -322,3 +322,15 @@ def create_edit_folder_microsoft_api(folder_name: str, folder_id: str = None, pa
         response = microsoft_post(url, token, data)
 
     return json.dumps(response, indent=2)
+
+def delete_folder_microsoft_api(folder_id: str) -> str:
+    """
+    Deletes a folder from the user's mailbox.
+
+    :param folder_id: The ID of the folder to delete.
+    :return: JSON response indicating success or failure.
+    """
+    token = get_access_token_microsoft()
+    url = f"https://graph.microsoft.com/v1.0/me/mailFolders/{folder_id}"
+
+    return microsoft_delete(url, token)

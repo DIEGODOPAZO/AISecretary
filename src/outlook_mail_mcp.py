@@ -291,6 +291,16 @@ def create_edit_folder(
         folder_name=folder_name, folder_id=folder_id, parent_folder_id=parent_folder_id
 )
 
+@mcp.tool()
+def delete_folder(folder_id: str) -> str:
+    """
+    Deletes a folder from the Outlook mailbox.
+    params:
+        folder_id (str): The id of the folder to delete.
+    returns:
+        str: A confirmation message or an error message.
+    """
+    return delete_folder_microsoft_api(folder_id)
 
 @mcp.resource("usersfolders://userFoldersInformation}")
 def get_user_folders() -> str:
