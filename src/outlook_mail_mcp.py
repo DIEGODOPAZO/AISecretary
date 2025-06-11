@@ -210,9 +210,26 @@ def move_or_copy_email(
         destination_folder_id (str): The id of the destination folder.
         move (bool): If True, moves the email; if False, copies it. Defaults to True.
     returns:
-        str: A confirmation message or an error message.
+        str: The data of the copied/moved email or an error message.
     """
     return move_or_copy_email_microsoft_api(email_id, destination_folder_id, move)
+
+
+@mcp.tool()
+def create_reply_to_email(
+    email_id: str,
+    reply_all: bool = False,
+    to_recipients: list[str] = None,
+    cc_recipients: list[str] = None) -> str:
+    """
+    Creates the draft for the reply of an email, it does not add content, for editing it you can use tools such as create_edit_draft_email.
+    params:
+        email_id (str): The id of the email to reply to.
+        reply_all (bool): If True, replies to all recipients; if False, replies only to the sender. Defaults to False.
+    returns:
+        str: A confirmation message or an error message.
+    """
+    return reply_to_email_microsoft_api(email_id, reply_all, to_recipients, cc_recipients)
 
 
 @mcp.resource("usersfolders://userFoldersInformation}")

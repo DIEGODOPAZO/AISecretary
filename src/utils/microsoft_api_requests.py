@@ -218,3 +218,22 @@ def move_or_copy_email_microsoft_api(email_id: str, destination_folder_id: str, 
     response = microsoft_post(url, token, data)
     
     return json.dumps(response, indent=2)
+
+def reply_to_email_microsoft_api(email_id: str, reply_all: bool = False, to_recipients: list[str] = None, cc_recipients: list[str] = None) -> str:
+  
+    token = get_access_token_microsoft()
+    url = f"https://graph.microsoft.com/v1.0/me/messages/{email_id}/createReplyAll" if reply_all else f"https://graph.microsoft.com/v1.0/me/messages/{email_id}/createReply"
+
+    data = {
+        "message": {
+            "body": {
+                "contentType": "Text",
+                "content": "..."
+            },
+        "toRecipients": [{"emailAddress": {"address": email}} for email in to_recipients] if to_recipients else [],
+        "ccRecipients": [{"emailAddress": {"address": email}} for email in cc_recipients] if cc_recipients else []
+        }
+    }
+    response = microsoft_post(url, token, data)
+    
+    return json.dumps(response, indent=2)
