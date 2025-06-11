@@ -197,12 +197,9 @@ def send_draft_email_microsoft_api(draft_id: str) -> str:
     token = get_access_token_microsoft()
     url = f"https://graph.microsoft.com/v1.0/me/messages/{draft_id}/send"
 
-    response = requests.post(url, headers={"Authorization": f"Bearer {token}"})
-    if response.status_code == 202:
-        return json.dumps({"message": "Draft email sent successfully."}, indent=2)
-    else:
-        return json.dumps({"error": response.text}, indent=2)
+    response = microsoft_post(url, token)
 
+    return json.dumps(response, indent=2)
 
 def delete_attachment_from_draft_microsoft_api(
     draft_id: str, attachment_id: str
@@ -267,6 +264,34 @@ def reply_to_email_microsoft_api(
             ),
         }
     }
+    response = microsoft_post(url, token, data)
+
+    return json.dumps(response, indent=2)
+
+
+def forward_email_microsoft_api(
+    email_id: str,
+    comment: str = "...",
+    to_recipients: list[str] = None,
+    cc_recipients: list[str] = None,
+) -> str:
+    token = get_access_token_microsoft()
+    url = f"https://graph.microsoft.com/v1.0/me/messages/{email_id}/forward"
+
+    data = {
+        "toRecipients": (
+            [{"emailAddress": {"address": email}} for email in to_recipients]
+            if to_recipients
+            else []
+        ),
+        "ccRecipients": (
+            [{"emailAddress": {"address": email}} for email in cc_recipients]
+            if cc_recipients
+            else []
+        ),
+        "comment": comment,
+    }
+
     response = microsoft_post(url, token, data)
 
     return json.dumps(response, indent=2)

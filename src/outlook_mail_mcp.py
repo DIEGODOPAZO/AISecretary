@@ -247,12 +247,30 @@ def create_reply_to_email(
         email_id (str): The id of the email to reply to.
         reply_all (bool): If True, replies to all recipients; if False, replies only to the sender. Defaults to False.
     returns:
-        str: A confirmation message or an error message.
+        str: Information about the created reply or an error message.
     """
     return reply_to_email_microsoft_api(
         email_id, reply_all, to_recipients, cc_recipients
     )
 
+
+@mcp.tool()
+def forward_email(
+    email_id: str,
+    comment: Optional[str] = None,
+    to_recipients: list[str] = None,
+    cc_recipients: list[str] = None,
+) -> str:
+    """
+    Creates the draft for the forward of an email, it does not add content, for editing it you can use tools such as create_edit_draft_email.
+    params:
+        email_id (str): The id of the email to forward.
+        to_recipients (list[str]): List of email addresses to send the forwarded email to.
+        cc_recipients (list[str]): List of email addresses to CC.
+    returns:
+        str: A confirmation message or an error message.
+    """
+    return forward_email_microsoft_api(email_id, comment, to_recipients, cc_recipients)
 
 @mcp.resource("usersfolders://userFoldersInformation}")
 def get_user_folders() -> str:

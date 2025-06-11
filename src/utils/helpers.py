@@ -32,9 +32,16 @@ def microsoft_post(url: str, token: str, data: dict) -> dict:
         },
         json=data,
     )
-    response.raise_for_status()
 
-    return response.json()
+    if response.status_code == 204:
+        return {"message": "Request completed successfully, no content returned."}
+    elif response.status_code == 202:
+        return {"message": "Draft email sent successfully."}
+    elif response.status_code == 200 or response.status_code == 201:
+        return response.json()
+    else:
+        return {"error": response.text}
+
 
 
 def microsoft_patch(url: str, token: str, data: dict) -> dict:
