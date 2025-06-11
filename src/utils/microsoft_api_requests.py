@@ -295,3 +295,30 @@ def forward_email_microsoft_api(
     response = microsoft_post(url, token, data)
 
     return json.dumps(response, indent=2)
+
+def create_edit_folder_microsoft_api(folder_name: str, folder_id: str = None, parent_folder_id: str = None) -> str:
+    """
+    Creates or edits a folder in the user's mailbox.
+
+    :param folder_name: The name of the folder to create or edit.
+    :param folder_id: The ID of the folder to edit (if it exists).
+    :return: JSON response indicating success or failure.
+    """
+    token = get_access_token_microsoft()
+    url = "https://graph.microsoft.com/v1.0/me/mailFolders"
+
+    data = {
+        "displayName": folder_name,
+    }
+
+    if parent_folder_id:
+        # If a parent folder ID is provided, create the folder under that parent
+        url = f"{url}/{parent_folder_id}/childFolders"
+        response = microsoft_post(url, token, data)
+    elif folder_id:
+        url = f"{url}/{folder_id}"
+        response = microsoft_patch(url, token, data)
+    else:
+        response = microsoft_post(url, token, data)
+
+    return json.dumps(response, indent=2)

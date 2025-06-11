@@ -272,6 +272,26 @@ def forward_email(
     """
     return forward_email_microsoft_api(email_id, comment, to_recipients, cc_recipients)
 
+@mcp.tool()
+def create_edit_folder(
+    folder_name: str,
+    folder_id: Optional[str] = None,
+    parent_folder_id: Optional[str] = None
+) -> str:
+    """
+    Creates or edits a folder in the Outlook mailbox.
+    params:
+        folder_name (str): The name of the folder to create or edit.
+        folder_id (Optional[str]): The id of the folder to edit. If None, a new folder will be created.
+        parent_folder_id (Optional[str]): The id of the parent folder in which to create the new folder. If None, it will be created in the root folder.
+    returns:
+        str: The id of the created or edited folder with more information, or an error message.
+    """
+    return create_edit_folder_microsoft_api(
+        folder_name=folder_name, folder_id=folder_id, parent_folder_id=parent_folder_id
+)
+
+
 @mcp.resource("usersfolders://userFoldersInformation}")
 def get_user_folders() -> str:
     """
