@@ -150,6 +150,7 @@ def create_edit_draft_email(
     body: str,
     to_recipients: list[str] = None,
     cc_recipients: list[str] = None,
+    importance: Optional[str] = "normal"
 ) -> str:
     """
     Creates a draft email in the Outlook mailbox.
@@ -159,6 +160,7 @@ def create_edit_draft_email(
         body (str): The body of the email.
         to_recipients (list[str]): List of email addresses to send the email to.
         cc_recipients (list[str]): List of email addresses to CC.
+        importance (Optional[str]): The importance of the email, can be 'low', 'normal', or 'high'. Defaults to 'normal'.
     returns:
         str: The id of the created draft email or a error message.
     """
@@ -169,6 +171,7 @@ def create_edit_draft_email(
         to_recipients=to_recipients,
         cc_recipients=cc_recipients,
         draft_id=draft_id,
+        importance=importance,
     )
 
 

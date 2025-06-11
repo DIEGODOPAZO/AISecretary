@@ -134,6 +134,7 @@ def create_edit_draft_microsoft_api(
     to_recipients: list[str] = None,
     cc_recipients: list[str] = None,
     draft_id: str = None,
+    importance: str = "normal",
 ) -> str:
     token = get_access_token_microsoft()
     url = "https://graph.microsoft.com/v1.0/me/messages"
@@ -151,6 +152,7 @@ def create_edit_draft_microsoft_api(
             if cc_recipients
             else []
         ),
+        "importance": importance.lower(),
     }
 
     if draft_id:
@@ -189,34 +191,6 @@ def add_attachment_to_draft_microsoft_api(
         "size": response.get("size"),
     }
     return json.dumps(response_data, indent=2)
-
-
-def edit_draft_microsoft_api(
-    draft_id: str,
-    subject: str,
-    body: str,
-    to_recipients: str,
-    cc_recipients: str = None,
-) -> str:
-    token = get_access_token_microsoft()
-    url = f"https://graph.microsoft.com/v1.0/me/messages/{draft_id}"
-
-    data = {
-        "subject": subject,
-        "body": {"contentType": "HTML", "content": body},
-        "toRecipients": (
-            [{"emailAddress": {"address": email}} for email in to_recipients]
-            if to_recipients
-            else []
-        ),
-        "ccRecipients": (
-            [{"emailAddress": {"address": email}} for email in cc_recipients]
-            if cc_recipients
-            else []
-        ),
-    }
-
-    return json.dumps(microsoft_patch(url, token, data), indent=2)
 
 
 def send_draft_email_microsoft_api(draft_id: str) -> str:
