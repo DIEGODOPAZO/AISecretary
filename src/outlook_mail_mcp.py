@@ -196,6 +196,25 @@ def send_draft_email(draft_id: str) -> str:
     """
     return send_draft_email_microsoft_api(draft_id)
 
+
+@mcp.tool()
+def move_or_copy_email(
+    email_id: str,
+    destination_folder_id: str,
+    move: bool = True
+) -> str:
+    """
+    Moves or copies an email to a different folder.
+    params:
+        email_id (str): The id of the email to move or copy.
+        destination_folder_id (str): The id of the destination folder.
+        move (bool): If True, moves the email; if False, copies it. Defaults to True.
+    returns:
+        str: A confirmation message or an error message.
+    """
+    return move_or_copy_email_microsoft_api(email_id, destination_folder_id, move)
+
+
 @mcp.resource("usersfolders://userFoldersInformation}")
 def get_user_folders() -> str:
     """

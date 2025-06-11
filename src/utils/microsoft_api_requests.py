@@ -198,4 +198,23 @@ def delete_attachment_from_draft_microsoft_api(draft_id: str, attachment_id: str
     url = f"https://graph.microsoft.com/v1.0/me/messages/{draft_id}/attachments/{attachment_id}"
 
     return microsoft_delete(url, token)
-   
+
+def move_or_copy_email_microsoft_api(email_id: str, destination_folder_id: str, move: bool = True) -> str:
+    """
+    Moves or copies an email to a specified folder.
+    
+    :param email_id: The ID of the email to move or copy.
+    :param destination_folder_id: The ID of the destination folder.
+    :param action: "move" to move the email, "copy" to copy it.
+    :return: JSON response indicating success or failure.
+    """
+    token = get_access_token_microsoft()
+    url = f"https://graph.microsoft.com/v1.0/me/messages/{email_id}/move" if move else f"https://graph.microsoft.com/v1.0/me/messages/{email_id}/copy"
+
+    data = {
+        "destinationId": destination_folder_id
+    }
+
+    response = microsoft_post(url, token, data)
+    
+    return json.dumps(response, indent=2)
