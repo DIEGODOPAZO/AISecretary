@@ -22,6 +22,7 @@ SCOPES = os.getenv("SCOPES", "User.Read,Mail.ReadWrite").split(",")
 raw_token_cache_path = os.getenv("TOKEN_CACHE_FILE")
 TOKEN_CACHE_FILE = (ENV_BASE_DIR / raw_token_cache_path).resolve()
 
+
 def load_cache():
     """Carga la caché del token desde un archivo (si existe)."""
     cache = msal.SerializableTokenCache()
@@ -30,19 +31,19 @@ def load_cache():
             cache.deserialize(f.read())
     return cache
 
+
 def save_cache(cache):
     """Guarda el estado del token en el archivo si hubo cambios."""
     if cache.has_state_changed:
         with open(TOKEN_CACHE_FILE, "w") as f:
             f.write(cache.serialize())
 
+
 def get_access_token_microsoft(scopes=SCOPES):
     """Obtiene un token de acceso, usando la caché si es posible."""
     cache = load_cache()
     app = msal.PublicClientApplication(
-        CLIENT_ID,
-        authority=AUTHORITY,
-        token_cache=cache
+        CLIENT_ID, authority=AUTHORITY, token_cache=cache
     )
 
     accounts = app.get_accounts()
@@ -57,7 +58,10 @@ def get_access_token_microsoft(scopes=SCOPES):
     if result and "access_token" in result:
         return result["access_token"]
     else:
-        raise Exception(f"Error in the authentication: {result.get('error_description') if result else 'No token found'}")
+        raise Exception(
+            f"Error in the authentication: {result.get('error_description') if result else 'No token found'}"
+        )
+
 
 if __name__ == "__main__":
     get_access_token_microsoft()

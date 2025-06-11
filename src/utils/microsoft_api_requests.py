@@ -6,10 +6,11 @@ import json
 from utils.auth_microsoft import get_access_token_microsoft
 from utils.helpers import *
 
+
 def get_folder_names() -> str:
     token = get_access_token_microsoft()
     base_url = "https://graph.microsoft.com/v1.0/me/mailFolders"
-    response = microsoft_get(base_url, token)    
+    response = microsoft_get(base_url, token)
     folders = response.get("value", [])
     simplified_folders = []
 
@@ -17,19 +18,23 @@ def get_folder_names() -> str:
         simplified = {
             "folder_id": folder.get("id"),
             "displayName": folder.get("displayName"),
-            "totalItemCount": folder.get("totalItemCount")
+            "totalItemCount": folder.get("totalItemCount"),
         }
         simplified_folders.append(simplified)
 
-    return json.dumps(simplified_folders, indent=2) 
+    return json.dumps(simplified_folders, indent=2)
 
 
-def get_request_microsoft_api(params: dict, folder_id: str = "ALL", unread_only: bool = False) -> str:
+def get_request_microsoft_api(
+    params: dict, folder_id: str = "ALL", unread_only: bool = False
+) -> str:
     token = get_access_token_microsoft()
     if folder_id == "ALL":
         base_url = "https://graph.microsoft.com/v1.0/me/messages"
     else:
-        base_url = f"https://graph.microsoft.com/v1.0/me/mailFolders/{folder_id}/messages"
+        base_url = (
+            f"https://graph.microsoft.com/v1.0/me/mailFolders/{folder_id}/messages"
+        )
 
     if unread_only:
         # add the filer"isRead eq false" to the existing filters
@@ -51,14 +56,11 @@ def get_request_microsoft_api(params: dict, folder_id: str = "ALL", unread_only:
     return json.dumps(simplified_messages, indent=2)
 
 
-
 def mark_as_read_microsoft_api(message_id: str) -> str:
     token = get_access_token_microsoft()
-    url = f'https://graph.microsoft.com/v1.0/me/messages/{message_id}'
-    data = {
-        "isRead": True
-    }
-    
+    url = f"https://graph.microsoft.com/v1.0/me/messages/{message_id}"
+    data = {"isRead": True}
+
     microsoft_patch(url, token, data)
     # Gets the updated messag
     response = microsoft_get(url, token)
@@ -68,12 +70,9 @@ def mark_as_read_microsoft_api(message_id: str) -> str:
 
 def get_full_message_and_attachments(message_id: str) -> str:
     token = get_access_token_microsoft()
-    
+
     base_url = f"https://graph.microsoft.com/v1.0/me/messages/{message_id}"
-    headers = {
-        "Authorization": f"Bearer {token}",
-        "Accept": "application/json"
-    }
+    headers = {"Authorization": f"Bearer {token}", "Accept": "application/json"}
 
     msg_data = microsoft_get(base_url, token)
 
@@ -102,36 +101,56 @@ def get_full_message_and_attachments(message_id: str) -> str:
                 with open(file_path, "wb") as f:
                     f.write(base64.b64decode(content_bytes))
 
-                downloaded_attachments.append({
-                    "name": name,
-                    "contentType": content_type,
-                    "path": file_path,
-                    "attachment_id": id
-                })
+                downloaded_attachments.append(
+                    {
+                        "name": name,
+                        "contentType": content_type,
+                        "path": file_path,
+                        "attachment_id": id,
+                    }
+                )
 
-
-    return json.dumps(microsoft_simplify_message(msg_data, full=True, attachments=attachments, attachments_download_path=downloaded_attachments), indent=2)
+    return json.dumps(
+        microsoft_simplify_message(
+            msg_data,
+            full=True,
+            attachments=attachments,
+            attachments_download_path=downloaded_attachments,
+        ),
+        indent=2,
+    )
 
 
 def delete_message_microsoft_api(message_id: str) -> str:
     token = get_access_token_microsoft()
-    url = f'https://graph.microsoft.com/v1.0/me/messages/{message_id}'
+    url = f"https://graph.microsoft.com/v1.0/me/messages/{message_id}"
 
     return microsoft_delete(url, token)
 
 
-def create_edit_draft_microsoft_api(subject: str, body: str, to_recipients: list[str] = None, cc_recipients: list[str] = None, draft_id: str = None) -> str:
+def create_edit_draft_microsoft_api(
+    subject: str,
+    body: str,
+    to_recipients: list[str] = None,
+    cc_recipients: list[str] = None,
+    draft_id: str = None,
+) -> str:
     token = get_access_token_microsoft()
     url = "https://graph.microsoft.com/v1.0/me/messages"
 
     data = {
         "subject": subject,
-        "body": {
-            "contentType": "HTML",
-            "content": body
-        },
-        "toRecipients": [{"emailAddress": {"address": email}} for email in to_recipients] if to_recipients else [],
-        "ccRecipients": [{"emailAddress": {"address": email}} for email in cc_recipients] if cc_recipients else []
+        "body": {"contentType": "HTML", "content": body},
+        "toRecipients": (
+            [{"emailAddress": {"address": email}} for email in to_recipients]
+            if to_recipients
+            else []
+        ),
+        "ccRecipients": (
+            [{"emailAddress": {"address": email}} for email in cc_recipients]
+            if cc_recipients
+            else []
+        ),
     }
 
     if draft_id:
@@ -139,23 +158,27 @@ def create_edit_draft_microsoft_api(subject: str, body: str, to_recipients: list
         response = microsoft_patch(url, token, data)
     else:
         response = microsoft_post(url, token, data)
-    
+
     return json.dumps(response, indent=2)
 
 
-def add_attachment_to_draft_microsoft_api(draft_id: str, attachment_path: str, content_type: str) -> str:
+def add_attachment_to_draft_microsoft_api(
+    draft_id: str, attachment_path: str, content_type: str
+) -> str:
     token = get_access_token_microsoft()
     url = f"https://graph.microsoft.com/v1.0/me/messages/{draft_id}/attachments"
     try:
-        attachment_name, attachment_content = read_file_and_encode_base64(attachment_path)
+        attachment_name, attachment_content = read_file_and_encode_base64(
+            attachment_path
+        )
     except FileNotFoundError as e:
         return json.dumps({"error": str(e)}, indent=2)
-    
+
     data = {
         "@odata.type": "#microsoft.graph.fileAttachment",
         "name": attachment_name,
         "contentBytes": attachment_content,
-        "contentType": content_type
+        "contentType": content_type,
     }
 
     response = microsoft_post(url, token, data)
@@ -163,25 +186,38 @@ def add_attachment_to_draft_microsoft_api(draft_id: str, attachment_path: str, c
         "attachment_id": response.get("id"),
         "name": response.get("name"),
         "contentType": response.get("contentType"),
-        "size": response.get("size")
+        "size": response.get("size"),
     }
     return json.dumps(response_data, indent=2)
 
-def edit_draft_microsoft_api(draft_id: str, subject: str, body: str, to_recipients: str, cc_recipients: str = None) -> str:
+
+def edit_draft_microsoft_api(
+    draft_id: str,
+    subject: str,
+    body: str,
+    to_recipients: str,
+    cc_recipients: str = None,
+) -> str:
     token = get_access_token_microsoft()
     url = f"https://graph.microsoft.com/v1.0/me/messages/{draft_id}"
 
     data = {
         "subject": subject,
-        "body": {
-            "contentType": "HTML",
-            "content": body
-        },
-        "toRecipients": [{"emailAddress": {"address": email}} for email in to_recipients] if to_recipients else [],
-        "ccRecipients": [{"emailAddress": {"address": email}} for email in cc_recipients] if cc_recipients else []
+        "body": {"contentType": "HTML", "content": body},
+        "toRecipients": (
+            [{"emailAddress": {"address": email}} for email in to_recipients]
+            if to_recipients
+            else []
+        ),
+        "ccRecipients": (
+            [{"emailAddress": {"address": email}} for email in cc_recipients]
+            if cc_recipients
+            else []
+        ),
     }
 
     return json.dumps(microsoft_patch(url, token, data), indent=2)
+
 
 def send_draft_email_microsoft_api(draft_id: str) -> str:
     token = get_access_token_microsoft()
@@ -192,48 +228,71 @@ def send_draft_email_microsoft_api(draft_id: str) -> str:
         return json.dumps({"message": "Draft email sent successfully."}, indent=2)
     else:
         return json.dumps({"error": response.text}, indent=2)
-    
-def delete_attachment_from_draft_microsoft_api(draft_id: str, attachment_id: str) -> str:
+
+
+def delete_attachment_from_draft_microsoft_api(
+    draft_id: str, attachment_id: str
+) -> str:
     token = get_access_token_microsoft()
     url = f"https://graph.microsoft.com/v1.0/me/messages/{draft_id}/attachments/{attachment_id}"
 
     return microsoft_delete(url, token)
 
-def move_or_copy_email_microsoft_api(email_id: str, destination_folder_id: str, move: bool = True) -> str:
+
+def move_or_copy_email_microsoft_api(
+    email_id: str, destination_folder_id: str, move: bool = True
+) -> str:
     """
     Moves or copies an email to a specified folder.
-    
+
     :param email_id: The ID of the email to move or copy.
     :param destination_folder_id: The ID of the destination folder.
     :param action: "move" to move the email, "copy" to copy it.
     :return: JSON response indicating success or failure.
     """
     token = get_access_token_microsoft()
-    url = f"https://graph.microsoft.com/v1.0/me/messages/{email_id}/move" if move else f"https://graph.microsoft.com/v1.0/me/messages/{email_id}/copy"
+    url = (
+        f"https://graph.microsoft.com/v1.0/me/messages/{email_id}/move"
+        if move
+        else f"https://graph.microsoft.com/v1.0/me/messages/{email_id}/copy"
+    )
 
-    data = {
-        "destinationId": destination_folder_id
-    }
+    data = {"destinationId": destination_folder_id}
 
     response = microsoft_post(url, token, data)
-    
+
     return json.dumps(response, indent=2)
 
-def reply_to_email_microsoft_api(email_id: str, reply_all: bool = False, to_recipients: list[str] = None, cc_recipients: list[str] = None) -> str:
-  
+
+def reply_to_email_microsoft_api(
+    email_id: str,
+    reply_all: bool = False,
+    to_recipients: list[str] = None,
+    cc_recipients: list[str] = None,
+) -> str:
+
     token = get_access_token_microsoft()
-    url = f"https://graph.microsoft.com/v1.0/me/messages/{email_id}/createReplyAll" if reply_all else f"https://graph.microsoft.com/v1.0/me/messages/{email_id}/createReply"
+    url = (
+        f"https://graph.microsoft.com/v1.0/me/messages/{email_id}/createReplyAll"
+        if reply_all
+        else f"https://graph.microsoft.com/v1.0/me/messages/{email_id}/createReply"
+    )
 
     data = {
         "message": {
-            "body": {
-                "contentType": "Text",
-                "content": "..."
-            },
-        "toRecipients": [{"emailAddress": {"address": email}} for email in to_recipients] if to_recipients else [],
-        "ccRecipients": [{"emailAddress": {"address": email}} for email in cc_recipients] if cc_recipients else []
+            "body": {"contentType": "Text", "content": "..."},
+            "toRecipients": (
+                [{"emailAddress": {"address": email}} for email in to_recipients]
+                if to_recipients
+                else []
+            ),
+            "ccRecipients": (
+                [{"emailAddress": {"address": email}} for email in cc_recipients]
+                if cc_recipients
+                else []
+            ),
         }
     }
     response = microsoft_post(url, token, data)
-    
+
     return json.dumps(response, indent=2)
