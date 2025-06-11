@@ -170,6 +170,20 @@ def add_attachment_to_draft_email(
         content_type=content_type
     )
 
+@mcp.tool()
+def delete_attachment_from_draft_email(
+    draft_id: str,
+    attachment_id: str
+) -> str:
+    """
+    Deletes an attachment from a draft email.
+    params:
+        draft_id (str): The id of the draft email from which the attachment will be deleted.
+        attachment_id (str): The id of the attachment to delete.
+    returns:
+        str: A confirmation message or an error message.
+    """
+    return delete_attachment_from_draft_microsoft_api(draft_id, attachment_id)
 
 @mcp.tool()
 def send_draft_email(draft_id: str) -> str:

@@ -98,7 +98,8 @@ def microsoft_simplify_message(msg: dict, full: bool = False, attachments: list 
             data["attachments"] = [
                 {
                     "name": a.get("name"),
-                    "contentType": a.get("contentType")
+                    "contentType": a.get("contentType"),
+                    "attachment_id": a.get("id")
                 } for a in attachments
             ]
         else:

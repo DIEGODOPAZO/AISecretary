@@ -95,6 +95,7 @@ def get_full_message_and_attachments(message_id: str) -> str:
             name = att.get("name")
             content_type = att.get("contentType")
             content_bytes = att.get("contentBytes")
+            id = att.get("id")
 
             if name and content_bytes:
                 file_path = os.path.join(download_dir, name)
@@ -104,7 +105,8 @@ def get_full_message_and_attachments(message_id: str) -> str:
                 downloaded_attachments.append({
                     "name": name,
                     "contentType": content_type,
-                    "path": file_path
+                    "path": file_path,
+                    "attachment_id": id
                 })
 
 
@@ -190,3 +192,10 @@ def send_draft_email_microsoft_api(draft_id: str) -> str:
         return json.dumps({"message": "Draft email sent successfully."}, indent=2)
     else:
         return json.dumps({"error": response.text}, indent=2)
+    
+def delete_attachment_from_draft_microsoft_api(draft_id: str, attachment_id: str) -> str:
+    token = get_access_token_microsoft()
+    url = f"https://graph.microsoft.com/v1.0/me/messages/{draft_id}/attachments/{attachment_id}"
+
+    return microsoft_delete(url, token)
+   
