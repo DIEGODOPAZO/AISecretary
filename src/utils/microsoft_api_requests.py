@@ -24,6 +24,23 @@ def get_folder_names() -> str:
 
     return json.dumps(simplified_folders, indent=2)
 
+@handle_microsoft_errors
+def get_subfolders_microsoft_api(folder_id: str) -> str:
+    token = get_access_token_microsoft()
+    base_url = f"https://graph.microsoft.com/v1.0/me/mailFolders/{folder_id}/childFolders"
+    (status_code, response) = microsoft_get(base_url, token)
+    folders = response.get("value", [])
+    simplified_folders = []
+
+    for folder in folders:
+        simplified = {
+            "folder_id": folder.get("id"),
+            "displayName": folder.get("displayName"),
+            "totalItemCount": folder.get("totalItemCount"),
+        }
+        simplified_folders.append(simplified)
+
+    return json.dumps(simplified_folders, indent=2)
 
 @handle_microsoft_errors
 def get_messages_from_folder_microsoft_api(

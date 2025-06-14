@@ -310,6 +310,16 @@ def delete_folder(folder_id: str) -> str:
     """
     return delete_folder_microsoft_api(folder_id)
 
+@mcp.tool()
+def get_subfolders(folder_id: str) -> str:
+    """
+    Gets the subfolders of a specific folder in the Outlook mailbox.
+    params:
+        folder_id (str): The id of the folder for which to retrieve the subfolders.
+    returns:
+        str: A JSON string containing the subfolders information.
+    """
+    return get_subfolders_microsoft_api(folder_id)
 
 @mcp.resource("usersfolders://userFoldersInformation")
 def get_user_folders() -> str:
