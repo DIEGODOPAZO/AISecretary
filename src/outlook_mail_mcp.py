@@ -56,12 +56,16 @@ def get_important_emails_outlook(
 
 @mcp.tool()
 def get_emails_from_mail_sender(
-    sender_email: str, number_emails: int = 10, unread_only: bool = False
+    sender_email: str,
+    folder_id: str = "All",
+    number_emails: int = 10,
+    unread_only: bool = False,
 ) -> str:
     """
     Gets the emails from a specific sender's email address.
     params:
         sender_email (str): The email address of the sender.
+        folder_id (str): The id of the folder from which to retrieve the emails. You can get the folder ids using the get_user_folders resource. If the string ALL is provided, it will search in all the folders.
         number_emails (int): The number of emails to retrieve, by default 10.
         unread_only (bool): If True, only retrieves unread emails. Defaults to False.
     returns:
@@ -74,7 +78,9 @@ def get_emails_from_mail_sender(
         "$orderBy": "receivedDateTime DESC",
     }
 
-    return get_messages_from_folder_microsoft_api(params, unread_only=unread_only)
+    return get_messages_from_folder_microsoft_api(
+        params, folder_id=folder_id, unread_only=unread_only
+    )
 
 
 @mcp.tool()
@@ -148,8 +154,8 @@ def create_edit_draft_email(
     draft_id: Optional[str],
     subject: str,
     body: str,
-    to_recipients: list[str] = None,
-    cc_recipients: list[str] = None,
+    to_recipients: list[str],
+    cc_recipients: list[str],
     importance: Optional[str] = "normal",
 ) -> str:
     """
@@ -158,7 +164,7 @@ def create_edit_draft_email(
         draft_id (Optional[str]): The id of the draft email to edit. If None, a new draft will be created.
         subject (str): The subject of the email.
         body (str): The body of the email.
-        to_recipients (list[str]): List of email addresses to send the email to.
+        to_recipients (list[str]): List of email addresses to send the email to, the ones to which the email was sent to.
         cc_recipients (list[str]): List of email addresses to CC.
         importance (Optional[str]): The importance of the email, can be 'low', 'normal', or 'high'. Defaults to 'normal'.
     returns:
@@ -237,20 +243,20 @@ def move_or_copy_email(
 @mcp.tool()
 def create_reply_to_email(
     email_id: str,
-    reply_all: bool = False,
-    to_recipients: list[str] = None,
-    cc_recipients: list[str] = None,
+    body: str,
+    reply_all: bool = False
 ) -> str:
     """
     Creates the draft for the reply of an email, it does not add content, for editing it you can use tools such as create_edit_draft_email.
     params:
         email_id (str): The id of the email to reply to.
+        body (str): The body of the reply email.
         reply_all (bool): If True, replies to all recipients; if False, replies only to the sender. Defaults to False.
     returns:
         str: Information about the created reply or an error message.
     """
     return reply_to_email_microsoft_api(
-        email_id, reply_all, to_recipients, cc_recipients
+        email_id, reply_all, body=body
     )
 
 

@@ -257,8 +257,7 @@ def move_or_copy_email_microsoft_api(
 def reply_to_email_microsoft_api(
     email_id: str,
     reply_all: bool = False,
-    to_recipients: list[str] = None,
-    cc_recipients: list[str] = None,
+    body: str = "Thank you for your email. I will get back to you soon."
 ) -> str:
     token = get_access_token_microsoft()
     url = (
@@ -268,20 +267,8 @@ def reply_to_email_microsoft_api(
     )
 
     data = {
-        "message": {
-            "body": {"contentType": "Text", "content": "..."},
-            "toRecipients": (
-                [{"emailAddress": {"address": email}} for email in to_recipients]
-                if to_recipients
-                else []
-            ),
-            "ccRecipients": (
-                [{"emailAddress": {"address": email}} for email in cc_recipients]
-                if cc_recipients
-                else []
-            ),
-        }
-    }
+        "comment": body
+    } 
     (status_code, response) = microsoft_post(url, token, data)
     return json.dumps(response, indent=2)
 
