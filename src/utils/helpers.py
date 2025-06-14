@@ -40,7 +40,6 @@ def microsoft_delete(url: str, token: str) -> tuple[int, str]:
 
 
 def microsoft_post(url: str, token: str, data: dict = {}) -> tuple[int, dict]:
-    """Sends a POST request to the Microsoft Graph API and returns status code and response json/text."""
     response = requests.post(
         url,
         headers={
@@ -50,7 +49,10 @@ def microsoft_post(url: str, token: str, data: dict = {}) -> tuple[int, dict]:
         json=data,
     )
     response.raise_for_status()
-    return response.status_code, response.json()
+    try:
+        return response.status_code, response.json()
+    except ValueError:
+        return response.status_code, {} 
 
 
 def microsoft_patch(url: str, token: str, data: dict = {}) -> tuple[int, dict]:

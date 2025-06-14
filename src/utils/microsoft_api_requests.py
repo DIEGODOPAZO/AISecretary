@@ -210,7 +210,7 @@ def send_draft_email_microsoft_api(draft_id: str) -> str:
     token = get_access_token_microsoft()
     url = f"https://graph.microsoft.com/v1.0/me/messages/{draft_id}/send"
     (status_code, response) = microsoft_post(url, token, data={})
-    return json.dumps(response, indent=2)
+    return json.dumps({"message": "Email sent successfully."}, indent=2)
 
 
 @handle_microsoft_errors
