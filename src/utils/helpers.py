@@ -1,29 +1,46 @@
 import base64
 import requests
 import os
+from functools import wraps
+import json
 
 
-def microsoft_get(url: str, token: str, params: dict = None) -> dict:
+def handle_microsoft_errors(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except requests.HTTPError as e:
+            return json.dumps(
+                {"error": f"HTTP error: {e.response.status_code} - {e.response.text}"},
+                indent=2,
+            )
+        except requests.RequestException as e:
+            return json.dumps({"error": f"Request failed: {str(e)}"}, indent=2)
+        except Exception as e:
+            return json.dumps({"error": f"Internal error: {str(e)}"}, indent=2)
+
+    return wrapper
+
+
+def microsoft_get(url: str, token: str, params: dict = {}) -> tuple[int, dict]:
     """Sends a GET request to the Microsoft Graph API."""
     headers = {"Authorization": f"Bearer {token}", "Accept": "application/json"}
     response = requests.get(url, headers=headers, params=params)
     response.raise_for_status()
-    return response.json()
+    return response.status_code, response.json()
 
 
-def microsoft_delete(url: str, token: str) -> str:
-    """Sends a DELETE request to the Microsoft Graph API."""
+def microsoft_delete(url: str, token: str) -> tuple[int, str]:
+    """Sends a DELETE request to the Microsoft Graph API and returns status code and response text."""
     headers = {"Authorization": f"Bearer {token}", "Accept": "application/json"}
     response = requests.delete(url, headers=headers)
-
-    if response.status_code == 204:
-        return "Message correctly deleted"
-    else:
-        return "Error deleting message: " + response.text
+    response.raise_for_status()
+    return response.status_code, response.text
 
 
-def microsoft_post(url: str, token: str, data: dict) -> dict:
-    """Sends a POST request to the Microsoft Graph API."""
+def microsoft_post(url: str, token: str, data: dict = {}) -> tuple[int, dict]:
+    """Sends a POST request to the Microsoft Graph API and returns status code and response json/text."""
     response = requests.post(
         url,
         headers={
@@ -32,24 +49,17 @@ def microsoft_post(url: str, token: str, data: dict) -> dict:
         },
         json=data,
     )
-
-    if response.status_code == 204:
-        return {"message": "Request completed successfully, no content returned."}
-    elif response.status_code == 202:
-        return {"message": "Draft email sent successfully."}
-    elif response.status_code == 200 or response.status_code == 201:
-        return response.json()
-    else:
-        return {"error": response.text}
+    response.raise_for_status()
+    return response.status_code, response.json()
 
 
-
-def microsoft_patch(url: str, token: str, data: dict) -> dict:
-    """Sends a PATCH request to the Microsoft Graph API."""
+def microsoft_patch(url: str, token: str, data: dict = {}) -> tuple[int, dict]:
+    """Sends a PATCH request to the Microsoft Graph API and returns status code and response json/text."""
     headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
     response = requests.patch(url, headers=headers, json=data)
     response.raise_for_status()
-    return response.json()
+
+    return response.status_code, response.json()
 
 
 def read_file_and_encode_base64(file_path: str) -> tuple[str, str]:

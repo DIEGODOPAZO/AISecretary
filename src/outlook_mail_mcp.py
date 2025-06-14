@@ -25,7 +25,7 @@ def get_last_emails_outlook(
     """
     params = {"$top": number_emails, "$orderBy": "receivedDateTime DESC"}
 
-    return get_request_microsoft_api(
+    return get_messages_from_folder_microsoft_api(
         params, folder_id=folder_id, unread_only=unread_only
     )
 
@@ -49,7 +49,7 @@ def get_important_emails_outlook(
         "$top": number_emails,
         "$orderBy": "receivedDateTime DESC",
     }
-    return get_request_microsoft_api(
+    return get_messages_from_folder_microsoft_api(
         params, folder_id=folder_id, unread_only=unread_only
     )
 
@@ -74,7 +74,7 @@ def get_emails_from_mail_sender(
         "$orderBy": "receivedDateTime DESC",
     }
 
-    return get_request_microsoft_api(params, unread_only=unread_only)
+    return get_messages_from_folder_microsoft_api(params, unread_only=unread_only)
 
 
 @mcp.tool()
@@ -101,7 +101,7 @@ def get_emails_with_keyword(
         "$orderBy": "receivedDateTime DESC",
     }
 
-    return get_request_microsoft_api(
+    return get_messages_from_folder_microsoft_api(
         params, folder_id=folder_id, unread_only=unread_only
     )
 
@@ -150,7 +150,7 @@ def create_edit_draft_email(
     body: str,
     to_recipients: list[str] = None,
     cc_recipients: list[str] = None,
-    importance: Optional[str] = "normal"
+    importance: Optional[str] = "normal",
 ) -> str:
     """
     Creates a draft email in the Outlook mailbox.
@@ -272,11 +272,12 @@ def forward_email(
     """
     return forward_email_microsoft_api(email_id, comment, to_recipients, cc_recipients)
 
+
 @mcp.tool()
 def create_edit_folder(
     folder_name: str,
     folder_id: Optional[str] = None,
-    parent_folder_id: Optional[str] = None
+    parent_folder_id: Optional[str] = None,
 ) -> str:
     """
     Creates or edits a folder in the Outlook mailbox.
@@ -289,7 +290,8 @@ def create_edit_folder(
     """
     return create_edit_folder_microsoft_api(
         folder_name=folder_name, folder_id=folder_id, parent_folder_id=parent_folder_id
-)
+    )
+
 
 @mcp.tool()
 def delete_folder(folder_id: str) -> str:
@@ -302,7 +304,8 @@ def delete_folder(folder_id: str) -> str:
     """
     return delete_folder_microsoft_api(folder_id)
 
-@mcp.resource("usersfolders://userFoldersInformation}")
+
+@mcp.resource("usersfolders://userFoldersInformation")
 def get_user_folders() -> str:
     """
     Gets the folders of the Outlook mailbox.

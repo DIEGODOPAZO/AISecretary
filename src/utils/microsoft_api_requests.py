@@ -1,16 +1,16 @@
 import base64
 import os
-import requests
 import json
 
 from utils.auth_microsoft import get_access_token_microsoft
 from utils.helpers import *
 
 
+@handle_microsoft_errors
 def get_folder_names() -> str:
     token = get_access_token_microsoft()
     base_url = "https://graph.microsoft.com/v1.0/me/mailFolders"
-    response = microsoft_get(base_url, token)
+    (status_code, response) = microsoft_get(base_url, token)
     folders = response.get("value", [])
     simplified_folders = []
 
@@ -25,7 +25,8 @@ def get_folder_names() -> str:
     return json.dumps(simplified_folders, indent=2)
 
 
-def get_request_microsoft_api(
+@handle_microsoft_errors
+def get_messages_from_folder_microsoft_api(
     params: dict, folder_id: str = "ALL", unread_only: bool = False
 ) -> str:
     token = get_access_token_microsoft()
@@ -45,7 +46,7 @@ def get_request_microsoft_api(
         else:
             params["$filter"] = unread_filter
 
-    response = microsoft_get(base_url, token, params=params)
+    (status_code, response) = microsoft_get(base_url, token, params=params)
 
     messages = response.get("value", [])
     simplified_messages = []
@@ -56,31 +57,32 @@ def get_request_microsoft_api(
     return json.dumps(simplified_messages, indent=2)
 
 
+@handle_microsoft_errors
 def mark_as_read_microsoft_api(message_id: str) -> str:
     token = get_access_token_microsoft()
     url = f"https://graph.microsoft.com/v1.0/me/messages/{message_id}"
     data = {"isRead": True}
 
     microsoft_patch(url, token, data)
-    # Gets the updated messag
-    response = microsoft_get(url, token)
+
+    (status_code, response) = microsoft_get(url, token)
 
     return json.dumps(microsoft_simplify_message(response), indent=2)
 
 
+@handle_microsoft_errors
 def get_full_message_and_attachments(message_id: str) -> str:
     token = get_access_token_microsoft()
 
     base_url = f"https://graph.microsoft.com/v1.0/me/messages/{message_id}"
     headers = {"Authorization": f"Bearer {token}", "Accept": "application/json"}
 
-    msg_data = microsoft_get(base_url, token)
+    (status_code, msg_data) = microsoft_get(base_url, token)
 
     # Obtain the attachments
     attachments_url = f"{base_url}/attachments"
-    att_response = requests.get(attachments_url, headers=headers)
-    att_response.raise_for_status()
-    attachments = att_response.json().get("value", [])
+    (att_status, att_data) = microsoft_get(attachments_url, token)
+    attachments = att_data.get("value", [])
 
     # Create the directory to save attachments
     download_dir = os.path.join(os.path.expanduser("~"), "Downloads", "attachments")
@@ -121,13 +123,20 @@ def get_full_message_and_attachments(message_id: str) -> str:
     )
 
 
+@handle_microsoft_errors
 def delete_message_microsoft_api(message_id: str) -> str:
     token = get_access_token_microsoft()
     url = f"https://graph.microsoft.com/v1.0/me/messages/{message_id}"
+    (status_code, response) = microsoft_delete(url, token)
 
-    return microsoft_delete(url, token)
+    if status_code != 204:
+        return json.dumps({"error": response}, indent=2)
+    return json.dumps(
+        {"message": f"Message with ID {message_id} deleted successfully."}, indent=2
+    )
 
 
+@handle_microsoft_errors
 def create_edit_draft_microsoft_api(
     subject: str,
     body: str,
@@ -136,6 +145,8 @@ def create_edit_draft_microsoft_api(
     draft_id: str = None,
     importance: str = "normal",
 ) -> str:
+    if not subject or not body:
+        return json.dumps({"error": "Subject and body are required."}, indent=2)
     token = get_access_token_microsoft()
     url = "https://graph.microsoft.com/v1.0/me/messages"
 
@@ -157,13 +168,14 @@ def create_edit_draft_microsoft_api(
 
     if draft_id:
         url = f"{url}/{draft_id}"
-        response = microsoft_patch(url, token, data)
+        (status_code, response) = microsoft_patch(url, token, data)
     else:
-        response = microsoft_post(url, token, data)
+        (status_code, response) = microsoft_post(url, token, data)
 
     return json.dumps(response, indent=2)
 
 
+@handle_microsoft_errors
 def add_attachment_to_draft_microsoft_api(
     draft_id: str, attachment_path: str, content_type: str
 ) -> str:
@@ -183,7 +195,7 @@ def add_attachment_to_draft_microsoft_api(
         "contentType": content_type,
     }
 
-    response = microsoft_post(url, token, data)
+    status_code, response = microsoft_post(url, token, data)
     response_data = {
         "attachment_id": response.get("id"),
         "name": response.get("name"),
@@ -193,23 +205,30 @@ def add_attachment_to_draft_microsoft_api(
     return json.dumps(response_data, indent=2)
 
 
+@handle_microsoft_errors
 def send_draft_email_microsoft_api(draft_id: str) -> str:
     token = get_access_token_microsoft()
     url = f"https://graph.microsoft.com/v1.0/me/messages/{draft_id}/send"
-
-    response = microsoft_post(url, token)
-
+    (status_code, response) = microsoft_post(url, token, data={})
     return json.dumps(response, indent=2)
 
+
+@handle_microsoft_errors
 def delete_attachment_from_draft_microsoft_api(
     draft_id: str, attachment_id: str
 ) -> str:
     token = get_access_token_microsoft()
     url = f"https://graph.microsoft.com/v1.0/me/messages/{draft_id}/attachments/{attachment_id}"
+    (status_code, response) = microsoft_delete(url, token)
+    if status_code != 204:
+        return json.dumps({"error": response}, indent=2)
+    return json.dumps(
+        {"message": f"Attachment with ID {attachment_id} deleted successfully."},
+        indent=2,
+    )
 
-    return microsoft_delete(url, token)
 
-
+@handle_microsoft_errors
 def move_or_copy_email_microsoft_api(
     email_id: str, destination_folder_id: str, move: bool = True
 ) -> str:
@@ -230,18 +249,17 @@ def move_or_copy_email_microsoft_api(
 
     data = {"destinationId": destination_folder_id}
 
-    response = microsoft_post(url, token, data)
-
+    (status_code, response) = microsoft_post(url, token, data)
     return json.dumps(response, indent=2)
 
 
+@handle_microsoft_errors
 def reply_to_email_microsoft_api(
     email_id: str,
     reply_all: bool = False,
     to_recipients: list[str] = None,
     cc_recipients: list[str] = None,
 ) -> str:
-
     token = get_access_token_microsoft()
     url = (
         f"https://graph.microsoft.com/v1.0/me/messages/{email_id}/createReplyAll"
@@ -264,11 +282,11 @@ def reply_to_email_microsoft_api(
             ),
         }
     }
-    response = microsoft_post(url, token, data)
-
+    (status_code, response) = microsoft_post(url, token, data)
     return json.dumps(response, indent=2)
 
 
+@handle_microsoft_errors
 def forward_email_microsoft_api(
     email_id: str,
     comment: str = "...",
@@ -292,11 +310,14 @@ def forward_email_microsoft_api(
         "comment": comment,
     }
 
-    response = microsoft_post(url, token, data)
-
+    (status_code, response) = microsoft_post(url, token, data)
     return json.dumps(response, indent=2)
 
-def create_edit_folder_microsoft_api(folder_name: str, folder_id: str = None, parent_folder_id: str = None) -> str:
+
+@handle_microsoft_errors
+def create_edit_folder_microsoft_api(
+    folder_name: str, folder_id: str = None, parent_folder_id: str = None
+) -> str:
     """
     Creates or edits a folder in the user's mailbox.
 
@@ -310,19 +331,22 @@ def create_edit_folder_microsoft_api(folder_name: str, folder_id: str = None, pa
     data = {
         "displayName": folder_name,
     }
+    if not folder_name:
+        return json.dumps({"error": "Folder name is required."}, indent=2)
 
     if parent_folder_id:
-        # If a parent folder ID is provided, create the folder under that parent
         url = f"{url}/{parent_folder_id}/childFolders"
-        response = microsoft_post(url, token, data)
+        (status_code, response) = microsoft_post(url, token, data)
     elif folder_id:
         url = f"{url}/{folder_id}"
-        response = microsoft_patch(url, token, data)
+        (status_code, response) = microsoft_patch(url, token, data)
     else:
-        response = microsoft_post(url, token, data)
+        (status_code, response) = microsoft_post(url, token, data)
 
     return json.dumps(response, indent=2)
 
+
+@handle_microsoft_errors
 def delete_folder_microsoft_api(folder_id: str) -> str:
     """
     Deletes a folder from the user's mailbox.
@@ -332,5 +356,9 @@ def delete_folder_microsoft_api(folder_id: str) -> str:
     """
     token = get_access_token_microsoft()
     url = f"https://graph.microsoft.com/v1.0/me/mailFolders/{folder_id}"
-
-    return microsoft_delete(url, token)
+    (status_code, response) = microsoft_delete(url, token)
+    if status_code != 204:
+        return json.dumps({"error": response}, indent=2)
+    return json.dumps(
+        {"message": f"Folder with ID {folder_id} deleted successfully."}, indent=2
+    )
