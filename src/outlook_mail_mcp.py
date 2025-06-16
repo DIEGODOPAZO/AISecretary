@@ -78,11 +78,7 @@ def get_emails_with_keyword(
         str: A JSON string containing the emails that match the keyword.
     """
 
-    params = {
-        "$search": f"{keyword}",
-        "$top": params.number_emails,
-        "$orderBy": "receivedDateTime DESC",
-    }
+    params = {"$search": f"{keyword}", "$top": email_search_params.number_emails}
 
     return get_messages_from_folder_microsoft_api(
         params, email_search_params=email_search_params
@@ -237,6 +233,16 @@ def delete_folder(folder_id: str) -> str:
 
 
 @mcp.tool()
+def get_folder_names_at_mailbox() -> str:
+    """
+    Gets the names of the folders in the Outlook mailbox.
+    returns:
+        str: A JSON string containing the folder names and information about the folders.
+    """
+    return get_folder_names()
+
+
+@mcp.tool()
 def get_subfolders(folder_id: str) -> str:
     """
     Gets the subfolders of a specific folder in the Outlook mailbox.
@@ -248,7 +254,7 @@ def get_subfolders(folder_id: str) -> str:
     return get_subfolders_microsoft_api(folder_id)
 
 
-@mcp.resource("usersfolders://userFoldersInformation")
+@mcp.resource("outlook://root/folders")
 def get_user_folders() -> str:
     """
     Gets the folders of the Outlook mailbox.
@@ -259,47 +265,66 @@ def get_user_folders() -> str:
 
 
 @mcp.prompt()
-def search_emails_by_mail(
-    user_mail: str, number_emails: int = 10, unread_only: bool = False
-) -> str:
-    """Search emails by mail address.
-    params:
-        user_mail (str): The email address to search for.
-        number_emails (int): The number of emails to retrieve, by default 10.
-        unread_only (bool): If True, only retrieves unread emails. Defaults to False.
+def outlook_inbox_new(number_emails: int) -> str:
     """
-    return f"Search emails by mail: {user_mail}, number of emails: {number_emails}, unread only: {unread_only}. Use the get_emails_from_mail_sender tool to retrieve the emails."
+    Prompt to get the latest unread number_emails emails from the Outlook inbox.
+    params:
+        number_emails (int): The number of latest unread emails to retrieve.
+    returns:
+        str: A JSON string containing the latest unread emails.
+    """
+    return f"Give me the latest {number_emails} unread emails from my Outlook inbox"
 
 
 @mcp.prompt()
-def search_emails_by_keyword(
-    keyword: str,
-    number_emails: int = 10,
-    folder_id: str = "ALL",
-    unread_only: bool = False,
-) -> str:
-    """ "Search emails by keyword.
+def outlook_inbox_important(number_emails: int) -> str:
+    """
+    Prompt to get the latest important emails from the Outlook inbox.
+    params:
+        number_emails (int): The number of latest important emails to retrieve.
+    returns:
+        str: A JSON string containing the latest important emails.
+    """
+    return f"Give me the latest {number_emails} important emails from my Outlook inbox"
+
+
+@mcp.prompt()
+def outlook_inbox_from_sender(sender_email: str, number_emails: int) -> str:
+    """
+    Prompt to get the latest emails from a specific sender's email address.
+    params:
+        sender_email (str): The email address of the sender.
+        number_emails (int): The number of latest emails to retrieve.
+    returns:
+        str: A JSON string containing the latest emails from the specified sender.
+    """
+    return f"Give me the latest {number_emails} emails from {sender_email} in my Outlook inbox"
+
+
+@mcp.prompt()
+def outlook_inbox_with_keyword(keyword: str, number_emails: int) -> str:
+    """
+    Prompt to get the latest emails that contain a specific keyword in the subject or body.
     params:
         keyword (str): The keyword to search for in the emails.
-        number_emails (int): The number of emails to retrieve, by default 10.
-        folder_id (str): The id of the folder from which to retrieve the emails. You can get the folder ids using the get_user_folders resource. If the string ALL is provided, it will search in all the folders.
-        unread_only (bool): If True, only retrieves unread emails. Defaults to False."""
-    return f"Search emails by keyword: {keyword}, number of emails: {number_emails}, folder id: {folder_id}, unread only: {unread_only}. Use the get_emails_with_keyword tool to retrieve the emails."
+        number_emails (int): The number of latest emails to retrieve.
+    returns:
+        str: A JSON string containing the latest emails that match the keyword.
+    """
+    return f"Give me the latest {number_emails} emails that contain '{keyword}' in my Outlook inbox"
 
 
 @mcp.prompt()
-def search_emails_by_important(
-    number_emails: Optional[int] = 10,
-    folder_id: Optional[str] = None,
-    unread_only: bool = False,
-) -> str:
-    """Search important emails.
-    params:
-        number_emails (int): The number of important emails to retrieve, by default 10.
-        folder_id (str): The id of the folder from which to retrieve the emails. You can get the folder ids using the get_user_folders resource. If the string ALL is provided, it will search in all the folders.
-        unread_only (bool): If True, only retrieves unread emails. Defaults to False.
+def outlook_inbox_from_folder(folder_name: str, number_emails: int) -> str:
     """
-    return f"Search important emails, number of emails: {number_emails}, folder id: {folder_id}, unread only: {unread_only}. Use the get_important_emails_outlook tool to retrieve the emails."
+    Prompt to get the latest emails from a specific folder in the Outlook inbox.
+    params:
+        folder_name (str): The name of the folder to search in.
+        number_emails (int): The number of latest emails to retrieve.
+    returns:
+        str: A JSON string containing the latest emails from the specified folder.
+    """
+    return f"Give me the latest {number_emails} emails from the '{folder_name}' folder in my Outlook inbox"
 
 
 if __name__ == "__main__":
