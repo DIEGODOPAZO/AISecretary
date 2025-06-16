@@ -1,5 +1,6 @@
 from typing import Optional
 from utils.microsoft_api_requests import *
+from utils.param_types import *
 
 # server.py
 from mcp.server.fastmcp import FastMCP
@@ -11,104 +12,80 @@ filter_dateTime = "receivedDateTime ge 2016-01-01T00:00:00Z"  # Needed to have t
 
 
 @mcp.tool()
-def get_last_emails_outlook(
-    number_emails: int, folder_id: str = "ALL", unread_only: bool = False
-) -> str:
+def get_last_emails_outlook(email_search_params: EmailSearchParams) -> str:
     """
     Gets the last {number_emails} emails from the Outlook mailbox that were sent to the user.
-    params:
-        number_emails (int): The number of emails to retrieve.
-        folder_id (str): The id of the folder from which to retrieve the emails. You can get the folder ids using the get_user_folders resource. If the string ALL is provided, it will search in all the folders.
-        unread_only (bool): If True, only retrieves unread emails. Defaults to False.
-    returns:
-        str: A JSON string containing the emails.
+
     """
-    params = {"$top": number_emails, "$orderBy": "receivedDateTime DESC"}
+    params = {
+        "$top": email_search_params.number_emails,
+        "$orderBy": "receivedDateTime DESC",
+    }
 
     return get_messages_from_folder_microsoft_api(
-        params, folder_id=folder_id, unread_only=unread_only
+        params, email_search_params=email_search_params
     )
 
 
 @mcp.tool()
-def get_important_emails_outlook(
-    number_emails: int = 10, folder_id: str = "ALL", unread_only: bool = False
-) -> str:
+def get_important_emails_outlook(email_search_params: EmailSearchParams) -> str:
     """
     Gets the important emails from the Outlook mailbox that were sent to the user.
-    params:
-        number_emails (int): The number of important emails to retrieve, by default 10.
-        folder_id (str): The id of the folder from which to retrieve the emails. You can get the folder ids using the get_user_folders resource. If the string ALL is provided, it will search in all the folders.
-        unread_only (bool): If True, only retrieves unread emails. Defaults to False.
     returns:
         str: A JSON string containing the important emails.
     """
 
     params = {
         "$filter": f"{filter_dateTime} and importance eq 'high'",
-        "$top": number_emails,
+        "$top": email_search_params.number_emails,
         "$orderBy": "receivedDateTime DESC",
     }
     return get_messages_from_folder_microsoft_api(
-        params, folder_id=folder_id, unread_only=unread_only
+        params, email_search_params=email_search_params
     )
 
 
 @mcp.tool()
 def get_emails_from_mail_sender(
-    sender_email: str,
-    folder_id: str = "All",
-    number_emails: int = 10,
-    unread_only: bool = False,
+    sender_email: str, email_search_params: EmailSearchParams
 ) -> str:
     """
     Gets the emails from a specific sender's email address.
-    params:
-        sender_email (str): The email address of the sender.
-        folder_id (str): The id of the folder from which to retrieve the emails. You can get the folder ids using the get_user_folders resource. If the string ALL is provided, it will search in all the folders.
-        number_emails (int): The number of emails to retrieve, by default 10.
-        unread_only (bool): If True, only retrieves unread emails. Defaults to False.
+
     returns:
         str: A JSON string containing the emails from the specified sender.
     """
 
     params = {
         "$filter": f"{filter_dateTime} and from/emailAddress/address eq '{sender_email}'",
-        "$top": number_emails,
+        "$top": email_search_params.number_emails,
         "$orderBy": "receivedDateTime DESC",
     }
 
     return get_messages_from_folder_microsoft_api(
-        params, folder_id=folder_id, unread_only=unread_only
+        params, email_search_params=email_search_params
     )
 
 
 @mcp.tool()
 def get_emails_with_keyword(
-    keyword: str,
-    number_emails: int = 10,
-    folder_id: str = "ALL",
-    unread_only: bool = False,
+    keyword: str, email_search_params: EmailSearchParams
 ) -> str:
     """
     Gets the emails that contain a specific keyword in the subject or body.
-    params:
-        keyword (str): The keyword to search for in the emails.
-        number_emails (int): The number of emails to retrieve, by default 10.
-        folder_id (str): The id of the folder from which to retrieve the emails. You can get the folder ids using the get_user_folders resource. If the string ALL is provided, it will search in all the folders.
-        unread_only (bool): If True, only retrieves unread emails. Defaults to False.
+
     returns:
         str: A JSON string containing the emails that match the keyword.
     """
 
     params = {
-        "$seach": f"{keyword}",
-        "$top": number_emails,
+        "$search": f"{keyword}",
+        "$top": params.number_emails,
         "$orderBy": "receivedDateTime DESC",
     }
 
     return get_messages_from_folder_microsoft_api(
-        params, folder_id=folder_id, unread_only=unread_only
+        params, email_search_params=email_search_params
     )
 
 
@@ -150,35 +127,14 @@ def delete_email(email_id: str) -> str:
 
 
 @mcp.tool()
-def create_edit_draft_email(
-    draft_id: Optional[str],
-    subject: str,
-    body: str,
-    to_recipients: list[str],
-    cc_recipients: list[str],
-    importance: Optional[str] = "normal",
-) -> str:
+def create_edit_draft_email(draft_email_data: DraftEmailData) -> str:
     """
     Creates a draft email in the Outlook mailbox.
-    params:
-        draft_id (Optional[str]): The id of the draft email to edit. If None, a new draft will be created.
-        subject (str): The subject of the email.
-        body (str): The body of the email.
-        to_recipients (list[str]): List of email addresses to send the email to, the ones to which the email was sent to.
-        cc_recipients (list[str]): List of email addresses to CC.
-        importance (Optional[str]): The importance of the email, can be 'low', 'normal', or 'high'. Defaults to 'normal'.
     returns:
         str: The id of the created draft email or a error message.
     """
 
-    return create_edit_draft_microsoft_api(
-        subject=subject,
-        body=body,
-        to_recipients=to_recipients,
-        cc_recipients=cc_recipients,
-        draft_id=draft_id,
-        importance=importance,
-    )
+    return create_edit_draft_microsoft_api(draft_email_data=draft_email_data)
 
 
 @mcp.tool()
@@ -225,78 +181,47 @@ def send_draft_email(draft_id: str) -> str:
 
 
 @mcp.tool()
-def move_or_copy_email(
-    email_id: str, destination_folder_id: str, move: bool = True
-) -> str:
+def move_or_copy_email(email_operation_params: EmailOperationParams) -> str:
     """
     Moves or copies an email to a different folder.
-    params:
-        email_id (str): The id of the email to move or copy.
-        destination_folder_id (str): The id of the destination folder.
-        move (bool): If True, moves the email; if False, copies it. Defaults to True.
+
     returns:
         str: The data of the copied/moved email or an error message.
     """
-    return move_or_copy_email_microsoft_api(email_id, destination_folder_id, move)
+    return move_or_copy_email_microsoft_api(email_operation_params)
 
 
 @mcp.tool()
-def create_reply_to_email(
-    email_id: str,
-    body: str,
-    reply_all: bool = False
-) -> str:
+def create_reply_to_email(email_reply_params: EmailReplyParams) -> str:
     """
     Creates the draft for the reply of an email, it does not add content, for editing it you can use tools such as create_edit_draft_email.
-    params:
-        email_id (str): The id of the email to reply to.
-        body (str): The body of the reply email.
-        reply_all (bool): If True, replies to all recipients; if False, replies only to the sender. Defaults to False.
+
     returns:
         str: Information about the created reply or an error message.
     """
-    return reply_to_email_microsoft_api(
-        email_id, reply_all, body=body
-    )
+    return reply_to_email_microsoft_api(email_reply_params)
 
 
 @mcp.tool()
-def forward_email(
-    email_id: str,
-    comment: Optional[str] = None,
-    to_recipients: list[str] = None,
-    cc_recipients: list[str] = None,
-) -> str:
+def forward_email(email_forward_params: EmailForwardParams) -> str:
     """
     Creates the draft for the forward of an email, it does not add content, for editing it you can use tools such as create_edit_draft_email.
-    params:
-        email_id (str): The id of the email to forward.
-        to_recipients (list[str]): List of email addresses to send the forwarded email to.
-        cc_recipients (list[str]): List of email addresses to CC.
+
     returns:
         str: A confirmation message or an error message.
     """
-    return forward_email_microsoft_api(email_id, comment, to_recipients, cc_recipients)
+    return forward_email_microsoft_api(email_forward_params)
 
 
 @mcp.tool()
-def create_edit_folder(
-    folder_name: str,
-    folder_id: Optional[str] = None,
-    parent_folder_id: Optional[str] = None,
-) -> str:
+def create_edit_folder(folder_params: FolderParams) -> str:
     """
     Creates or edits a folder in the Outlook mailbox.
-    params:
-        folder_name (str): The name of the folder to create or edit.
-        folder_id (Optional[str]): The id of the folder to edit. If None, a new folder will be created.
-        parent_folder_id (Optional[str]): The id of the parent folder in which to create the new folder. If None, it will be created in the root folder.
+
     returns:
         str: The id of the created or edited folder with more information, or an error message.
     """
-    return create_edit_folder_microsoft_api(
-        folder_name=folder_name, folder_id=folder_id, parent_folder_id=parent_folder_id
-    )
+    return create_edit_folder_microsoft_api(folder_params)
 
 
 @mcp.tool()
@@ -310,6 +235,7 @@ def delete_folder(folder_id: str) -> str:
     """
     return delete_folder_microsoft_api(folder_id)
 
+
 @mcp.tool()
 def get_subfolders(folder_id: str) -> str:
     """
@@ -320,6 +246,7 @@ def get_subfolders(folder_id: str) -> str:
         str: A JSON string containing the subfolders information.
     """
     return get_subfolders_microsoft_api(folder_id)
+
 
 @mcp.resource("usersfolders://userFoldersInformation")
 def get_user_folders() -> str:
@@ -362,7 +289,9 @@ def search_emails_by_keyword(
 
 @mcp.prompt()
 def search_emails_by_important(
-    number_emails: int = 10, folder_id: str = "ALL", unread_only: bool = False
+    number_emails: Optional[int] = 10,
+    folder_id: Optional[str] = None,
+    unread_only: bool = False,
 ) -> str:
     """Search important emails.
     params:

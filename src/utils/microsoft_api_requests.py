@@ -2,6 +2,7 @@ import base64
 import os
 import json
 
+from utils.param_types import *
 from utils.auth_microsoft import get_access_token_microsoft
 from utils.helpers import *
 
@@ -24,10 +25,13 @@ def get_folder_names() -> str:
 
     return json.dumps(simplified_folders, indent=2)
 
+
 @handle_microsoft_errors
 def get_subfolders_microsoft_api(folder_id: str) -> str:
     token = get_access_token_microsoft()
-    base_url = f"https://graph.microsoft.com/v1.0/me/mailFolders/{folder_id}/childFolders"
+    base_url = (
+        f"https://graph.microsoft.com/v1.0/me/mailFolders/{folder_id}/childFolders"
+    )
     (status_code, response) = microsoft_get(base_url, token)
     folders = response.get("value", [])
     simplified_folders = []
@@ -42,19 +46,18 @@ def get_subfolders_microsoft_api(folder_id: str) -> str:
 
     return json.dumps(simplified_folders, indent=2)
 
+
 @handle_microsoft_errors
 def get_messages_from_folder_microsoft_api(
-    params: dict, folder_id: str = "ALL", unread_only: bool = False
+    params: dict, email_search_params: EmailSearchParams
 ) -> str:
     token = get_access_token_microsoft()
-    if folder_id == "ALL":
+    if email_search_params.folder_id is None:
         base_url = "https://graph.microsoft.com/v1.0/me/messages"
     else:
-        base_url = (
-            f"https://graph.microsoft.com/v1.0/me/mailFolders/{folder_id}/messages"
-        )
+        base_url = f"https://graph.microsoft.com/v1.0/me/mailFolders/{email_search_params.folder_id}/messages"
 
-    if unread_only:
+    if email_search_params.unread_only:
         # add the filer"isRead eq false" to the existing filters
         existing_filter = params.get("$filter", "")
         unread_filter = "isRead eq false"
@@ -154,37 +157,41 @@ def delete_message_microsoft_api(message_id: str) -> str:
 
 
 @handle_microsoft_errors
-def create_edit_draft_microsoft_api(
-    subject: str,
-    body: str,
-    to_recipients: list[str] = None,
-    cc_recipients: list[str] = None,
-    draft_id: str = None,
-    importance: str = "normal",
-) -> str:
-    if not subject or not body:
+def create_edit_draft_microsoft_api(draft_email_data: DraftEmailData) -> str:
+    if not draft_email_data.subject or not draft_email_data.body:
         return json.dumps({"error": "Subject and body are required."}, indent=2)
     token = get_access_token_microsoft()
     url = "https://graph.microsoft.com/v1.0/me/messages"
 
+    if draft_email_data.importance.lower() not in ["low", "normal", "high"]:
+        return json.dumps(
+            {"error": "Importance must be one of: low, normal, high."}, indent=2
+        )
+
     data = {
-        "subject": subject,
-        "body": {"contentType": "HTML", "content": body},
+        "subject": draft_email_data.subject,
+        "body": {"contentType": "HTML", "content": draft_email_data.body},
         "toRecipients": (
-            [{"emailAddress": {"address": email}} for email in to_recipients]
-            if to_recipients
+            [
+                {"emailAddress": {"address": email}}
+                for email in draft_email_data.email_recipients.to_recipients
+            ]
+            if draft_email_data.email_recipients.to_recipients
             else []
         ),
         "ccRecipients": (
-            [{"emailAddress": {"address": email}} for email in cc_recipients]
-            if cc_recipients
+            [
+                {"emailAddress": {"address": email}}
+                for email in draft_email_data.email_recipients.cc_recipients
+            ]
+            if draft_email_data.email_recipients.cc_recipients
             else []
         ),
-        "importance": importance.lower(),
+        "importance": draft_email_data.importance.lower(),
     }
 
-    if draft_id:
-        url = f"{url}/{draft_id}"
+    if draft_email_data.draft_id:
+        url = f"{url}/{draft_email_data.draft_id}"
         (status_code, response) = microsoft_patch(url, token, data)
     else:
         (status_code, response) = microsoft_post(url, token, data)
@@ -247,7 +254,7 @@ def delete_attachment_from_draft_microsoft_api(
 
 @handle_microsoft_errors
 def move_or_copy_email_microsoft_api(
-    email_id: str, destination_folder_id: str, move: bool = True
+    email_operation_params: EmailOperationParams,
 ) -> str:
     """
     Moves or copies an email to a specified folder.
@@ -259,59 +266,54 @@ def move_or_copy_email_microsoft_api(
     """
     token = get_access_token_microsoft()
     url = (
-        f"https://graph.microsoft.com/v1.0/me/messages/{email_id}/move"
-        if move
-        else f"https://graph.microsoft.com/v1.0/me/messages/{email_id}/copy"
+        f"https://graph.microsoft.com/v1.0/me/messages/{email_operation_params.email_id}/move"
+        if email_operation_params.move
+        else f"https://graph.microsoft.com/v1.0/me/messages/{email_operation_params.email_id}/copy"
     )
 
-    data = {"destinationId": destination_folder_id}
+    data = {"destinationId": email_operation_params.destination_folder_id}
 
     (status_code, response) = microsoft_post(url, token, data)
     return json.dumps(response, indent=2)
 
 
 @handle_microsoft_errors
-def reply_to_email_microsoft_api(
-    email_id: str,
-    reply_all: bool = False,
-    body: str = "Thank you for your email. I will get back to you soon."
-) -> str:
+def reply_to_email_microsoft_api(email_reply_params: EmailReplyParams) -> str:
     token = get_access_token_microsoft()
     url = (
-        f"https://graph.microsoft.com/v1.0/me/messages/{email_id}/createReplyAll"
-        if reply_all
-        else f"https://graph.microsoft.com/v1.0/me/messages/{email_id}/createReply"
+        f"https://graph.microsoft.com/v1.0/me/messages/{email_reply_params.email_id}/createReplyAll"
+        if email_reply_params.reply_all
+        else f"https://graph.microsoft.com/v1.0/me/messages/{email_reply_params.email_id}/createReply"
     )
 
-    data = {
-        "comment": body
-    } 
+    data = {"comment": email_reply_params.body}
     (status_code, response) = microsoft_post(url, token, data)
     return json.dumps(response, indent=2)
 
 
 @handle_microsoft_errors
-def forward_email_microsoft_api(
-    email_id: str,
-    comment: str = "...",
-    to_recipients: list[str] = None,
-    cc_recipients: list[str] = None,
-) -> str:
+def forward_email_microsoft_api(email_forward_params: EmailForwardParams) -> str:
     token = get_access_token_microsoft()
-    url = f"https://graph.microsoft.com/v1.0/me/messages/{email_id}/forward"
+    url = f"https://graph.microsoft.com/v1.0/me/messages/{email_forward_params.email_id}/forward"
 
     data = {
         "toRecipients": (
-            [{"emailAddress": {"address": email}} for email in to_recipients]
-            if to_recipients
+            [
+                {"emailAddress": {"address": email}}
+                for email in email_forward_params.email_recipients.to_recipients
+            ]
+            if email_forward_params.email_recipients.to_recipients
             else []
         ),
         "ccRecipients": (
-            [{"emailAddress": {"address": email}} for email in cc_recipients]
-            if cc_recipients
+            [
+                {"emailAddress": {"address": email}}
+                for email in email_forward_params.email_recipients.cc_recipients
+            ]
+            if email_forward_params.email_recipients.cc_recipients
             else []
         ),
-        "comment": comment,
+        "comment": email_forward_params.comment,
     }
 
     (status_code, response) = microsoft_post(url, token, data)
@@ -319,9 +321,7 @@ def forward_email_microsoft_api(
 
 
 @handle_microsoft_errors
-def create_edit_folder_microsoft_api(
-    folder_name: str, folder_id: str = None, parent_folder_id: str = None
-) -> str:
+def create_edit_folder_microsoft_api(folder_params: FolderParams) -> str:
     """
     Creates or edits a folder in the user's mailbox.
 
@@ -333,16 +333,16 @@ def create_edit_folder_microsoft_api(
     url = "https://graph.microsoft.com/v1.0/me/mailFolders"
 
     data = {
-        "displayName": folder_name,
+        "displayName": folder_params.folder_name,
     }
-    if not folder_name:
+    if not folder_params.folder_name:
         return json.dumps({"error": "Folder name is required."}, indent=2)
 
-    if parent_folder_id:
-        url = f"{url}/{parent_folder_id}/childFolders"
+    if folder_params.parent_folder_id:
+        url = f"{url}/{folder_params.parent_folder_id}/childFolders"
         (status_code, response) = microsoft_post(url, token, data)
-    elif folder_id:
-        url = f"{url}/{folder_id}"
+    elif folder_params.folder_id:
+        url = f"{url}/{folder_params.folder_id}"
         (status_code, response) = microsoft_patch(url, token, data)
     else:
         (status_code, response) = microsoft_post(url, token, data)
