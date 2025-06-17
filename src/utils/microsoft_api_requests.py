@@ -78,10 +78,10 @@ def get_messages_from_folder_microsoft_api(
 
 
 @handle_microsoft_errors
-def mark_as_read_microsoft_api(message_id: str) -> str:
+def mark_as_read_unread_microsoft_api(message_id: str, is_read: bool = True) -> str:
     token = get_access_token_microsoft()
     url = f"https://graph.microsoft.com/v1.0/me/messages/{message_id}"
-    data = {"isRead": True}
+    data = {"isRead": is_read}
 
     microsoft_patch(url, token, data)
 

@@ -92,10 +92,20 @@ def mark_email_as_read(email_id: str) -> str:
     params:
         email_id (str): The id of the email to mark as read.
     returns:
-        str: A confirmation message.
+        str: Information about the changed email.
     """
-    return mark_as_read_microsoft_api(email_id)
+    return mark_as_read_unread_microsoft_api(email_id)
 
+@mcp.tool()
+def mark_email_as_unread(email_id: str) -> str:
+    """
+    Marks an email as unread.
+    params:
+        email_id (str): The id of the email to mark as unread.
+    returns:
+        str: Information about the changed email.
+    """
+    return mark_as_read_unread_microsoft_api(email_id, is_read=False)
 
 @mcp.tool()
 def get_full_email_and_attachments(email_id: str) -> str:
