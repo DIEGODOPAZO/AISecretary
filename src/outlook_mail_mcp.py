@@ -263,6 +263,17 @@ def get_subfolders(folder_id: str) -> str:
     """
     return get_subfolders_microsoft_api(folder_id)
 
+@mcp.tool()
+def get_categores() -> str:
+    """
+    Gets the categories of the Outlook mailbox.
+    returns:
+        str: A JSON string containing the categories.
+    """
+    return get_categories_microsoft_api()
+
+
+
 
 @mcp.resource("outlook://root/folders")
 def get_user_folders() -> str:
@@ -272,6 +283,15 @@ def get_user_folders() -> str:
         str: A JSON string containing the folders.
     """
     return get_folder_names()
+
+@mcp.resource("outlook://preset/colors")
+def get_preset_colors() -> str:
+    """
+    Gets the preset colors for the categories in the Outlook mailbox.
+    returns:
+        str: A JSON string containing the preset colors.
+    """
+    return get_preset_color_equivalence_microsoft()
 
 
 @mcp.prompt()
@@ -335,6 +355,7 @@ def outlook_inbox_from_folder(folder_name: str, number_emails: int) -> str:
         str: A JSON string containing the latest emails from the specified folder.
     """
     return f"Give me the latest {number_emails} emails from the '{folder_name}' folder in my Outlook inbox"
+
 
 
 if __name__ == "__main__":

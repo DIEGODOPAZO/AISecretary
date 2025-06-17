@@ -366,3 +366,27 @@ def delete_folder_microsoft_api(folder_id: str) -> str:
     return json.dumps(
         {"message": f"Folder with ID {folder_id} deleted successfully."}, indent=2
     )
+
+@handle_microsoft_errors
+def get_categories_microsoft_api() -> str:
+    """
+    Retrieves the categories from the user's mailbox.
+
+    :return: JSON response containing the categories.
+    """
+    token = get_access_token_microsoft()
+    url = "https://graph.microsoft.com/v1.0/me/outlook/masterCategories"
+    (status_code, response) = microsoft_get(url, token)
+
+    categories = response.get("value", [])
+    simplified_categories = [
+        {"id": cat.get("id"), "displayName": cat.get("displayName")}
+        for cat in categories
+    ]
+
+    return json.dumps(simplified_categories, indent=2)
+
+
+def get_preset_color_equivalence_microsoft() -> str:
+
+    return get_preset_color_scheme()
