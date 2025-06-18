@@ -7,7 +7,7 @@ class EmailSearchParams:
     """
     Parameter for searching emails
         number_emails: Number of emails to retrieve
-        folder_id: ID of the folder to search in, if None, searches in all folders
+        folder_id: ID of the folder to search in, if None, searches in all folders. To obtain the folder ID, use the `get_folder_names_at_mailbox` tool and then if you don't find the folder, use the `get_subfolders` tool to get all subfolders of the folder
         unread_only: If True, only retrieves unread emails
     """
 

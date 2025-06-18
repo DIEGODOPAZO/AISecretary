@@ -76,6 +76,17 @@ def get_messages_from_folder_microsoft_api(
 
     return json.dumps(simplified_messages, indent=2)
 
+@handle_microsoft_errors
+def get_conversation_messages_microsoft_api(params: dict) -> str:
+    token = get_access_token_microsoft()
+    base_url = f"https://graph.microsoft.com/v1.0/me/messages"
+
+    (status_code, response) = microsoft_get(base_url, token, params=params)
+
+    messages = response.get("value", [])
+
+    return json.dumps(messages, indent=2)
+
 
 @handle_microsoft_errors
 def mark_as_read_unread_microsoft_api(message_id: str, is_read: bool = True) -> str:

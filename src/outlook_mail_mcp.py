@@ -86,6 +86,22 @@ def get_emails_with_keyword(
 
 
 @mcp.tool()
+def get_conversation_emails(conversation_id: str, number_email: int) -> str:
+    """
+    Gets the emails from the conversation with conversation_id in the Outlook mailbox.
+    params:
+        conversation_id (str): The id of the conversation to retrieve emails from.
+        number_email (int): The number of emails to retrieve from the conversation.
+    returns:
+        str: A JSON string containing the emails from the conversation view.
+    """
+    params = {
+        "$top": number_email,
+        "$filter": "conversationId eq '" + conversation_id + "'"
+    }
+    return get_conversation_messages_microsoft_api(params)
+
+@mcp.tool()
 def mark_email_as_read(email_id: str) -> str:
     """
     Marks an email as read.
@@ -245,7 +261,7 @@ def delete_folder(folder_id: str) -> str:
 @mcp.tool()
 def get_folder_names_at_mailbox() -> str:
     """
-    Gets the names of the folders in the Outlook mailbox.
+    Gets the names and the id of the folders in the Outlook mailbox.
     returns:
         str: A JSON string containing the folder names and information about the folders.
     """
