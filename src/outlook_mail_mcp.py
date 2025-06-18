@@ -300,6 +300,17 @@ def create_edit_category(category_params: CategoryParams) -> str:
     """
     return create_edit_category_microsoft_api(category_params)
 
+@mcp.tool()
+def delete_category(category_id: str) -> str:
+    """
+    Deletes a category from the Outlook mailbox.
+    params:
+        category_id (str): The id of the category to delete.
+    returns:        
+        str: A confirmation message or an error message.
+    """
+    return delete_category_microsoft_api(category_id)
+
 @mcp.resource("outlook://root/folders")
 def get_user_folders() -> str:
     """
