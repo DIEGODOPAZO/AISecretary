@@ -40,6 +40,25 @@ def delete_category(category_id: str) -> str:
     return delete_category_microsoft_api(category_id)
 
 
+@mcp.tool()
+def add_delete_category_to_email(handle_category_to_resource_params: HandleCategoryToResourceParams) -> str:
+    """
+    Adds or deletes a category to/from an email in the Outlook mailbox.
+    params:
+        handle_category_to_resource_params (HandleCategoryToResourceParams): The parameters for adding or deleting a category to/from an email.
+    returns:
+        str: A confirmation message or an error message.
+    """
+    return add_delete_category_to_resource_microsoft_api(handle_category_to_resource_params)
+
+@mcp.resource("outlook://categories")
+def get_categories() -> str:
+    """
+    Gets the categories of the Outlook mailbox.
+    returns:
+        str: A JSON string containing the categories.
+    """
+    return get_categories_microsoft_api()
 
 @mcp.resource("outlook://preset/colors")
 def get_preset_colors() -> str:

@@ -55,6 +55,32 @@ def delete_category_microsoft_api(category_id: str) -> str:
         {"message": f"Category with ID {category_id} deleted successfully."}, indent=2)
 
 
+@handle_microsoft_errors
+def add_delete_category_to_resource_microsoft_api(handle_category_to_resource_params: HandleCategoryToResourceParams) -> str:
+    token = get_access_token_microsoft()
+    
+    url = f"https://graph.microsoft.com/v1.0/me/messages/{handle_category_to_resource_params.resource_id}"
+
+    # get current categories
+    status_code, message_data = microsoft_get(url, token)
+    existing_categories = message_data.get("categories", [])
+
+    existing_categories = set(message_data.get("categories", []))
+    new_categories = set(handle_category_to_resource_params.category_names)
+
+    # Agregar o quitar categorías
+    if handle_category_to_resource_params.remove:
+        updated_categories = list(existing_categories.difference(new_categories))
+    else:
+        updated_categories = list(existing_categories.union(new_categories))
+
+
+    data = {"categories": updated_categories}
+    status_code, response = microsoft_patch(url, token, data)
+
+    return json.dumps(response, indent=2)
+
+
 def get_preset_color_equivalence_microsoft() -> str:
 
     return get_preset_color_scheme()

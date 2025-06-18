@@ -114,3 +114,15 @@ class CategoryParams:
     category_name: str
     category_id: Optional[str] = None
     preset_color: str = "preset0"
+
+@dataclass
+class HandleCategoryToResourceParams:
+    """
+    Parameters for adding a category to a resource
+        str resource_id: ID of the resource to add the category to, can be an email or a calendar event
+        str category_names: names of the categories to add or remove
+        bool remove: If True, removes the category from the resource, if False, adds the category to the resource
+    """
+    resource_id: str
+    category_names: List[str] = field(default_factory=list)
+    remove: bool = False 
