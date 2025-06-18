@@ -102,3 +102,15 @@ class FolderParams:
     folder_name: str
     folder_id: Optional[str] = None
     parent_folder_id: Optional[str] = None
+
+@dataclass
+class CategoryParams:
+    """
+    Parameters for creating or editing a category
+        category_name: Name of the category to create or edit
+        category_id: ID of the category to edit, if None, it creates a new category
+        preset_color: Color of the category, it ranges from preset0 to preset25
+    """
+    category_name: str
+    category_id: Optional[str] = None
+    preset_color: str = "preset0"

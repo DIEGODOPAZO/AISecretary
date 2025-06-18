@@ -259,11 +259,11 @@ def delete_folder(folder_id: str) -> str:
 
 
 @mcp.tool()
-def get_folder_names_at_mailbox() -> str:
+def get_folders_info_at_outlook() -> str:
     """
-    Gets the names and the id of the folders in the Outlook mailbox.
+    Gets the names and the folder_id of the folders in Outlook.
     returns:
-        str: A JSON string containing the folder names and information about the folders.
+        str: A JSON string containing the folder names, folder_id and information about the folders.
     """
     return get_folder_names()
 
@@ -289,7 +289,16 @@ def get_categores() -> str:
     return get_categories_microsoft_api()
 
 
-
+@mcp.tool()
+def create_edit_category(category_params: CategoryParams) -> str:
+    """
+    Creates or edits a category in the Outlook mailbox.
+    params:
+        category_params (CategoryParams): The parameters for creating or editing a category.
+    returns:
+        str: The id of the created or edited category with more information, or an error message.
+    """
+    return create_edit_category_microsoft_api(category_params)
 
 @mcp.resource("outlook://root/folders")
 def get_user_folders() -> str:
