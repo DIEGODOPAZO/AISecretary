@@ -302,6 +302,21 @@ def get_subfolders(folder_id: str) -> str:
     return get_subfolders_microsoft_api(folder_id)
 
 
+@mcp.tool()
+def add_delete_flag_or_mark_as_complete(email_id: str, flag: str):
+    """
+    Marks an email with email_id with a flag or removes its flags or marks it as completed.
+    params:
+        email_id (str): The id of the email to mark with a flag
+        flag (str): The type of the flag that is put to the email, it can have the following values:
+            - "flagged": it is marked
+            - "notFlagged": it is not marked
+            - "complete":  it is marked as completed
+    returns:
+        The info about the email that was actualized
+    """
+    return manage_flags_microsoft_api(email_id, flag)
+
 @mcp.resource("outlook://root/folders")
 def get_user_folders() -> str:
     """

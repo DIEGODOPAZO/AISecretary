@@ -360,6 +360,22 @@ def create_edit_folder_microsoft_api(folder_params: FolderParams) -> str:
 
     return json.dumps(response, indent=2)
 
+@handle_microsoft_errors
+def manage_flags_microsoft_api(email_id: str, flag: str):
+    token = get_access_token_microsoft()
+    url = f"https://graph.microsoft.com/v1.0/me/messages/{email_id}"
+    if flag not in ["complete", "notFlagged", "flagged"]:
+        return json.dumps({"error": "Not valid flag submited"}, indent=2)
+    
+    data = {
+        "flag": {
+            "flagStatus": f"{flag}"
+        }
+    }
+
+    status_code, response = microsoft_patch(url, token, data=data)
+
+    return json.dumps(response, indent=2)
 
 @handle_microsoft_errors
 def delete_folder_microsoft_api(folder_id: str) -> str:

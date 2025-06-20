@@ -108,6 +108,7 @@ def microsoft_simplify_message(
             }
             for r in msg.get("ccRecipients", [])
         ],
+        "flag": msg.get("flag"),
         "receivedDateTime": msg.get("receivedDateTime"),
         "categories": msg.get("categories"),
         "sentDateTime": msg.get("sentDateTime"),
