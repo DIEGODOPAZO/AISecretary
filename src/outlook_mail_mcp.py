@@ -85,6 +85,26 @@ def get_emails_with_keyword(
 
 
 @mcp.tool()
+def get_emails_with_subject(
+    subject: str, email_search_params: EmailSearchParams
+) -> str:
+    """
+    Gets the emails with a specific subject
+
+    returns:
+        str: A JSON string containing the emails that have the specified subject
+    """
+    params = {
+        "$search": f'"subject:{subject}"',
+        "$top": email_search_params.number_emails,
+    }
+
+    return get_messages_from_folder_microsoft_api(
+        params, email_search_params=email_search_params
+    )
+
+
+@mcp.tool()
 def get_conversation_emails(conversation_id: str, number_email: int) -> str:
     """
     Gets the emails from the conversation with conversation_id in the Outlook mailbox.
@@ -96,9 +116,10 @@ def get_conversation_emails(conversation_id: str, number_email: int) -> str:
     """
     params = {
         "$top": number_email,
-        "$filter": "conversationId eq '" + conversation_id + "'"
+        "$filter": "conversationId eq '" + conversation_id + "'",
     }
     return get_conversation_messages_microsoft_api(params)
+
 
 @mcp.tool()
 def mark_email_as_read(email_id: str) -> str:
@@ -111,6 +132,7 @@ def mark_email_as_read(email_id: str) -> str:
     """
     return mark_as_read_unread_microsoft_api(email_id)
 
+
 @mcp.tool()
 def mark_email_as_unread(email_id: str) -> str:
     """
@@ -121,6 +143,7 @@ def mark_email_as_unread(email_id: str) -> str:
         str: Information about the changed email.
     """
     return mark_as_read_unread_microsoft_api(email_id, is_read=False)
+
 
 @mcp.tool()
 def get_full_email_and_attachments(email_id: str) -> str:
@@ -288,6 +311,7 @@ def get_user_folders() -> str:
     """
     return get_folder_names()
 
+
 @mcp.prompt()
 def outlook_inbox_new(number_emails: int) -> str:
     """
@@ -326,7 +350,7 @@ def outlook_inbox_from_sender(sender_email: str, number_emails: int) -> str:
 
 
 @mcp.prompt()
-def outlook_inbox_with_keyword(keyword: str, number_emails: int) -> str:
+def outlook_inbox_with_keyword(keyword: str, number_emails: Optional[int] = 10) -> str:
     """
     Prompt to get the latest emails that contain a specific keyword in the subject or body.
     params:
@@ -349,7 +373,6 @@ def outlook_inbox_from_folder(folder_name: str, number_emails: int) -> str:
         str: A JSON string containing the latest emails from the specified folder.
     """
     return f"Give me the latest {number_emails} emails from the '{folder_name}' folder in my Outlook inbox"
-
 
 
 if __name__ == "__main__":
