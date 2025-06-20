@@ -414,3 +414,14 @@ def create_message_rule_microsoft_api(mail_rule: MailRule, rule_id: Optional[str
         (status_code, response) = microsoft_post(url, token, data=dataclass_to_clean_dict(mail_rule))
 
     return json.dumps(response, indent=2)
+
+@handle_microsoft_errors
+def delete_message_rule_microsoft_api(rule_id: str) -> str:
+    token = get_access_token_microsoft()
+    url = f"https://graph.microsoft.com/v1.0/me/mailFolders/inbox/messageRules/{rule_id}"
+    (status_code, response) = microsoft_delete(url, token)
+    if status_code != 204:
+        return json.dumps({"error": response}, indent=2)
+    return json.dumps(
+        {"message": f"Rule with ID {rule_id} deleted successfully."}, indent=2
+    )

@@ -339,6 +339,15 @@ def create_edit_message_rule(mail_rule: MailRule, rule_id: Optional[str] = None)
 
     return create_message_rule_microsoft_api(mail_rule, rule_id)
 
+@mcp.tool()
+def delete_message_rule(rule_id: str):
+    """
+    Deletes a message rule in the Outlook mailbox.
+    params:
+        rule_id (str): The id of the rule to delete.
+    """
+    return delete_message_rule_microsoft_api(rule_id)
+
 @mcp.resource("outlook://root/folders")
 def get_user_folders() -> str:
     """
