@@ -15,6 +15,8 @@ def get_last_emails_outlook(email_search_params: EmailSearchParams) -> str:
     """
     Gets the last {number_emails} emails from the Outlook mailbox that were sent to the user.
 
+    returns:
+        str: A JSON string containing the emails. And if there are more emails, it will return the nextLink to get the next page of emails.
     """
     params = {
         "$top": email_search_params.number_emails,
@@ -31,7 +33,7 @@ def get_important_emails_outlook(email_search_params: EmailSearchParams) -> str:
     """
     Gets the important emails from the Outlook mailbox that were sent to the user.
     returns:
-        str: A JSON string containing the important emails.
+        str: A JSON string containing the important emails. And if there are more emails, it will return the nextLink to get the next page of emails.
     """
 
     params = {
@@ -52,7 +54,7 @@ def get_emails_from_mail_sender(
     Gets the emails from a specific sender's email address.
 
     returns:
-        str: A JSON string containing the emails from the specified sender.
+        str: A JSON string containing the emails from the specified sender. And if there are more emails, it will return the nextLink to get the next page of emails.
     """
 
     params = {
@@ -74,7 +76,7 @@ def get_emails_with_keyword(
     Gets the emails that contain a specific keyword in the subject or body.
 
     returns:
-        str: A JSON string containing the emails that match the keyword.
+        str: A JSON string containing the emails that match the keyword. And if there are more emails, it will return the nextLink to get the next page of emails.
     """
 
     params = {"$search": f"{keyword}", "$top": email_search_params.number_emails}
@@ -92,7 +94,7 @@ def get_emails_with_subject(
     Gets the emails with a specific subject
 
     returns:
-        str: A JSON string containing the emails that have the specified subject
+        str: A JSON string containing the emails that have the specified subject. And if there are more emails, it will return the nextLink to get the next page of emails.
     """
     params = {
         "$search": f'"subject:{subject}"',
@@ -112,7 +114,7 @@ def get_conversation_emails(conversation_id: str, number_email: int) -> str:
         conversation_id (str): The id of the conversation to retrieve emails from.
         number_email (int): The number of emails to retrieve from the conversation.
     returns:
-        str: A JSON string containing the emails from the conversation view.
+        str: A JSON string containing the emails from the conversation view. And if there are more emails, it will return the nextLink to get the next page of emails.
     """
     params = {
         "$top": number_email,
@@ -285,7 +287,7 @@ def get_folders_info_at_outlook() -> str:
     """
     Gets the names and the folder_id of the folders in Outlook.
     returns:
-        str: A JSON string containing the folder names, folder_id and information about the folders.
+        str: A JSON string containing the folders. And if there are more folders, it will return the nextLink to get the next page of folders.
     """
     return get_folder_names()
 
@@ -297,7 +299,7 @@ def get_subfolders(folder_id: str) -> str:
     params:
         folder_id (str): The id of the folder for which to retrieve the subfolders.
     returns:
-        str: A JSON string containing the subfolders information.
+        str: A JSON string containing the subfolders information. And if there are more subfolders, it will return the nextLink to get the next page of subfolders.
     """
     return get_subfolders_microsoft_api(folder_id)
 
@@ -348,12 +350,23 @@ def delete_message_rule(rule_id: str):
     """
     return delete_message_rule_microsoft_api(rule_id)
 
+@mcp.tool()
+def get_next_link(next_link: str):
+    """
+    Gets the next page of the given link.
+    params:
+        next_link (str): The nextLink to get the next page of.
+    returns:
+        str: A JSON string containing the next page of the given link.
+    """
+    return get_next_link_microsoft_api(next_link)
+
 @mcp.resource("outlook://root/folders")
 def get_user_folders() -> str:
     """
     Gets the folders of the Outlook mailbox.
     returns:
-        str: A JSON string containing the folders.
+        str: A JSON string containing the folders. And if there are more folders, it will return the nextLink to get the next page of folders.
     """
     return get_folder_names()
 

@@ -23,7 +23,16 @@ def get_folder_names() -> str:
         }
         simplified_folders.append(simplified)
 
-    return json.dumps(simplified_folders, indent=2)
+    result = {
+        "folders": simplified_folders
+    }
+
+    # Agregar @odata.nextLink si existe
+    if "@odata.nextLink" in response:
+        result["nextLink"] = response["@odata.nextLink"]
+
+    return json.dumps(result, indent=2)
+    
 
 
 @handle_microsoft_errors
@@ -44,7 +53,14 @@ def get_subfolders_microsoft_api(folder_id: str) -> str:
         }
         simplified_folders.append(simplified)
 
-    return json.dumps(simplified_folders, indent=2)
+    result = {
+        "folders": simplified_folders
+    }
+
+    if "@odata.nextLink" in response:
+        result["nextLink"] = response["@odata.nextLink"]
+    
+    return json.dumps(result, indent=2)
 
 
 @handle_microsoft_errors
@@ -74,7 +90,14 @@ def get_messages_from_folder_microsoft_api(
     for msg in messages:
         simplified_messages.append(microsoft_simplify_message(msg))
 
-    return json.dumps(simplified_messages, indent=2)
+    result = {
+        "messages": simplified_messages
+    }
+
+    if "@odata.nextLink" in response:
+        result["nextLink"] = response["@odata.nextLink"]
+
+    return json.dumps(result, indent=2)
 
 @handle_microsoft_errors
 def get_conversation_messages_microsoft_api(params: dict) -> str:
@@ -84,8 +107,19 @@ def get_conversation_messages_microsoft_api(params: dict) -> str:
     (status_code, response) = microsoft_get(base_url, token, params=params)
 
     messages = response.get("value", [])
+    simplified_messages = []
 
-    return json.dumps(messages, indent=2)
+    for msg in messages:
+        simplified_messages.append(microsoft_simplify_message(msg))
+
+    result = {
+        "messages": simplified_messages
+    }
+
+    if "@odata.nextLink" in response:
+        result["nextLink"] = response["@odata.nextLink"]
+
+    return json.dumps(result, indent=2)
 
 
 @handle_microsoft_errors
@@ -425,3 +459,9 @@ def delete_message_rule_microsoft_api(rule_id: str) -> str:
     return json.dumps(
         {"message": f"Rule with ID {rule_id} deleted successfully."}, indent=2
     )
+
+@handle_microsoft_errors
+def get_next_link_microsoft_api(next_link: str) -> str:
+    token = get_access_token_microsoft()
+    (status_code, response) = microsoft_get(next_link, token)
+    return json.dumps(response, indent=2)
