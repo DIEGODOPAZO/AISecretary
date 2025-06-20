@@ -401,3 +401,12 @@ def get_message_rules_microsoft_api() -> str:
     (status_code, response) = microsoft_get(url, token)
 
     return json.dumps(response, indent=2)
+
+@handle_microsoft_errors
+def create_message_rule_microsoft_api(mail_rule: MailRule) -> str:
+    token = get_access_token_microsoft()
+    url = "https://graph.microsoft.com/v1.0/me/mailFolders/inbox/messageRules"
+    
+    (status_code, response) = microsoft_post(url, token, data=dataclass_to_clean_dict(mail_rule))
+
+    return json.dumps(response, indent=2)

@@ -326,6 +326,18 @@ def get_message_rules():
     """
     return get_message_rules_microsoft_api()
 
+@mcp.tool()
+def create_message_rule(mail_rule: MailRule):
+    """
+    Creates a message rule in the Outlook mailbox.
+    params:
+        mail_rule (MailRule): The message rule to create.
+    returns:
+        str: A confirmation message or an error message.
+    """
+
+    return create_message_rule_microsoft_api(mail_rule)
+
 @mcp.resource("outlook://root/folders")
 def get_user_folders() -> str:
     """

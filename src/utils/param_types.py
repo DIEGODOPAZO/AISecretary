@@ -144,14 +144,12 @@ class HandleCategoryToResourceParams:
     remove: bool = False 
 
 @dataclass
-class EmailAddress:
-    """
-    Represents an email address.
-
-    Args:
-        address (str): Email address.
-    """
+class EmailAddressValue():
     address: str
+
+@dataclass
+class EmailAddress:
+    emailAddress: EmailAddressValue
     
 @dataclass
 class RuleConditions:

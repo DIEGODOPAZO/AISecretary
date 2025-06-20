@@ -3,6 +3,10 @@ import requests
 import os
 from functools import wraps
 import json
+from dataclasses import asdict, is_dataclass
+from typing import Any
+
+from utils.param_types import MailRule
 
 
 def handle_microsoft_errors(func):
@@ -178,3 +182,20 @@ def get_preset_color_scheme() -> str:
     "preset25": ("Lavanda", "#E6E6FA"),
 }
     return json.dumps(preset_colors, indent=2)
+
+
+def dataclass_to_clean_dict(obj: Any) -> Any:
+    if is_dataclass(obj):
+        result = {}
+        for k, v in asdict(obj).items():
+            cleaned = dataclass_to_clean_dict(v)
+            if cleaned is not None:
+                result[k] = cleaned
+        return result or None
+    elif isinstance(obj, list):
+        cleaned_list = [dataclass_to_clean_dict(item) for item in obj if dataclass_to_clean_dict(item) is not None]
+        return cleaned_list or None
+    elif isinstance(obj, dict):
+        return {k: dataclass_to_clean_dict(v) for k, v in obj.items() if dataclass_to_clean_dict(v) is not None}
+    else:
+        return obj
