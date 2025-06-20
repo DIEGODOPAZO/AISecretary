@@ -1,5 +1,9 @@
-from utils.microsoft_mail_requests import *
 from utils.param_types import *
+from utils.email.microsoft_folders_requests import MicrosoftFoldersRequests
+from utils.email.microsoft_messages_requests import MicrosoftMessagesRequests
+from utils.email.microsoft_rules_requests import MicrosoftRulesRequests
+from utils.email.microsoft_flag_requests import MicrosoftFlagRequests
+from utils.categories.microsoft_categories_requests import MicrosoftCategoriesRequests
 
 # server.py
 from mcp.server.fastmcp import FastMCP
@@ -8,6 +12,12 @@ from mcp.server.fastmcp import FastMCP
 mcp = FastMCP("AISecretary-Outlook-Mail", dependencies=["mcp[cli]", "msal"])
 
 filter_dateTime = "receivedDateTime ge 2016-01-01T00:00:00Z"  # Needed to have the params of orderBy in the filter
+
+folders_requests = MicrosoftFoldersRequests()
+messages_requests = MicrosoftMessagesRequests()
+rules_requests = MicrosoftRulesRequests()
+flag_requests = MicrosoftFlagRequests()
+categories_requests = MicrosoftCategoriesRequests()
 
 
 @mcp.tool()
@@ -23,7 +33,7 @@ def get_last_emails_outlook(email_search_params: EmailSearchParams) -> str:
         "$orderBy": "receivedDateTime DESC",
     }
 
-    return get_messages_from_folder_microsoft_api(
+    return messages_requests.get_messages_from_folder_microsoft_api(
         params, email_search_params=email_search_params
     )
 
@@ -41,7 +51,7 @@ def get_important_emails_outlook(email_search_params: EmailSearchParams) -> str:
         "$top": email_search_params.number_emails,
         "$orderBy": "receivedDateTime DESC",
     }
-    return get_messages_from_folder_microsoft_api(
+    return messages_requests.get_messages_from_folder_microsoft_api(
         params, email_search_params=email_search_params
     )
 
@@ -63,7 +73,7 @@ def get_emails_from_mail_sender(
         "$orderBy": "receivedDateTime DESC",
     }
 
-    return get_messages_from_folder_microsoft_api(
+    return messages_requests.get_messages_from_folder_microsoft_api(
         params, email_search_params=email_search_params
     )
 
@@ -81,7 +91,7 @@ def get_emails_with_keyword(
 
     params = {"$search": f"{keyword}", "$top": email_search_params.number_emails}
 
-    return get_messages_from_folder_microsoft_api(
+    return messages_requests.get_messages_from_folder_microsoft_api(
         params, email_search_params=email_search_params
     )
 
@@ -101,7 +111,7 @@ def get_emails_with_subject(
         "$top": email_search_params.number_emails,
     }
 
-    return get_messages_from_folder_microsoft_api(
+    return messages_requests.get_messages_from_folder_microsoft_api(
         params, email_search_params=email_search_params
     )
 
@@ -120,7 +130,7 @@ def get_conversation_emails(conversation_id: str, number_email: int) -> str:
         "$top": number_email,
         "$filter": "conversationId eq '" + conversation_id + "'",
     }
-    return get_conversation_messages_microsoft_api(params)
+    return messages_requests.get_conversation_messages_microsoft_api(params)
 
 
 @mcp.tool()
@@ -132,7 +142,7 @@ def mark_email_as_read(email_id: str) -> str:
     returns:
         str: Information about the changed email.
     """
-    return mark_as_read_unread_microsoft_api(email_id)
+    return messages_requests.mark_as_read_unread_microsoft_api(email_id)
 
 
 @mcp.tool()
@@ -144,7 +154,7 @@ def mark_email_as_unread(email_id: str) -> str:
     returns:
         str: Information about the changed email.
     """
-    return mark_as_read_unread_microsoft_api(email_id, is_read=False)
+    return messages_requests.mark_as_read_unread_microsoft_api(email_id, is_read=False)
 
 
 @mcp.tool()
@@ -157,7 +167,7 @@ def get_full_email_and_attachments(email_id: str) -> str:
         str: A JSON string containing the full email and its attachments names, the files will be downloaded.
     """
 
-    return get_full_message_and_attachments(email_id)
+    return messages_requests.get_full_message_and_attachments(email_id)
 
 
 @mcp.tool()
@@ -169,7 +179,7 @@ def delete_email(email_id: str) -> str:
     returns:
         str: A confirmation message.
     """
-    return delete_message_microsoft_api(email_id)
+    return messages_requests.delete_message_microsoft_api(email_id)
 
 
 @mcp.tool()
@@ -180,7 +190,9 @@ def create_edit_draft_email(draft_email_data: DraftEmailData) -> str:
         str: The id of the created draft email or a error message.
     """
 
-    return create_edit_draft_microsoft_api(draft_email_data=draft_email_data)
+    return messages_requests.create_edit_draft_microsoft_api(
+        draft_email_data=draft_email_data
+    )
 
 
 @mcp.tool()
@@ -196,7 +208,7 @@ def add_attachment_to_draft_email(
         str: The information about the attachment or an error message.
     """
 
-    return add_attachment_to_draft_microsoft_api(
+    return messages_requests.add_attachment_to_draft_microsoft_api(
         draft_id=draft_id, attachment_path=attachment_path, content_type=content_type
     )
 
@@ -211,7 +223,9 @@ def delete_attachment_from_draft_email(draft_id: str, attachment_id: str) -> str
     returns:
         str: A confirmation message or an error message.
     """
-    return delete_attachment_from_draft_microsoft_api(draft_id, attachment_id)
+    return messages_requests.delete_attachment_from_draft_microsoft_api(
+        draft_id, attachment_id
+    )
 
 
 @mcp.tool()
@@ -223,7 +237,7 @@ def send_draft_email(draft_id: str) -> str:
     returns:
         str: A confirmation message or an error message.
     """
-    return send_draft_email_microsoft_api(draft_id)
+    return messages_requests.send_draft_email_microsoft_api(draft_id)
 
 
 @mcp.tool()
@@ -234,7 +248,7 @@ def move_or_copy_email(email_operation_params: EmailOperationParams) -> str:
     returns:
         str: The data of the copied/moved email or an error message.
     """
-    return move_or_copy_email_microsoft_api(email_operation_params)
+    return messages_requests.move_or_copy_email_microsoft_api(email_operation_params)
 
 
 @mcp.tool()
@@ -245,7 +259,7 @@ def create_reply_to_email(email_reply_params: EmailReplyParams) -> str:
     returns:
         str: Information about the created reply or an error message.
     """
-    return reply_to_email_microsoft_api(email_reply_params)
+    return messages_requests.reply_to_email_microsoft_api(email_reply_params)
 
 
 @mcp.tool()
@@ -256,7 +270,7 @@ def forward_email(email_forward_params: EmailForwardParams) -> str:
     returns:
         str: A confirmation message or an error message.
     """
-    return forward_email_microsoft_api(email_forward_params)
+    return messages_requests.forward_email_microsoft_api(email_forward_params)
 
 
 @mcp.tool()
@@ -267,7 +281,7 @@ def create_edit_folder(folder_params: FolderParams) -> str:
     returns:
         str: The id of the created or edited folder with more information, or an error message.
     """
-    return create_edit_folder_microsoft_api(folder_params)
+    return folders_requests.create_edit_folder_microsoft_api(folder_params)
 
 
 @mcp.tool()
@@ -279,7 +293,7 @@ def delete_folder(folder_id: str) -> str:
     returns:
         str: A confirmation message or an error message.
     """
-    return delete_folder_microsoft_api(folder_id)
+    return folders_requests.delete_folder_microsoft_api(folder_id)
 
 
 @mcp.tool()
@@ -289,7 +303,7 @@ def get_folders_info_at_outlook() -> str:
     returns:
         str: A JSON string containing the folders. And if there are more folders, it will return the nextLink to get the next page of folders.
     """
-    return get_folder_names()
+    return folders_requests.get_folder_names()
 
 
 @mcp.tool()
@@ -301,7 +315,7 @@ def get_subfolders(folder_id: str) -> str:
     returns:
         str: A JSON string containing the subfolders information. And if there are more subfolders, it will return the nextLink to get the next page of subfolders.
     """
-    return get_subfolders_microsoft_api(folder_id)
+    return folders_requests.get_subfolders_microsoft_api(folder_id)
 
 
 @mcp.tool()
@@ -317,7 +331,8 @@ def add_delete_flag_or_mark_as_complete(email_id: str, flag: str):
     returns:
         The info about the email that was actualized
     """
-    return manage_flags_microsoft_api(email_id, flag)
+    return flag_requests.manage_flags_microsoft_api(email_id, flag)
+
 
 @mcp.tool()
 def get_message_rules():
@@ -326,7 +341,8 @@ def get_message_rules():
     returns:
         str: A JSON string containing the message rules.
     """
-    return get_message_rules_microsoft_api()
+    return rules_requests.get_message_rules_microsoft_api()
+
 
 @mcp.tool()
 def create_edit_message_rule(mail_rule: MailRule, rule_id: Optional[str] = None):
@@ -339,7 +355,8 @@ def create_edit_message_rule(mail_rule: MailRule, rule_id: Optional[str] = None)
         str: A confirmation message or an error message.
     """
 
-    return create_message_rule_microsoft_api(mail_rule, rule_id)
+    return rules_requests.create_message_rule_microsoft_api(mail_rule, rule_id)
+
 
 @mcp.tool()
 def delete_message_rule(rule_id: str):
@@ -348,7 +365,8 @@ def delete_message_rule(rule_id: str):
     params:
         rule_id (str): The id of the rule to delete.
     """
-    return delete_message_rule_microsoft_api(rule_id)
+    return rules_requests.delete_message_rule_microsoft_api(rule_id)
+
 
 @mcp.tool()
 def get_next_link(next_link: str):
@@ -359,7 +377,8 @@ def get_next_link(next_link: str):
     returns:
         str: A JSON string containing the next page of the given link.
     """
-    return get_next_link_microsoft_api(next_link)
+    return rules_requests.get_next_link_microsoft_api(next_link)
+
 
 @mcp.resource("outlook://root/folders")
 def get_user_folders() -> str:
@@ -368,7 +387,7 @@ def get_user_folders() -> str:
     returns:
         str: A JSON string containing the folders. And if there are more folders, it will return the nextLink to get the next page of folders.
     """
-    return get_folder_names()
+    return folders_requests.get_folder_names()
 
 
 @mcp.prompt()

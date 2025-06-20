@@ -115,6 +115,7 @@ class FolderParams:
     folder_id: Optional[str] = None
     parent_folder_id: Optional[str] = None
 
+
 @dataclass
 class CategoryParams:
     """
@@ -125,9 +126,11 @@ class CategoryParams:
         category_id (Optional[str]): ID of the category to edit. If None, creates a new category.
         preset_color (str): Color of the category. Ranges from preset0 to preset25.
     """
+
     category_name: str
     category_id: Optional[str] = None
     preset_color: str = "preset0"
+
 
 @dataclass
 class HandleCategoryToResourceParams:
@@ -139,18 +142,22 @@ class HandleCategoryToResourceParams:
         category_names (List[str]): Names of the categories to add or remove.
         remove (bool): If True, removes the category from the resource. If False, adds the category to the resource.
     """
+
     resource_id: str
     category_names: List[str] = field(default_factory=list)
-    remove: bool = False 
+    remove: bool = False
+
 
 @dataclass
-class EmailAddressValue():
+class EmailAddressValue:
     address: str
+
 
 @dataclass
 class EmailAddress:
     emailAddress: EmailAddressValue
-    
+
+
 @dataclass
 class RuleConditions:
     """
@@ -170,6 +177,7 @@ class RuleConditions:
         isReadReceipt (Optional[bool]): Whether the email is a read receipt.
         isMeetingRequest (Optional[bool]): Whether the email is a meeting request.
     """
+
     subjectContains: Optional[List[str]] = None
     bodyContains: Optional[List[str]] = None
     senderContains: Optional[List[str]] = None
@@ -182,6 +190,7 @@ class RuleConditions:
     isAutomaticForward: Optional[bool] = None
     isReadReceipt: Optional[bool] = None
     isMeetingRequest: Optional[bool] = None
+
 
 @dataclass
 class RuleActions:
@@ -199,6 +208,7 @@ class RuleActions:
         permanentDelete (Optional[bool]): Whether to permanently delete the email.
         stopProcessingRules (Optional[bool]): Whether to stop processing further rules.
     """
+
     moveToFolder: Optional[str] = None
     copyToFolder: Optional[str] = None
     delete: Optional[bool] = None
@@ -208,6 +218,7 @@ class RuleActions:
     markImportance: Optional[Literal["Low", "Normal", "High"]] = None
     permanentDelete: Optional[bool] = None
     stopProcessingRules: Optional[bool] = None
+
 
 @dataclass
 class MailRule:
@@ -222,6 +233,7 @@ class MailRule:
         isEnabled (bool): Whether the rule is enabled.
         isReadOnly (bool): Whether the rule is read-only.
     """
+
     displayName: str
     sequence: int
     conditions: Optional[RuleConditions] = None

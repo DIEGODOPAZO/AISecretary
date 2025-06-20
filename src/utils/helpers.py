@@ -6,8 +6,6 @@ import json
 from dataclasses import asdict, is_dataclass
 from typing import Any
 
-from utils.param_types import MailRule
-
 
 def handle_microsoft_errors(func):
     @wraps(func)
@@ -56,7 +54,7 @@ def microsoft_post(url: str, token: str, data: dict = {}) -> tuple[int, dict]:
     try:
         return response.status_code, response.json()
     except ValueError:
-        return response.status_code, {} 
+        return response.status_code, {}
 
 
 def microsoft_patch(url: str, token: str, data: dict = {}) -> tuple[int, dict]:
@@ -154,33 +152,33 @@ def get_preset_color_scheme() -> str:
     """Returns a preset color scheme for the Microsoft Graph API."""
 
     preset_colors = {
-    "preset0":  ("Rojo", "#E81123"),
-    "preset1":  ("Naranja oscuro", "#F7630C"),
-    "preset2":  ("Naranja", "#FF8C00"),
-    "preset3":  ("Amarillo", "#FFF100"),
-    "preset4":  ("Verde lima", "#BAD80A"),
-    "preset5":  ("Verde claro", "#107C10"),
-    "preset6":  ("Verde bosque", "#008272"),
-    "preset7":  ("Verde azulado", "#00B294"),
-    "preset8":  ("Azul cielo", "#00B7C3"),
-    "preset9":  ("Azul claro", "#0078D4"),
-    "preset10": ("Azul oscuro", "#004E8C"),
-    "preset11": ("Índigo", "#5C2D91"),
-    "preset12": ("Violeta", "#B146C2"),
-    "preset13": ("Fucsia", "#E3008C"),
-    "preset14": ("Rosa", "#FF69B4"),
-    "preset15": ("Marrón claro", "#A0522D"),
-    "preset16": ("Marrón oscuro", "#8B4513"),
-    "preset17": ("Gris claro", "#D3D3D3"),
-    "preset18": ("Gris", "#A9A9A9"),
-    "preset19": ("Gris oscuro", "#696969"),
-    "preset20": ("Negro", "#000000"),
-    "preset21": ("Azul pastel", "#8FD8F4"),
-    "preset22": ("Verde pastel", "#ACE1AF"),
-    "preset23": ("Amarillo pastel", "#FFFACD"),
-    "preset24": ("Rosa pastel", "#FFD1DC"),
-    "preset25": ("Lavanda", "#E6E6FA"),
-}
+        "preset0": ("Rojo", "#E81123"),
+        "preset1": ("Naranja oscuro", "#F7630C"),
+        "preset2": ("Naranja", "#FF8C00"),
+        "preset3": ("Amarillo", "#FFF100"),
+        "preset4": ("Verde lima", "#BAD80A"),
+        "preset5": ("Verde claro", "#107C10"),
+        "preset6": ("Verde bosque", "#008272"),
+        "preset7": ("Verde azulado", "#00B294"),
+        "preset8": ("Azul cielo", "#00B7C3"),
+        "preset9": ("Azul claro", "#0078D4"),
+        "preset10": ("Azul oscuro", "#004E8C"),
+        "preset11": ("Índigo", "#5C2D91"),
+        "preset12": ("Violeta", "#B146C2"),
+        "preset13": ("Fucsia", "#E3008C"),
+        "preset14": ("Rosa", "#FF69B4"),
+        "preset15": ("Marrón claro", "#A0522D"),
+        "preset16": ("Marrón oscuro", "#8B4513"),
+        "preset17": ("Gris claro", "#D3D3D3"),
+        "preset18": ("Gris", "#A9A9A9"),
+        "preset19": ("Gris oscuro", "#696969"),
+        "preset20": ("Negro", "#000000"),
+        "preset21": ("Azul pastel", "#8FD8F4"),
+        "preset22": ("Verde pastel", "#ACE1AF"),
+        "preset23": ("Amarillo pastel", "#FFFACD"),
+        "preset24": ("Rosa pastel", "#FFD1DC"),
+        "preset25": ("Lavanda", "#E6E6FA"),
+    }
     return json.dumps(preset_colors, indent=2)
 
 
@@ -193,9 +191,17 @@ def dataclass_to_clean_dict(obj: Any) -> Any:
                 result[k] = cleaned
         return result or None
     elif isinstance(obj, list):
-        cleaned_list = [dataclass_to_clean_dict(item) for item in obj if dataclass_to_clean_dict(item) is not None]
+        cleaned_list = [
+            dataclass_to_clean_dict(item)
+            for item in obj
+            if dataclass_to_clean_dict(item) is not None
+        ]
         return cleaned_list or None
     elif isinstance(obj, dict):
-        return {k: dataclass_to_clean_dict(v) for k, v in obj.items() if dataclass_to_clean_dict(v) is not None}
+        return {
+            k: dataclass_to_clean_dict(v)
+            for k, v in obj.items()
+            if dataclass_to_clean_dict(v) is not None
+        }
     else:
         return obj

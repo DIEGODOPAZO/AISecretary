@@ -1,10 +1,12 @@
-from utils.microsoft_categories_requests import *
+from utils.categories.microsoft_categories_requests import MicrosoftCategoriesRequests
 from utils.param_types import *
 
 # server.py
 from mcp.server.fastmcp import FastMCP
 
 mcp = FastMCP("AISecretary-Outlook-Categories", dependencies=["mcp[cli]", "msal"])
+
+categories_requests = MicrosoftCategoriesRequests()
 
 
 @mcp.tool()
@@ -14,7 +16,7 @@ def get_categores() -> str:
     returns:
         str: A JSON string containing the categories.
     """
-    return get_categories_microsoft_api()
+    return categories_requests.get_categories_microsoft_api()
 
 
 @mcp.tool()
@@ -26,7 +28,8 @@ def create_edit_category(category_params: CategoryParams) -> str:
     returns:
         str: The id of the created or edited category with more information, or an error message.
     """
-    return create_edit_category_microsoft_api(category_params)
+    return categories_requests.create_edit_category_microsoft_api(category_params)
+
 
 @mcp.tool()
 def delete_category(category_id: str) -> str:
@@ -34,14 +37,16 @@ def delete_category(category_id: str) -> str:
     Deletes a category from the Outlook mailbox.
     params:
         category_id (str): The id of the category to delete.
-    returns:        
+    returns:
         str: A confirmation message or an error message.
     """
-    return delete_category_microsoft_api(category_id)
+    return categories_requests.delete_category_microsoft_api(category_id)
 
 
 @mcp.tool()
-def add_delete_category_to_email(handle_category_to_resource_params: HandleCategoryToResourceParams) -> str:
+def add_delete_category_to_email(
+    handle_category_to_resource_params: HandleCategoryToResourceParams,
+) -> str:
     """
     Adds or deletes a category to/from an email in the Outlook mailbox.
     params:
@@ -49,7 +54,10 @@ def add_delete_category_to_email(handle_category_to_resource_params: HandleCateg
     returns:
         str: A confirmation message or an error message.
     """
-    return add_delete_category_to_resource_microsoft_api(handle_category_to_resource_params)
+    return categories_requests.add_delete_category_to_resource_microsoft_api(
+        handle_category_to_resource_params
+    )
+
 
 @mcp.resource("outlook://categories")
 def get_categories() -> str:
@@ -58,7 +66,8 @@ def get_categories() -> str:
     returns:
         str: A JSON string containing the categories.
     """
-    return get_categories_microsoft_api()
+    return categories_requests.get_categories_microsoft_api()
+
 
 @mcp.resource("outlook://preset/colors")
 def get_preset_colors() -> str:
@@ -67,4 +76,4 @@ def get_preset_colors() -> str:
     returns:
         str: A JSON string containing the preset colors.
     """
-    return get_preset_color_equivalence_microsoft()
+    return categories_requests.get_preset_color_equivalence_microsoft()
