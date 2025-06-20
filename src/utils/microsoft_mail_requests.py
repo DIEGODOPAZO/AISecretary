@@ -393,3 +393,11 @@ def delete_folder_microsoft_api(folder_id: str) -> str:
     return json.dumps(
         {"message": f"Folder with ID {folder_id} deleted successfully."}, indent=2
     )
+
+@handle_microsoft_errors
+def get_message_rules_microsoft_api() -> str:
+    token = get_access_token_microsoft()
+    url = "https://graph.microsoft.com/v1.0/me/mailFolders/inbox/messageRules"
+    (status_code, response) = microsoft_get(url, token)
+
+    return json.dumps(response, indent=2)

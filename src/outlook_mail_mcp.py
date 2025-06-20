@@ -317,6 +317,15 @@ def add_delete_flag_or_mark_as_complete(email_id: str, flag: str):
     """
     return manage_flags_microsoft_api(email_id, flag)
 
+@mcp.tool()
+def get_message_rules():
+    """
+    Gets the message rules of the Outlook mailbox.
+    returns:
+        str: A JSON string containing the message rules.
+    """
+    return get_message_rules_microsoft_api()
+
 @mcp.resource("outlook://root/folders")
 def get_user_folders() -> str:
     """
