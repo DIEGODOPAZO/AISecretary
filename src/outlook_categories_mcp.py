@@ -21,7 +21,7 @@ categories_requests = MicrosoftCategoriesRequests(token_manager)
 @mcp.tool()
 def get_categores() -> str:
     """
-    Gets the categories of the Outlook mailbox.
+    Gets the categories of Outlook.
     returns:
         str: A JSON string containing the categories.
     """
@@ -31,7 +31,8 @@ def get_categores() -> str:
 @mcp.tool()
 def create_edit_category(category_params: CategoryParams) -> str:
     """
-    Creates or edits a category in the Outlook mailbox.
+    Creates or edits a category in Outlook.
+    For the equivalence of the preset colors, see the get_preset_colors tool.
     params:
         category_params (CategoryParams): The parameters for creating or editing a category.
     returns:
@@ -43,7 +44,7 @@ def create_edit_category(category_params: CategoryParams) -> str:
 @mcp.tool()
 def delete_category(category_id: str) -> str:
     """
-    Deletes a category from the Outlook mailbox.
+    Deletes a category from Outlook.
     params:
         category_id (str): The id of the category to delete.
     returns:
@@ -67,6 +68,15 @@ def add_delete_category_to_email(
         handle_category_to_resource_params
     )
 
+@mcp.tool()
+def get_preset_colors() -> str:
+    """
+    Gets the preset colors for the categories in Outlook.
+    This is useful for understanding the available color options for categories (it gives the presetX to color equivalence).
+    returns:
+        str: A JSON string containing the preset colors.
+    """
+    return categories_requests.get_preset_color_equivalence_microsoft()
 
 @mcp.resource("outlook://categories")
 def get_categories() -> str:
