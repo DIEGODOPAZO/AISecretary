@@ -1,18 +1,20 @@
 import json
 
 from ..param_types import *
-from ..auth_microsoft import get_access_token_microsoft
 from ..helpers import *
+from ..token_manager import TokenManager
 
 
 class MicrosoftFoldersRequests:
-    def __init__(self):
-        self.token = get_access_token_microsoft()
+    def __init__(self, token_manager: TokenManager):
         self.base_url = "https://graph.microsoft.com/v1.0/me/mailFolders"
+        self.token_manager = token_manager
 
     @handle_microsoft_errors
     def get_folder_names(self) -> str:
-        (status_code, response) = microsoft_get(self.base_url, self.token)
+        (status_code, response) = microsoft_get(
+            self.base_url, self.token_manager.get_token()
+        )
         folders = response.get("value", [])
         simplified_folders = []
 
@@ -35,7 +37,7 @@ class MicrosoftFoldersRequests:
     @handle_microsoft_errors
     def get_subfolders_microsoft_api(self, folder_id: str) -> str:
         url = f"{self.base_url}/{folder_id}/childFolders"
-        (status_code, response) = microsoft_get(url, self.token)
+        (status_code, response) = microsoft_get(url, self.token_manager.get_token())
         folders = response.get("value", [])
         simplified_folders = []
 
@@ -72,12 +74,18 @@ class MicrosoftFoldersRequests:
 
         if folder_params.parent_folder_id:
             url = f"{url}/{folder_params.parent_folder_id}/childFolders"
-            (status_code, response) = microsoft_post(url, self.token, data)
+            (status_code, response) = microsoft_post(
+                url, self.token_manager.get_token(), data
+            )
         elif folder_params.folder_id:
             url = f"{url}/{folder_params.folder_id}"
-            (status_code, response) = microsoft_patch(url, self.token, data)
+            (status_code, response) = microsoft_patch(
+                url, self.token_manager.get_token(), data
+            )
         else:
-            (status_code, response) = microsoft_post(url, self.token, data)
+            (status_code, response) = microsoft_post(
+                url, self.token_manager.get_token(), data
+            )
 
         return json.dumps(response, indent=2)
 
@@ -90,7 +98,7 @@ class MicrosoftFoldersRequests:
         :return: JSON response indicating success or failure.
         """
         url = f"{self.base_url}/{folder_id}"
-        (status_code, response) = microsoft_delete(url, self.token)
+        (status_code, response) = microsoft_delete(url, self.token_manager.get_token())
         if status_code != 204:
             return json.dumps({"error": response}, indent=2)
         return json.dumps(

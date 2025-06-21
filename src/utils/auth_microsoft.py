@@ -39,7 +39,12 @@ def save_cache(cache):
             f.write(cache.serialize())
 
 
-def get_access_token_microsoft(scopes=SCOPES):
+def get_token_cache_path():
+    """Devuelve la ruta del archivo de caché del token."""
+    return TOKEN_CACHE_FILE
+
+
+def get_access_token(scopes=SCOPES):
     """Obtiene un token de acceso, usando la caché si es posible."""
     cache = load_cache()
     app = msal.PublicClientApplication(
@@ -64,4 +69,4 @@ def get_access_token_microsoft(scopes=SCOPES):
 
 
 if __name__ == "__main__":
-    get_access_token_microsoft()
+    get_access_token()

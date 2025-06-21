@@ -1,14 +1,14 @@
 import json
 
 from ..param_types import *
-from ..auth_microsoft import get_access_token_microsoft
 from ..helpers import *
+from ..token_manager import TokenManager
 
 
 class MicrosoftCategoriesRequests:
-    def __init__(self):
-        self.token = get_access_token_microsoft()
+    def __init__(self, token_manager: TokenManager):
         self.url = "https://graph.microsoft.com/v1.0/me/outlook/masterCategories"
+        self.token_manager = token_manager
 
     @handle_microsoft_errors
     def get_categories_microsoft_api(self) -> str:
@@ -17,7 +17,10 @@ class MicrosoftCategoriesRequests:
 
         :return: JSON response containing the categories.
         """
-        (status_code, response) = microsoft_get(self.url, self.token)
+
+        (status_code, response) = microsoft_get(
+            self.url, self.token_manager.get_token()
+        )
 
         categories = response.get("value", [])
         simplified_categories = [
@@ -36,21 +39,24 @@ class MicrosoftCategoriesRequests:
             "displayName": category_params.category_name,
             "color": category_params.preset_color,
         }
-
         if not category_params.category_id:
             # Create a new category
-            (status_code, response) = microsoft_post(url, self.token, params)
+            (status_code, response) = microsoft_post(
+                url, self.token_manager.get_token(), params
+            )
         else:
             # Edit an existing category
             url = f"{url}/{category_params.category_id}"
-            (status_code, response) = microsoft_patch(url, self.token, params)
+            (status_code, response) = microsoft_patch(
+                url, self.token_manager.get_token(), params
+            )
 
         return json.dumps(response, indent=2)
 
     @handle_microsoft_errors
     def delete_category_microsoft_api(self, category_id: str) -> str:
         url = f"{self.url}/{category_id}"
-        (status_code, response) = microsoft_delete(url, self.token)
+        (status_code, response) = microsoft_delete(url, self.token_manager.get_token())
         if status_code != 204:
             return json.dumps({"error": response}, indent=2)
         return json.dumps(
@@ -62,11 +68,10 @@ class MicrosoftCategoriesRequests:
     def add_delete_category_to_resource_microsoft_api(
         self, handle_category_to_resource_params: HandleCategoryToResourceParams
     ) -> str:
-        token = self.token
-        url = f"https://graph.microsoft.com/v1.0/me/messages/{handle_category_to_resource_params.resource_id}"
 
+        url = f"https://graph.microsoft.com/v1.0/me/messages/{handle_category_to_resource_params.resource_id}"
         # get current categories
-        status_code, message_data = microsoft_get(url, token)
+        status_code, message_data = microsoft_get(url, self.token_manager.get_token())
         existing_categories = message_data.get("categories", [])
 
         existing_categories = set(message_data.get("categories", []))
@@ -79,7 +84,9 @@ class MicrosoftCategoriesRequests:
             updated_categories = list(existing_categories.union(new_categories))
 
         data = {"categories": updated_categories}
-        status_code, response = microsoft_patch(url, token, data)
+        status_code, response = microsoft_patch(
+            url, self.token_manager.get_token(), data
+        )
 
         return json.dumps(response, indent=2)
 
