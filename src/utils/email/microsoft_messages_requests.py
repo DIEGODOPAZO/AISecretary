@@ -70,7 +70,7 @@ class MicrosoftMessagesRequests:
         url = f"{self.base_url}/{message_id}"
         data = {"isRead": is_read}
         microsoft_patch(url, self.token_manager.get_token(), data)
-        (status_code, response) = microsoft_get(url, self.token)
+        (status_code, response) = microsoft_get(url, self.token_manager.token)
         return json.dumps(microsoft_simplify_message(response), indent=2)
 
     @handle_microsoft_errors
