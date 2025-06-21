@@ -96,3 +96,18 @@ def get_preset_colors() -> str:
         str: A JSON string containing the preset colors.
     """
     return categories_requests.get_preset_color_equivalence_microsoft()
+
+
+@mcp.prompt()
+def create_edit_category_prompt(
+    category_name: str,
+    category_color: str = "red",
+) -> str:
+    """
+    Creates or edits a category in the Outlook mailbox.
+    params:
+        category_params (CategoryParams): The parameters for creating or editing a category.
+    returns:
+        str: The id of the created or edited category with more information, or an error message.
+    """
+    return f"Use the tool get_preset_colors to get the equivalence of the preset colors to colors. Then use the tool get_categories to get the categoires, if the category provided is very similar to one category, edit it, otherwise create it. The name of the category is {category_name} and the color is {category_color}."

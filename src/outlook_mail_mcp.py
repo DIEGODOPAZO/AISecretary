@@ -421,7 +421,7 @@ def get_emails_sender(
     sender_email: str,
     number_emails: Optional[str] = "10",
     folder_name: Optional[str] = None,
-    unread_only: Optional[str] = "false"
+    unread_only: Optional[str] = "false",
 ) -> str:
     """
     Prompt to get the latest unread number_emails emails from the Outlook inbox with the specified caracteristics.
@@ -432,11 +432,11 @@ def get_emails_sender(
     """
     ret_str = ""
     if folder_name:
-        ret_str += f"Search in the folder '{folder_name}', to get the id of the folder and use the get_folders_info_at_outlook tool."
+        ret_str += f"Search in the folder '{folder_name}', to get the id of the folder and use the get_folders_info_at_outlook tool. If you don't see the folder, or one with a similar name, you can use the tool get_subfolders to get the subfolders of a specific folder and look there."
     ret_str += f"Search for the latest {number_emails} emails from the sender '{sender_email}'. The emails have to be unread = {unread_only}"
 
-
     return ret_str
+
 
 @mcp.prompt()
 def get_emails_keyword(
@@ -454,10 +454,21 @@ def get_emails_keyword(
     """
     ret_str = ""
     if folder_name:
-        ret_str += f"Search in the folder '{folder_name}', to get the id of the folder use the get_folders_info_at_outlook tool."
+        ret_str += f"Search in the folder '{folder_name}', to get the id of the folder use the get_folders_info_at_outlook tool. If you don't see the folder, or one with a similar name, you can use the tool get_subfolders to get the subfolders of a specific folder and look there."
     ret_str += f"Search for the latest {number_emails} emails with the keyword '{keyword}' in the subject or body. The emails have to be unread = {unread_only}."
-   
+
     return ret_str
+
+
+@mcp.prompt()
+def create_edit_rules(rule_name: str, rule_description: str) -> str:
+    """
+    Prompt to create or edit a message rule in the Outlook mailbox.
+    returns:
+        str: A JSON string containing the message rule to create or edit.
+    """
+    return f"Use the tools get_message_rules to get the current message rules, if there is a rules with the a very similar name, you edit it, otherwise you create a new rule. The rule name is: {rule_name}. The rule consiste on the following: {rule_description}"
+
 
 @mcp.prompt()
 def create_draft_email(
