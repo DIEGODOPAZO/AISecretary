@@ -29,7 +29,10 @@ categories_requests = MicrosoftCategoriesRequests(token_manager)
 @mcp.tool()
 def get_last_emails_outlook(email_search_params: EmailSearchParams) -> str:
     """
-    Gets the last {number_emails} emails from the Outlook mailbox that were sent to the user.
+    Gets the last {number_emails} emails from the Outlook mailbox of the user. If the folder_id is provided, it will search in that folder, otherwise it will search in all folders.
+    For consulting the id of a folder, you can use the get_folders_info_at_outlook tool.
+    params:
+        email_search_params (EmailSearchParams): The parameters for searching emails, including the number of emails to retrieve, the folder_id and if it is unread_only.
 
     returns:
         str: A JSON string containing the emails. And if there are more emails, it will return the nextLink to get the next page of emails.
@@ -47,7 +50,8 @@ def get_last_emails_outlook(email_search_params: EmailSearchParams) -> str:
 @mcp.tool()
 def get_important_emails_outlook(email_search_params: EmailSearchParams) -> str:
     """
-    Gets the important emails from the Outlook mailbox that were sent to the user.
+    Gets the important emails from the Outlook mailbox of the user, If the folder_id is provided, it will search in that folder, otherwise it will search in all folders.
+    For consulting the id of a folder, you can use the get_folders_info_at_outlook tool.
     returns:
         str: A JSON string containing the important emails. And if there are more emails, it will return the nextLink to get the next page of emails.
     """
@@ -67,8 +71,12 @@ def get_emails_from_mail_sender(
     sender_email: str, email_search_params: EmailSearchParams
 ) -> str:
     """
-    Gets the emails from a specific sender's email address.
-
+    Gets the emails from a specific sender's email address, If the folder_id is provided, it will search in that folder, otherwise it will search in all folders.
+    For consulting the id of a folder, you can use the get_folders_info_at_outlook tool.
+   
+    params:
+        sender_email (str): The email address of the sender.
+        email_search_params (EmailSearchParams): The parameters for searching emails, including the number of emails to retrieve, the folder_id and if it is unread_only.
     returns:
         str: A JSON string containing the emails from the specified sender. And if there are more emails, it will return the nextLink to get the next page of emails.
     """
@@ -89,8 +97,11 @@ def get_emails_with_keyword(
     keyword: str, email_search_params: EmailSearchParams
 ) -> str:
     """
-    Gets the emails that contain a specific keyword in the subject or body.
-
+    Gets the emails that contain a specific keyword in the subject or body, If the folder_id is provided, it will search in that folder, otherwise it will search in all folders.
+    For consulting the id of a folder, you can use the get_folders_info_at_outlook tool.
+    params:
+        keyword (str): The keyword to search for in the emails.
+        email_search_params (EmailSearchParams): The parameters for searching emails, including the number of emails to retrieve, the folder_id and if it is unread_only.
     returns:
         str: A JSON string containing the emails that match the keyword. And if there are more emails, it will return the nextLink to get the next page of emails.
     """
@@ -107,8 +118,11 @@ def get_emails_with_subject(
     subject: str, email_search_params: EmailSearchParams
 ) -> str:
     """
-    Gets the emails with a specific subject
-
+    Gets the emails with a specific subject, If the folder_id is provided, it will search in that folder, otherwise it will search in all folders
+    For consulting the id of a folder, you can use the get_folders_info_at_outlook tool.
+    params:
+        subject (str): The subject to search for in the emails.
+        email_search_params (EmailSearchParams): The parameters for searching emails, including the number of emails to retrieve, the folder_id and if it is unread_only.
     returns:
         str: A JSON string containing the emails that have the specified subject. And if there are more emails, it will return the nextLink to get the next page of emails.
     """
@@ -192,6 +206,8 @@ def delete_email(email_id: str) -> str:
 def create_edit_draft_email(draft_email_data: DraftEmailData) -> str:
     """
     Creates a draft email in the Outlook mailbox.
+    params:
+        draft_email_data (DraftEmailData): The data for creating or editing a draft email, including subject, body, recipients, draft_id (if editing), and importance.
     returns:
         str: The id of the created draft email or a error message.
     """
@@ -306,6 +322,10 @@ def delete_folder(folder_id: str) -> str:
 def get_folders_info_at_outlook() -> str:
     """
     Gets the names and the folder_id of the folders in Outlook.
+    This is useful to know the id of a folder to use it in other tools, such as get_last_emails_outlook.
+    You can also use the get_subfolders tool to get the subfolders of a specific folder.
+    params:
+        None
     returns:
         str: A JSON string containing the folders. And if there are more folders, it will return the nextLink to get the next page of folders.
     """
