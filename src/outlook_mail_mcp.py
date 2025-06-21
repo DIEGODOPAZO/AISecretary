@@ -73,7 +73,7 @@ def get_emails_from_mail_sender(
     """
     Gets the emails from a specific sender's email address, If the folder_id is provided, it will search in that folder, otherwise it will search in all folders.
     For consulting the id of a folder, you can use the get_folders_info_at_outlook tool.
-   
+
     params:
         sender_email (str): The email address of the sender.
         email_search_params (EmailSearchParams): The parameters for searching emails, including the number of emails to retrieve, the folder_id and if it is unread_only.
@@ -417,66 +417,68 @@ def get_user_folders() -> str:
 
 
 @mcp.prompt()
-def outlook_inbox_new(number_emails: int) -> str:
+def get_emails_sender(
+    sender_email: str,
+    number_emails: Optional[str] = "10",
+    folder_name: Optional[str] = None,
+    unread_only: Optional[str] = "false"
+) -> str:
     """
-    Prompt to get the latest unread number_emails emails from the Outlook inbox.
+    Prompt to get the latest unread number_emails emails from the Outlook inbox with the specified caracteristics.
     params:
         number_emails (int): The number of latest unread emails to retrieve.
     returns:
         str: A JSON string containing the latest unread emails.
     """
-    return f"Give me the latest {number_emails} unread emails from my Outlook inbox"
+    ret_str = ""
+    if folder_name:
+        ret_str += f"Search in the folder '{folder_name}', to get the id of the folder and use the get_folders_info_at_outlook tool."
+    ret_str += f"Search for the latest {number_emails} emails from the sender '{sender_email}'. The emails have to be unread = {unread_only}"
 
 
-@mcp.prompt()
-def outlook_inbox_important(number_emails: int) -> str:
-    """
-    Prompt to get the latest important emails from the Outlook inbox.
-    params:
-        number_emails (int): The number of latest important emails to retrieve.
-    returns:
-        str: A JSON string containing the latest important emails.
-    """
-    return f"Give me the latest {number_emails} important emails from my Outlook inbox"
-
+    return ret_str
 
 @mcp.prompt()
-def outlook_inbox_from_sender(sender_email: str, number_emails: int) -> str:
+def get_emails_keyword(
+    keyword: str,
+    number_emails: Optional[str] = "10",
+    folder_name: Optional[str] = None,
+    unread_only: Optional[str] = "false",
+) -> str:
     """
-    Prompt to get the latest emails from a specific sender's email address.
+    Prompt to get the latest unread number_emails emails from the Outlook inbox with the specified caracteristics.
     params:
-        sender_email (str): The email address of the sender.
-        number_emails (int): The number of latest emails to retrieve.
+        number_emails (int): The number of latest unread emails to retrieve.
     returns:
-        str: A JSON string containing the latest emails from the specified sender.
+        str: A JSON string containing the latest unread emails.
     """
-    return f"Give me the latest {number_emails} emails from {sender_email} in my Outlook inbox"
-
+    ret_str = ""
+    if folder_name:
+        ret_str += f"Search in the folder '{folder_name}', to get the id of the folder use the get_folders_info_at_outlook tool."
+    ret_str += f"Search for the latest {number_emails} emails with the keyword '{keyword}' in the subject or body. The emails have to be unread = {unread_only}."
+   
+    return ret_str
 
 @mcp.prompt()
-def outlook_inbox_with_keyword(keyword: str, number_emails: Optional[int] = 10) -> str:
+def create_draft_email(
+    subject: str,
+    body: str,
+    to_recipients: str,
+    cc_recipients: Optional[str] = None,
+    importance: Optional[str] = "normal",
+) -> str:
     """
-    Prompt to get the latest emails that contain a specific keyword in the subject or body.
+    Prompt to create a draft email with the specified subject, body, recipients and importance.
     params:
-        keyword (str): The keyword to search for in the emails.
-        number_emails (int): The number of latest emails to retrieve.
+        subject (str): The subject of the email.
+        body (str): The body of the email.
+        to_recipients (List[str]): The list of email addresses for the "To" field.
+        cc_recipients (Optional[List[str]]): The list of email addresses for the "CC" field.
+        importance (Optional[str]): The importance level of the email. Default is "normal".
     returns:
-        str: A JSON string containing the latest emails that match the keyword.
+        str: A JSON string containing the created draft email.
     """
-    return f"Give me the latest {number_emails} emails that contain '{keyword}' in my Outlook inbox"
-
-
-@mcp.prompt()
-def outlook_inbox_from_folder(folder_name: str, number_emails: int) -> str:
-    """
-    Prompt to get the latest emails from a specific folder in the Outlook inbox.
-    params:
-        folder_name (str): The name of the folder to search in.
-        number_emails (int): The number of latest emails to retrieve.
-    returns:
-        str: A JSON string containing the latest emails from the specified folder.
-    """
-    return f"Give me the latest {number_emails} emails from the '{folder_name}' folder in my Outlook inbox"
+    return f"Create a draft email with subject '{subject}' and body '{body}' to {to_recipients} with CC {cc_recipients} and importance {importance}"
 
 
 if __name__ == "__main__":
