@@ -85,7 +85,49 @@ http://127.0.0.1:9000
 
 You can now interact with **AISecretary** through the OpenWebUI interface.
 
+## Functionalities
+This are the funtionalities for each of the MCP servers:
 
+### - Email
+
+#### Email Management
+
+- Advanced email search  
+- Retrieve conversations  
+- Mark as read/unread  
+- Get full email with attachments  
+- Delete emails  
+- Move/copy emails  
+- Flag management  
+
+#### Email Creation and Sending
+
+- Create/edit drafts  
+- Attachment handling  
+- Send drafts  
+- Reply to emails  
+- Forward emails  
+
+#### Folder Organization
+
+- View folder structure  
+- Create/edit folders  
+- Delete folders  
+- Hierarchical navigation  
+
+#### Mail Rules
+
+- View existing rules  
+- Create/edit rules  
+- Delete rules  
+
+### - Categories
+
+- View existing categories  
+- Create/edit categories  
+- Delete categories  
+- Assign categories to emails  
+- Predefined colors  
 ## Adding New Servers
 
 To add support for new tools, create a new Python file following the structure of the existing servers and register the functions you want to expose as MCP tools.

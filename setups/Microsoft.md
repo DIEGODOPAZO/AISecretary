@@ -31,18 +31,19 @@ Before you begin, make sure you have the following:
 
 ## API Permissions
 
-After registering the app add the followign delegated permisions:
-- User.Read
-- Mail.Read
-- Mail.Send
-- Mail.ReadWrite
-- MailboxSettings.ReadWrite
+After registering the app, add the following **delegated permissions**:
+- For the email:
+  - User.Read
+  - Mail.Read
+  - Mail.Send
+  - Mail.ReadWrite
+  - MailboxSettings.ReadWrite
 
 ---
 
 ## .env Configuration
 
-Create a `.env` file in your project’s `src/` directory with the following content:
+Create a `.env` file in your project’s `/` directory with the following content (include **only the permissions you need** in the `SCOPES` field):
 
 ```env
 # Microsoft Graph API Configuration
