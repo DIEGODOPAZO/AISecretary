@@ -4,7 +4,7 @@ from unittest.mock import patch, MagicMock
 
 from src.utils.email.microsoft_messages_requests import MicrosoftMessagesRequests
 from src.utils.param_types import (
-    EmailSearchParams,
+    EmailQuery,
     DraftEmailData,
     EmailRecipients,
     EmailOperationParams,
@@ -28,29 +28,47 @@ def client(mock_token_manager):
 @patch("src.utils.email.microsoft_messages_requests.microsoft_get")
 @patch("src.utils.email.microsoft_messages_requests.microsoft_simplify_message")
 def test_get_messages_from_folder(mock_simplify, mock_get, client):
-    mock_get.return_value = (200, {"value": [{"id": "msg1"}], "@odata.nextLink": "next"})
-    mock_simplify.return_value = {"id": "simplified"}
+    # Simula dos mensajes con el mismo ID para probar que se eliminan duplicados
+    mock_get.return_value = (
+        200,
+        {"value": [{"id": "msg1"}, {"id": "msg1"}], "@odata.nextLink": "next"},
+    )
+    mock_simplify.return_value = {"id": "msg1"}  # Ambos mensajes se simplifican igual
+
     params = {}
-    email_params = EmailSearchParams(folder_id=None)
-    response = json.loads(client.get_messages_from_folder_microsoft_api(params, email_params))
+    email_params = EmailQuery(folder_id=None)
+    response = json.loads(
+        client.get_messages_from_folder_microsoft_api(params, email_params)
+    )
+
     assert "messages" in response
-    assert response["messages"][0]["id"] == "simplified"
-    assert "nextLink" in response
+    assert (
+        len(response["messages"]) == 1
+    )  # Solo debe quedar un mensaje después de eliminar duplicados
+    assert response["messages"][0]["id"] == "msg1"
 
 
 @patch("src.utils.email.microsoft_messages_requests.microsoft_patch")
 @patch("src.utils.email.microsoft_messages_requests.microsoft_get")
 def test_mark_as_read(mock_get, mock_patch, client):
     mock_get.return_value = (200, {"id": "msg1", "subject": "Hi"})
-    with patch("src.utils.email.microsoft_messages_requests.microsoft_simplify_message", return_value={"id": "msg1"}):
-        response = json.loads(client.mark_as_read_unread_microsoft_api("msg1", is_read=True))
+    with patch(
+        "src.utils.email.microsoft_messages_requests.microsoft_simplify_message",
+        return_value={"id": "msg1"},
+    ):
+        response = json.loads(
+            client.mark_as_read_unread_microsoft_api("msg1", is_read=True)
+        )
     assert response["id"] == "msg1"
 
 
 @patch("src.utils.email.microsoft_messages_requests.microsoft_get")
 def test_get_conversation_messages(mock_get, client):
     mock_get.return_value = (200, {"value": [{"id": "conv1"}]})
-    with patch("src.utils.email.microsoft_messages_requests.microsoft_simplify_message", return_value={"id": "conv1"}):
+    with patch(
+        "src.utils.email.microsoft_messages_requests.microsoft_simplify_message",
+        return_value={"id": "conv1"},
+    ):
         response = json.loads(client.get_conversation_messages_microsoft_api({}))
     assert response["messages"][0]["id"] == "conv1"
 
@@ -81,8 +99,15 @@ def test_send_draft_email(mock_post, client):
 @patch("src.utils.email.microsoft_messages_requests.microsoft_post")
 def test_add_attachment_to_draft(mock_post, mock_read, client):
     mock_read.return_value = ("file.txt", "base64encoded")
-    mock_post.return_value = (200, {"id": "att123", "name": "file.txt", "contentType": "text/plain", "size": 123})
-    response = json.loads(client.add_attachment_to_draft_microsoft_api("draft123", "path/to/file.txt", "text/plain"))
+    mock_post.return_value = (
+        200,
+        {"id": "att123", "name": "file.txt", "contentType": "text/plain", "size": 123},
+    )
+    response = json.loads(
+        client.add_attachment_to_draft_microsoft_api(
+            "draft123", "path/to/file.txt", "text/plain"
+        )
+    )
     assert response["attachment_id"] == "att123"
 
 
@@ -92,7 +117,9 @@ def test_forward_email(mock_post, client):
     params = EmailForwardParams(
         email_id="email123",
         comment="Forward this",
-        email_recipients=EmailRecipients(to_recipients=["a@example.com"], cc_recipients=[])
+        email_recipients=EmailRecipients(
+            to_recipients=["a@example.com"], cc_recipients=[]
+        ),
     )
     response = json.loads(client.forward_email_microsoft_api(params))
     assert response["status"] == "ok"
@@ -101,7 +128,9 @@ def test_forward_email(mock_post, client):
 @patch("src.utils.email.microsoft_messages_requests.microsoft_post")
 def test_reply_to_email(mock_post, client):
     mock_post.return_value = (200, {"id": "reply1"})
-    params = EmailReplyParams(email_id="email123", body="Reply content", reply_all=False)
+    params = EmailReplyParams(
+        email_id="email123", body="Reply content", reply_all=False
+    )
     response = json.loads(client.reply_to_email_microsoft_api(params))
     assert response["id"] == "reply1"
 
@@ -109,7 +138,9 @@ def test_reply_to_email(mock_post, client):
 @patch("src.utils.email.microsoft_messages_requests.microsoft_post")
 def test_move_email(mock_post, client):
     mock_post.return_value = (200, {"id": "movedEmail"})
-    params = EmailOperationParams(email_id="email1", destination_folder_id="dest123", move=True)
+    params = EmailOperationParams(
+        email_id="email1", destination_folder_id="dest123", move=True
+    )
     response = json.loads(client.move_or_copy_email_microsoft_api(params))
     assert response["id"] == "movedEmail"
 

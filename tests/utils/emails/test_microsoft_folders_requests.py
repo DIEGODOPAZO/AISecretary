@@ -15,13 +15,16 @@ def mock_token_manager():
 
 @patch("src.utils.email.microsoft_folders_requests.microsoft_get")
 def test_get_folder_names(mock_get, mock_token_manager):
-    mock_get.return_value = (200, {
-        "value": [
-            {"id": "1", "displayName": "Inbox", "totalItemCount": 10},
-            {"id": "2", "displayName": "Sent", "totalItemCount": 5},
-        ],
-        "@odata.nextLink": "https://next.link"
-    })
+    mock_get.return_value = (
+        200,
+        {
+            "value": [
+                {"id": "1", "displayName": "Inbox", "totalItemCount": 10},
+                {"id": "2", "displayName": "Sent", "totalItemCount": 5},
+            ],
+            "@odata.nextLink": "https://next.link",
+        },
+    )
 
     client = MicrosoftFoldersRequests(mock_token_manager)
     response = json.loads(client.get_folder_names())
@@ -33,11 +36,10 @@ def test_get_folder_names(mock_get, mock_token_manager):
 
 @patch("src.utils.email.microsoft_folders_requests.microsoft_get")
 def test_get_subfolders(mock_get, mock_token_manager):
-    mock_get.return_value = (200, {
-        "value": [
-            {"id": "sub1", "displayName": "SubFolder", "totalItemCount": 3}
-        ]
-    })
+    mock_get.return_value = (
+        200,
+        {"value": [{"id": "sub1", "displayName": "SubFolder", "totalItemCount": 3}]},
+    )
 
     client = MicrosoftFoldersRequests(mock_token_manager)
     response = json.loads(client.get_subfolders_microsoft_api("folder123"))
