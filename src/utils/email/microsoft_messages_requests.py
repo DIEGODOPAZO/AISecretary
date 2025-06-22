@@ -10,6 +10,7 @@ from ..helpers import (
     microsoft_post,
     microsoft_simplify_message,
     read_file_and_encode_base64,
+    remove_duplicate_messages,
 )
 from ..param_types import *
 from ..token_manager import TokenManager
@@ -22,21 +23,23 @@ class MicrosoftMessagesRequests:
 
     @handle_microsoft_errors
     def get_messages_from_folder_microsoft_api(
-        self, params: dict, email_search_params: EmailSearchParams
-    ) -> str:
+        self, params: dict, folder_id: Optional[str] = None
+    ) -> dict:
+        """
+        Executes the actual API request to Microsoft Graph
 
-        if email_search_params.folder_id is None:
-            base_url = self.base_url
-        else:
-            base_url = f"https://graph.microsoft.com/v1.0/me/mailFolders/{email_search_params.folder_id}/messages"
+        Args:
+            params: Query parameters for the API call
+            folder_id: Optional folder ID to search within
 
-        if email_search_params.unread_only:
-            existing_filter = params.get("$filter", "")
-            unread_filter = "isRead eq false"
-            if existing_filter:
-                params["$filter"] = f"{existing_filter} and {unread_filter}"
-            else:
-                params["$filter"] = unread_filter
+        Returns:
+            JSON string with results
+        """
+        base_url = (
+            f"https://graph.microsoft.com/v1.0/me/mailFolders/{folder_id}/messages"
+            if folder_id
+            else self.base_url
+        )
 
         (status_code, response) = microsoft_get(
             base_url, self.token_manager.get_token(), params=params
@@ -48,6 +51,11 @@ class MicrosoftMessagesRequests:
         result = {"messages": simplified_messages}
         if "@odata.nextLink" in response:
             result["nextLink"] = response["@odata.nextLink"]
+
+        unique_messages = remove_duplicate_messages(simplified_messages)
+
+        result = {"messages": unique_messages}
+
         return json.dumps(result, indent=2)
 
     @handle_microsoft_errors
@@ -212,7 +220,7 @@ class MicrosoftMessagesRequests:
         self, draft_id: str, attachment_id: str
     ) -> str:
         url = f"{self.base_url}/{draft_id}/attachments/{attachment_id}"
-        (status_code, response) = microsoft_delete(url, self.token)
+        (status_code, response) = microsoft_delete(url, self.token_manager.get_token())
         if status_code != 204:
             return json.dumps({"error": response}, indent=2)
         return json.dumps(

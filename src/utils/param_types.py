@@ -1,21 +1,66 @@
 from dataclasses import dataclass, field
+from datetime import datetime as DateTime
 from typing import List, Optional, Literal
 
 
 @dataclass
-class EmailSearchParams:
-    """
-    Parameter for searching emails.
-
+class DateFilter:
+    """Filter for date ranges
     Args:
-        number_emails (int): Number of emails to retrieve.
-        folder_id (Optional[str]): ID of the folder to search in. If None, searches in all folders.
-        unread_only (bool): If True, only retrieves unread emails.
+        start_date (Optional[DateTime]): Start date for the filter. Example: 2025-06-19T23:59:59.000Z
+        end_date (Optional[DateTime]): End date for the filter. Example: 2025-06-19T23:59:59.000Z
     """
 
+    start_date: Optional[DateTime] = None
+    end_date: Optional[DateTime] = None
+
+
+@dataclass
+class SearchParams:
+    """Parameters for search operations ($search in Graph API)
+    Args:
+        keyword (Optional[str]): Keyword to search for in the emails.
+        subject (Optional[str]): Subject to search for in the emails.
+    """
+
+    keyword: Optional[str] = None
+    subject: Optional[str] = None
+
+
+@dataclass
+class EmailFilters:
+    """All available email filters
+    Args:
+        date_filter (Optional[DateFilter]): Filter for date ranges.
+        importance (Optional[str]): Importance level of the email ('high', 'normal', 'low').
+        sender (Optional[str]): Email address of the sender to filter by.
+        unread_only (bool): If True, filters only unread emails.
+        has_attachments (bool): If True, filters emails that have attachments.
+        categories (Optional[List[str]]): List of category names to filter by.
+    """
+
+    date_filter: Optional[DateFilter] = None
+    importance: Optional[str] = None  # 'high', 'normal', 'low'
+    sender: Optional[str] = None
+    unread_only: bool = False
+    has_attachments: bool = False
+    categories: Optional[List[str]] = None
+
+
+@dataclass
+class EmailQuery:
+    """Complete email query parameters
+    Args:
+        filters (EmailFilters): Filters to apply to the email query.
+        search (Optional[SearchParams]): Search parameters for the email query.
+        number_emails (int): Number of emails to retrieve. Default is 10.
+        folder_id (Optional[str]): ID of the folder to query emails from. If None, queries all folders.
+    """
+
+    filters: EmailFilters = field(default_factory=EmailFilters)
+    search: Optional[SearchParams] = None
     number_emails: int = 10
     folder_id: Optional[str] = None
-    unread_only: bool = False
 
 
 @dataclass

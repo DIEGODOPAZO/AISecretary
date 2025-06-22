@@ -1,3 +1,5 @@
+import json
+from utils.helpers import build_search_params, build_filter_params
 from utils.param_types import *
 from utils.email.microsoft_folders_requests import MicrosoftFoldersRequests
 from utils.email.microsoft_messages_requests import MicrosoftMessagesRequests
@@ -27,112 +29,72 @@ categories_requests = MicrosoftCategoriesRequests(token_manager)
 
 
 @mcp.tool()
-def get_last_emails_outlook(email_search_params: EmailSearchParams) -> str:
+def search_emails_outlook(email_query: EmailQuery) -> str:
     """
-    Gets the last {number_emails} emails from the Outlook mailbox of the user. If the folder_id is provided, it will search in that folder, otherwise it will search in all folders.
-    For consulting the id of a folder, you can use the get_folders_info_at_outlook tool.
-    params:
-        email_search_params (EmailSearchParams): The parameters for searching emails, including the number of emails to retrieve, the folder_id and if it is unread_only.
+    Searches emails in Outlook mailbox using Microsoft Graph API with advanced filtering capabilities.
+    Supports filtering by date, importance, sender, keywords, subject, unread status, and more.
+    You can't use both search and filter parameters at the same time, if you do, it will return an error message.
+    If you want to use this tool with filter and with search, you can use the tool twice, once with the search parameters and once with the filter parameters an then combine the results.
 
-    returns:
-        str: A JSON string containing the emails. And if there are more emails, it will return the nextLink to get the next page of emails.
+    Args:
+        email_query (EmailQuery): The query parameters for searching emails, including filters and pagination options.
+
+    Returns:
+        str: A JSON string containing the emails and pagination information if available.
     """
-    params = {
-        "$top": email_search_params.number_emails,
-        "$orderBy": "receivedDateTime DESC",
-    }
-
-    return messages_requests.get_messages_from_folder_microsoft_api(
-        params, email_search_params=email_search_params
+    has_search = bool(
+        email_query.search
+        and (email_query.search.keyword or email_query.search.subject)
+    )
+    has_filters = bool(
+        email_query.filters
+        and (
+            email_query.filters.date_filter
+            or email_query.filters.importance
+            or email_query.filters.sender
+            or email_query.filters.unread_only
+            or email_query.filters.has_attachments
+            or email_query.filters.categories
+        )
     )
 
+    search_params = build_search_params(email_query.search)
+    filter_params = build_filter_params(email_query.filters)
 
-@mcp.tool()
-def get_important_emails_outlook(email_search_params: EmailSearchParams) -> str:
-    """
-    Gets the important emails from the Outlook mailbox of the user, If the folder_id is provided, it will search in that folder, otherwise it will search in all folders.
-    For consulting the id of a folder, you can use the get_folders_info_at_outlook tool.
-    returns:
-        str: A JSON string containing the important emails. And if there are more emails, it will return the nextLink to get the next page of emails.
-    """
+    if "$top" not in search_params:
+        search_params["$top"] = email_query.number_emails
+    if "$top" not in filter_params:
+        filter_params["$top"] = email_query.number_emails
 
-    params = {
-        "$filter": f"{filter_dateTime} and importance eq 'high'",
-        "$top": email_search_params.number_emails,
-        "$orderBy": "receivedDateTime DESC",
-    }
-    return messages_requests.get_messages_from_folder_microsoft_api(
-        params, email_search_params=email_search_params
-    )
+    # If both search and filter are provided, we need to handle them separately
+    if has_search and has_filters:
+        search_result = messages_requests.get_messages_from_folder_microsoft_api(
+            search_params, folder_id=email_query.folder_id
+        )
+        filter_result = messages_requests.get_messages_from_folder_microsoft_api(
+            filter_params, folder_id=email_query.folder_id
+        )
 
+        search_messages = json.loads(search_result).get("messages", [])
+        filter_messages = json.loads(filter_result).get("messages", [])
 
-@mcp.tool()
-def get_emails_from_mail_sender(
-    sender_email: str, email_search_params: EmailSearchParams
-) -> str:
-    """
-    Gets the emails from a specific sender's email address, If the folder_id is provided, it will search in that folder, otherwise it will search in all folders.
-    For consulting the id of a folder, you can use the get_folders_info_at_outlook tool.
+        # Intersección por ID
+        search_ids = {msg["id"] for msg in search_messages}
+        filtered_ids = {msg["id"]: msg for msg in filter_messages}
 
-    params:
-        sender_email (str): The email address of the sender.
-        email_search_params (EmailSearchParams): The parameters for searching emails, including the number of emails to retrieve, the folder_id and if it is unread_only.
-    returns:
-        str: A JSON string containing the emails from the specified sender. And if there are more emails, it will return the nextLink to get the next page of emails.
-    """
+        intersected = [
+            filtered_ids[msg_id] for msg_id in search_ids if msg_id in filtered_ids
+        ]
 
-    params = {
-        "$filter": f"{filter_dateTime} and from/emailAddress/address eq '{sender_email}'",
-        "$top": email_search_params.number_emails,
-        "$orderBy": "receivedDateTime DESC",
-    }
+        return json.dumps({"messages": intersected}, indent=2)
+
+    # Solo search o solo filter
+    final_params = search_params if has_search else filter_params
+    if not final_params:
+        final_params = {"$top": email_query.number_emails}
 
     return messages_requests.get_messages_from_folder_microsoft_api(
-        params, email_search_params=email_search_params
-    )
-
-
-@mcp.tool()
-def get_emails_with_keyword(
-    keyword: str, email_search_params: EmailSearchParams
-) -> str:
-    """
-    Gets the emails that contain a specific keyword in the subject or body, If the folder_id is provided, it will search in that folder, otherwise it will search in all folders.
-    For consulting the id of a folder, you can use the get_folders_info_at_outlook tool.
-    params:
-        keyword (str): The keyword to search for in the emails.
-        email_search_params (EmailSearchParams): The parameters for searching emails, including the number of emails to retrieve, the folder_id and if it is unread_only.
-    returns:
-        str: A JSON string containing the emails that match the keyword. And if there are more emails, it will return the nextLink to get the next page of emails.
-    """
-
-    params = {"$search": f"{keyword}", "$top": email_search_params.number_emails}
-
-    return messages_requests.get_messages_from_folder_microsoft_api(
-        params, email_search_params=email_search_params
-    )
-
-
-@mcp.tool()
-def get_emails_with_subject(
-    subject: str, email_search_params: EmailSearchParams
-) -> str:
-    """
-    Gets the emails with a specific subject, If the folder_id is provided, it will search in that folder, otherwise it will search in all folders
-    For consulting the id of a folder, you can use the get_folders_info_at_outlook tool.
-    params:
-        subject (str): The subject to search for in the emails.
-        email_search_params (EmailSearchParams): The parameters for searching emails, including the number of emails to retrieve, the folder_id and if it is unread_only.
-    returns:
-        str: A JSON string containing the emails that have the specified subject. And if there are more emails, it will return the nextLink to get the next page of emails.
-    """
-    params = {
-        "$search": f'"subject:{subject}"',
-        "$top": email_search_params.number_emails,
-    }
-
-    return messages_requests.get_messages_from_folder_microsoft_api(
-        params, email_search_params=email_search_params
+        final_params, folder_id=email_query.folder_id
     )
 
 

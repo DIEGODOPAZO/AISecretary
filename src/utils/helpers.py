@@ -4,7 +4,9 @@ import os
 from functools import wraps
 import json
 from dataclasses import asdict, is_dataclass
-from typing import Any
+from typing import Any, List
+
+from .param_types import DateFilter
 
 
 def handle_microsoft_errors(func):
@@ -205,3 +207,74 @@ def dataclass_to_clean_dict(obj: Any) -> Any:
         }
     else:
         return obj
+
+
+def build_date_filter(date_filter: DateFilter) -> str:
+    """Helper to build date filter clause"""
+    clauses = []
+    if date_filter.start_date:
+        clauses.append(f"receivedDateTime ge {date_filter.start_date.isoformat()}")
+    if date_filter.end_date:
+        clauses.append(f"receivedDateTime le {date_filter.end_date.isoformat()}")
+    return " and ".join(clauses) if clauses else ""
+
+
+def build_categories_filter(categories: List[str]) -> str:
+    """Helper to build categories filter"""
+    if not categories:
+        return ""
+
+    # Escape single quotes in category names by doubling them (OData standard)
+    escaped_categories = [c.replace("'", "''") for c in categories if c]
+
+    if not escaped_categories:
+        return ""
+
+    # Build individual category conditions
+    category_conditions = [f"categories/any(c:c eq '{c}')" for c in escaped_categories]
+
+    # Combine with OR and wrap in parentheses
+    return f"({' or '.join(category_conditions)})"
+
+
+def remove_duplicate_messages(messages: List[dict]) -> List[dict]:
+    """Remove duplicate messages based on their ID while preserving order."""
+    seen_ids = set()
+    unique_messages = []
+
+    for msg in messages:
+        msg_id = msg.get("id")
+        if msg_id and msg_id not in seen_ids:
+            seen_ids.add(msg_id)
+            unique_messages.append(msg)
+
+    return unique_messages
+
+
+def build_search_params(search) -> dict:
+    if not search:
+        return {}
+    if search.keyword:
+        return {"$search": f'"{search.keyword}"'}
+    if search.subject:
+        return {"$search": f'"subject:{search.subject}"'}
+    return {}
+
+
+def build_filter_params(filters) -> dict:
+    parts = []
+    if filters.date_filter:
+        date_filter = build_date_filter(filters.date_filter)
+        if date_filter:
+            parts.append(date_filter)
+    if filters.importance:
+        parts.append(f"importance eq '{filters.importance}'")
+    if filters.sender:
+        parts.append(f"from/emailAddress/address eq '{filters.sender}'")
+    if filters.unread_only:
+        parts.append("isRead eq false")
+    if filters.has_attachments:
+        parts.append("hasAttachments eq true")
+    if filters.categories:
+        parts.append(build_categories_filter(filters.categories))
+    return {"$filter": " and ".join(parts)} if parts else {}
