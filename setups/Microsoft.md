@@ -31,9 +31,12 @@ Before you begin, make sure you have the following:
 
 ## API Permissions
 
-After registering the app:
-
-
+After registering the app add the followign delegated permisions:
+- User.Read
+- Mail.Read
+- Mail.Send
+- Mail.ReadWrite
+- MailboxSettings.ReadWrite
 
 ---
 
@@ -45,8 +48,8 @@ Create a `.env` file in your project’s `src/` directory with the following con
 # Microsoft Graph API Configuration
 CLIENT_ID=your_application_client_id
 TENANT_ID=common
-SCOPES=User.Read,Mail.Read,Mail.Send
-TOKEN_CACHE_FILE=token_cache_microsoft.json
+SCOPES=User.Read,Mail.Read,Mail.Send,Mail.ReadWrite,MailboxSettings.ReadWrite
+TOKEN_CACHE_FILE=src/token_cache_microsoft.json
 ```
 
 **Notes:**

@@ -1,7 +1,8 @@
 # AISecretary
 
-AISecretary is a collection of MCP servers designed to automate the tasks of a virtual secretary. Each server handles a specific tool, such as:
+AISecretary is a collection of MCP servers designed to automate the tasks of a virtual secretary insede the Outlook suite. Each server handles a specific tool, such as:
 - Outlook Mail
+- Categories
 
 ## Features
 
@@ -21,7 +22,7 @@ Follow the instructions below to configure and run the server:
 
 ### Service Setup
 
-Refer to the appropriate setup guide for your service:
+To configure the necessary Microsoft Graph API settings, follow this setup guide:
 
 - [Outlook](setups/Microsoft.md)
 
@@ -37,6 +38,29 @@ If you have Claude Desktop installed:
 
 ```bash
 uv run mcp install server.py
+```
+
+Other option to install your server in Claude Desktop is to edit the configuration file at:
+`C:\Users\YOUR_USER\AppData\Roaming\Claude\claude_desktop_config.json`
+
+```config
+{
+  "mcpServers": {
+    "Server_name": {
+      "command": "/Your/path/to/uv",
+      "args": [
+        "run",
+        "--with",
+        "mcp[cli]",
+        "--with",
+        "msal",
+        "mcp",
+        "run",
+        "/your/path/to/server.py"
+      ]
+    },
+  }
+}
 ```
 
 #### Alternative: Running with OpenWebUI
