@@ -1,5 +1,3 @@
-import os
-from pathlib import Path
 from utils.categories.microsoft_categories_requests import MicrosoftCategoriesRequests
 from utils.param_types import *
 from utils.token_manager import TokenManager
