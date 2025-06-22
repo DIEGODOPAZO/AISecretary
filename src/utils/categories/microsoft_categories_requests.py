@@ -87,7 +87,7 @@ class MicrosoftCategoriesRequests:
         status_code, response = microsoft_patch(
             url, self.token_manager.get_token(), data
         )
-
+        response = microsoft_simplify_message(response)
         return json.dumps(response, indent=2)
 
     def get_preset_color_equivalence_microsoft(self) -> str:

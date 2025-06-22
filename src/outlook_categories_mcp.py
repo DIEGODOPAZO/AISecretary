@@ -71,7 +71,7 @@ def add_delete_category_to_email(
 @mcp.tool()
 def get_preset_colors() -> str:
     """
-    Gets the preset colors for the categories in Outlook.
+    Gets the equivalence between colors and preset colors for the categories in Outlook
     This is useful for understanding the available color options for categories (it gives the presetX to color equivalence).
     returns:
         str: A JSON string containing the preset colors.
@@ -91,7 +91,7 @@ def get_categories() -> str:
 @mcp.resource("outlook://preset/colors")
 def get_preset_colors() -> str:
     """
-    Gets the preset colors for the categories in the Outlook mailbox.
+    Gets the equivalence between colors and preset colors for the categories in the Outlook mailbox.
     returns:
         str: A JSON string containing the preset colors.
     """
