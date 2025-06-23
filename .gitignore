@@ -62,3 +62,5 @@ __pypackages__/
 Thumbs.db
 
 src/token_cache_microsoft.json
+
+todo.txt

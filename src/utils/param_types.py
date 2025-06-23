@@ -285,3 +285,144 @@ class MailRule:
     actions: Optional[RuleActions] = None
     isEnabled: bool = True
     isReadOnly: bool = False
+
+
+@dataclass
+class EmailAddressCalendar:
+    """Represents an email address with an optional name.
+    Args:
+        address (str): The email address.
+        name (Optional[str]): The name associated with the email address.
+    """
+    address: str
+    name: Optional[str] = None
+
+@dataclass
+class Attendee:
+    """Represents an attendee for a calendar event.
+    Args:   
+    emailAddress (EmailAddress): The email address of the attendee.
+        type (Optional[str]): The type of attendee, e.g., "required", "optional" or "resource".
+    """
+    emailAddress: EmailAddressCalendar
+    type: Optional[str] = "required"  # Puede ser "required", "optional", etc.
+
+@dataclass
+class EventBody:
+    """Represents the body of an event.
+    Args:
+        contentType (str): Type of the content, e.g., "HTML" or "Text".
+        content (str): The content of the body.
+    """
+    contentType: str
+    content: str
+
+@dataclass
+class DateTimeTimeZone:
+    """Represents a date and time with a time zone.
+    Args:
+        dateTime (str): The date and time in ISO 8601 format, e.g., "2025-06-24T14:00:00".
+        timeZone (str): The time zone, e.g., "America/Bogota".
+    """
+    dateTime: str  
+    timeZone: str  
+
+@dataclass
+class Location:
+    """Represents a location for an event.
+    Args:   
+        displayName (str): The name of the location.
+    """
+    displayName: str
+
+@dataclass
+class RecurrencePattern:
+    """Represents the recurrence pattern for an event.
+    Args:   
+    type (str): The type of recurrence, e.g., "daily", "weekly", "absoluteMonthly", etc.
+        interval (Optional[int]): The interval of recurrence, e.g., every 2 weeks.
+        month (Optional[int]): The month of recurrence, if applicable (1-12).
+        dayOfMonth (Optional[int]): The day of the month for monthly recurrences (1-31).
+        daysOfWeek (Optional[List[str]]): List of days of the week for weekly recurrences, e.g., ["monday", "wednesday"].
+        firstDayOfWeek (Optional[str]): The first day of the week, e.g., "sunday".
+        index (Optional[str]): The index of the occurrence in the month, e.g., "first", "second", "third", etc.
+    """
+    type: str
+    interval: int
+    month: int
+    dayOfMonth: int
+    firstDayOfWeek: str  
+    index: str 
+    daysOfWeek: List[str] = field(default_factory=list) 
+
+@dataclass
+class RecurrenceRange:
+    """Represents the range of recurrence for an event.
+    Args:
+        type (str): The type of recurrence range, e.g., "endDate", "noEnd", "numbered".
+        startDate (str): The start date of the recurrence in "YYYY-MM-DD" format.
+        endDate (Optional[str]): The end date of the recurrence, if type is "endDate".
+        numberOfOccurrences (Optional[int]): The number of occurrences, if type is "numbered".
+        recurrenceTimeZone (Optional[str]): The time zone for the recurrence.       
+    """
+    type: str 
+    startDate: str  
+    endDate: str 
+    numberOfOccurrences: int
+    recurrenceTimeZone: str
+
+@dataclass
+class PatternedRecurrence:
+    """
+    Represents a recurrence pattern for an event.
+    Args:
+        pattern (RecurrencePattern): The recurrence pattern.    
+        range (RecurrenceRange): The range of the recurrence.
+    """
+    pattern: RecurrencePattern
+    range: RecurrenceRange
+
+@dataclass
+class EventParams:
+    """Represents a calendar event. 
+    Args:
+        subject (str): The subject of the event.
+        start (DateTimeTimeZone): Start date and time of the event.
+        end (DateTimeTimeZone): End date and time of the event.
+        body (Optional[EventBody]): Body of the event.
+        location (Optional[Location]): Location of the event.
+        attendees (Optional[List[Attendee]]): List of attendees for the event.
+        isOnlineMeeting (Optional[bool]): Whether the event is an online meeting.
+        onlineMeetingProvider (Optional[str]): Provider for the online meeting, e.g., "teamsForBusiness".
+        recurrence (Optional[PatternedRecurrence]): Recurrence pattern for the event, if applicable.
+        sensitivity (Optional[str]): Sensitivity of the event, e.g., "normal", "personal", "private", "confidential".
+        importance (Optional[str]): Importance of the event, e.g., "low", "normal", "high".
+        showAs (Optional[str]): How the event should be shown, e.g., "free", "tentative", "busy".
+        isAllDay (Optional[bool]): Whether the event is an all-day event.
+        categories (Optional[List[str]]): List of categories for the event.
+        transactionId (Optional[str]): Transaction ID for the event, if applicable.
+        reminderMinutesBeforeStart (Optional[int]): Reminder time in minutes before the event starts.
+        responseRequested (Optional[bool]): Whether a response is requested from attendees.
+        allowNewTimeProposals (Optional[bool]): Whether to allow new time proposals from attendees.
+        hideAttendees (Optional[bool]): Whether to hide attendees from the event details.
+    """
+    subject: str
+    start: DateTimeTimeZone
+    end: DateTimeTimeZone
+    body: Optional[EventBody] = None
+    location: Optional[Location] = None
+    locations: Optional[List[Location]] = field(default_factory=list)
+    attendees: Optional[List[Attendee]] = field(default_factory=list)
+    isOnlineMeeting: Optional[bool] = None
+    onlineMeetingProvider: Optional[str] = None  
+    recurrence: Optional[PatternedRecurrence] = None  
+    sensitivity: Optional[str] = None  
+    importance: Optional[str] = None 
+    showAs: Optional[str] = None 
+    isAllDay: Optional[bool] = None
+    categories: Optional[List[str]] = field(default_factory=list)
+    transactionId: Optional[str] = None
+    reminderMinutesBeforeStart: Optional[int] = None
+    responseRequested: Optional[bool] = None
+    allowNewTimeProposals: Optional[bool] = None
+    hideAttendees: Optional[bool] = None
