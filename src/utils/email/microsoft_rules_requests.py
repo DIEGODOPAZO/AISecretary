@@ -1,8 +1,15 @@
 import json
 
 from ..param_types import *
-from ..helpers import *
+from ..helper_functions.helpers_email import *
 from ..token_manager import TokenManager
+from ..helper_functions.general_helpers import (
+    handle_microsoft_errors,
+    microsoft_get,
+    microsoft_post,
+    microsoft_patch,
+    microsoft_delete,
+)
 
 
 class MicrosoftRulesRequests:

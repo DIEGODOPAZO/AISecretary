@@ -2,16 +2,19 @@ import base64
 import json
 import os
 
-from ..helpers import (
-    handle_microsoft_errors,
-    microsoft_delete,
-    microsoft_get,
-    microsoft_patch,
-    microsoft_post,
+from ..helper_functions.helpers_email import (
     microsoft_simplify_message,
-    read_file_and_encode_base64,
     remove_duplicate_messages,
 )
+from ..helper_functions.general_helpers import (
+    handle_microsoft_errors,
+    microsoft_get,
+    microsoft_post,
+    microsoft_patch,
+    microsoft_delete,
+    read_file_and_encode_base64,
+)
+
 from ..param_types import *
 from ..token_manager import TokenManager
 

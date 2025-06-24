@@ -1,8 +1,8 @@
 import json
 from ..token_manager import TokenManager
-from ..helpers import handle_microsoft_errors
+from ..helper_functions.helpers_email import handle_microsoft_errors
 from ..param_types import EventParams, EventQuery
-from ..helpers import (
+from ..helper_functions.helpers_email import (
     microsoft_get,
     microsoft_post,
     microsoft_patch,

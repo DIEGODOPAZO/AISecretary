@@ -1,5 +1,5 @@
 import json
-from utils.helpers import build_search_params, build_filter_params
+from src.utils.helper_functions.helpers_email import build_search_params, build_filter_params
 from utils.param_types import *
 from utils.email.microsoft_folders_requests import MicrosoftFoldersRequests
 from utils.email.microsoft_messages_requests import MicrosoftMessagesRequests
