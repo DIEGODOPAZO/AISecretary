@@ -6,7 +6,7 @@ import json
 from dataclasses import asdict, is_dataclass
 from typing import Any, List
 
-from .param_types import DateFilter, EventParams
+from .param_types import DateFilter, EventParams, EventQuery
 
 
 def handle_microsoft_errors(func):
@@ -375,6 +375,50 @@ def event_params_to_dict(event_params: EventParams) -> dict:
         data["hideAttendees"] = event_params.hideAttendees
 
     return data
+
+def event_query_to_graph_params(event_query: EventQuery) -> dict:
+    params = {}
+
+    # Número de eventos → $top
+    if event_query.number_events:
+        params["$top"] = str(event_query.number_events)
+
+    filters = event_query.filters
+    filter_clauses = []
+
+    # Fechas para calendarView (no se incluyen en $filter)
+    if filters.date_filter:
+        if filters.date_filter.start_date:
+            params["startDateTime"] = filters.date_filter.start_date.isoformat()
+        if filters.date_filter.end_date:
+            params["endDateTime"] = filters.date_filter.end_date.isoformat()
+
+    # Filtros para $filter
+    if filters.importance:
+        filter_clauses.append(f"importance eq '{filters.importance}'")
+    if filters.is_all_day is not None:
+        filter_clauses.append(f"isAllDay eq {str(filters.is_all_day).lower()}")
+    if filters.has_attachments is not None:
+        filter_clauses.append(f"hasAttachments eq {str(filters.has_attachments).lower()}")
+    if filters.categories:
+        for cat in filters.categories:
+            filter_clauses.append(f"categories/any(c:c eq '{cat}')")
+    if filters.is_cancelled is not None:
+        filter_clauses.append(f"isCancelled eq {str(filters.is_cancelled).lower()}")
+
+    # Convertir búsquedas a filtros con contains()
+    search = event_query.search
+    if search:
+        if search.body:
+            filter_clauses.append(f"contains(body/content, '{search.body}')")
+        if search.subject:
+                filter_clauses.append(f"contains(subject, '{search.subject}')")
+
+    if filter_clauses:
+        params["$filter"] = " and ".join(filter_clauses)
+
+    return params
+
 
 def simplify_event(event: dict) -> dict:
     """Simplifies an event object to a more manageable format."""

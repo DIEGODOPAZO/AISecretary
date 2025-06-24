@@ -426,3 +426,50 @@ class EventParams:
     responseRequested: Optional[bool] = None
     allowNewTimeProposals: Optional[bool] = None
     hideAttendees: Optional[bool] = None
+
+
+@dataclass
+class EventSearchParams:
+    """Parameters for searching calendar events using filters.
+    Args:
+        search_params (Optional[SearchParams]): Search parameters for the event search.
+        location (Optional[str]): Location to filter events by.
+        body (Optional[str]): Body content to filter events by.
+    """
+    subject: Optional[str] = None
+    body: Optional[str] = None
+
+@dataclass
+class EventFilters:
+    """
+    All available filters for calendar events
+
+    Args:
+        date_filter (Optional[DateFilter]): Start/end datetime range.
+        importance (Optional[str]): 'low', 'normal', 'high'.
+        is_all_day (Optional[bool]): If True, only all-day events.
+        has_attachments (Optional[bool]): Filter by presence of attachments.
+        categories (Optional[List[str]]): Filter by category tags.
+        is_cancelled (Optional[bool]): Include only cancelled events.
+    """
+    date_filter: Optional[DateFilter] = None
+    importance: Optional[str] = None  # 'low' | 'normal' | 'high'
+    is_all_day: Optional[bool] = None
+    has_attachments: Optional[bool] = None
+    categories: Optional[List[str]] = None
+    is_cancelled: Optional[bool] = None
+
+@dataclass
+class EventQuery:
+    """
+    Complete event query parameters
+
+    Args:
+        filters (EventFilters): Filtering options for the event query.
+        search (Optional[EventSearchParams]): Search terms for events.
+        number_events (int): Number of events to retrieve. Default is 10.
+        calendar_id (Optional[str]): ID of the calendar to query. Default uses primary calendar.
+    """
+    filters: EventFilters = field(default_factory=EventFilters)
+    search: Optional[EventSearchParams] = None
+    number_events: int = 10

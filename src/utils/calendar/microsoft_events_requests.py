@@ -1,12 +1,13 @@
 import json
 from ..token_manager import TokenManager
 from ..helpers import handle_microsoft_errors
-from ..param_types import EventParams
+from ..param_types import EventParams, EventQuery
 from ..helpers import (
     microsoft_get,
     microsoft_post,
     microsoft_patch,
     microsoft_delete,
+    event_query_to_graph_params,
     simplify_event,
     event_params_to_dict,
 )
@@ -17,20 +18,61 @@ class MicrosoftEventsRequests:
         self.token_manager = token_manager
         self.url = "https://graph.microsoft.com/v1.0/me/calendar"
 
+    def _get_url(self, calendar_id: str = None):
+        if calendar_id is None:
+            return f"{self.url}/events"
+        else:
+            return f"{self.url}/{calendar_id}/events"
+        
     @handle_microsoft_errors
-    def get_events(self):
-        pass
+    def get_events(self, event_query: EventQuery, calendar_id: str = None):
+        params = event_query_to_graph_params(event_query)
+        url = self._get_url(calendar_id)
+
+        has_filter = "filter" in params
+        has_dates = "startDateTime" in params and "endDateTime" in params
+
+        response_filter = None 
+        response_dates = None
+
+        if has_filter:
+            filter_params = {k: v for k, v in params.items() if k not in ("search", "startDateTime", "endDateTime")}
+            status_code, response_filter = microsoft_get(
+                url, self.token_manager.get_token(), params=filter_params)
+            response_filter = [simplify_event(e) for e in response_filter.get("value", [])]
+        if has_dates:
+            date_params = {k: v for k, v in params.items() if k not in ("search", "filter")} 
+            if calendar_id is not None:
+                calendar_url = f"https://graph.microsoft.com/v1.0/me/{calendar_id}/calendarView"
+            else:
+                calendar_url = f"https://graph.microsoft.com/v1.0/me/calendarView"
+            status_code, response_dates = microsoft_get(
+                calendar_url, self.token_manager.get_token(), params=date_params)   
+            response_dates = [simplify_event(e) for e in response_dates.get("value", [])]
+            
+        if has_filter:
+            response_final = response_filter
+            if has_dates:
+                date_ids = {msg["id"] for msg in response_dates}
+                response_final = [
+                    msg for msg in response_final if msg["id"] in date_ids]
+        elif has_dates:
+            response_final = response_dates
+        else:
+            status_code, response = microsoft_get(url, self.token_manager.get_token(), params=params)
+            response_final = [simplify_event(e) for e in response.get("value", [])]
+        
+        return json.dumps(response_final, indent=2)
+        
+
 
     @handle_microsoft_errors
     def get_event(self):
         pass
 
     @handle_microsoft_errors
-    def create_event(self, event_params: EventParams, folder_id: str = None):
-        if folder_id is None:
-            url = f"{self.url}/events"
-        else:
-            url = f"{self.url}/{folder_id}/events"
+    def create_event(self, event_params: EventParams, calendar_id: str = None):
+        url = self._get_url(calendar_id)
 
         # Convert the EventParams dataclass to a dictionary
         data = event_params_to_dict(event_params)

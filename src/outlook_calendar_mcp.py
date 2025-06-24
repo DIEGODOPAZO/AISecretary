@@ -2,7 +2,7 @@ from typing import Optional
 from utils.token_manager import TokenManager
 from utils.auth_microsoft import get_access_token, get_token_cache_path
 from utils.calendar.microsoft_events_requests import MicrosoftEventsRequests
-from utils.param_types import EventParams
+from utils.param_types import EventParams, EventQuery
 from mcp.server.fastmcp import FastMCP
 
 # Create an MCP server
@@ -13,19 +13,40 @@ token_manager = TokenManager(
 )
 events_requests = MicrosoftEventsRequests(token_manager)
 
+
+@mcp.tool()
+def get_events_outlook_calendar(
+    event_search_params: EventQuery,
+    calendar_id: Optional[str] = None,
+) -> str:
+    """
+    Get events from the Outlook calendar.
+
+    Args:
+        event_search_params (EventSearchParams): The parameters to search for events.
+        calendar_id (str): The ID of the calendar to retrieve events from.
+
+    Returns:
+        str: A JSON string containing the list of events.
+    """
+    
+    return events_requests.get_events(event_search_params, calendar_id)
+
 @mcp.tool()
 def create_event_outlook_calendar(
     event_params: EventParams,
-    folder_id: Optional[str] = None,
+    calendar_id: Optional[str] = None,
 ) -> str:
     """
     Create an event in the Outlook calendar.
 
     Args:
-        folder_id (str): The ID of the calendar folder where the event will be created.
         event_params (EventParams): The parameters for the event to be created.
+        calendar_id (str): The ID of the calendar where the event will be created.
 
     Returns:
         str: A JSON string containing the response from the Microsoft Graph API.
     """
-    return events_requests.create_event(event_params, folder_id)
+    return events_requests.create_event(event_params, calendar_id)
+
+
