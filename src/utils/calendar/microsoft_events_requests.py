@@ -3,18 +3,19 @@ import json
 from ..token_manager import TokenManager
 from ..param_types import EventParams, EventQuery
 from ..helper_functions.general_helpers import (
+    download_attachments,
     handle_microsoft_errors,
     microsoft_get,
     microsoft_post,
     microsoft_patch,
     microsoft_delete,
-    read_file_and_encode_base64
-    
+    read_file_and_encode_base64,
 )
 from ..helper_functions.helpers_calendar import (
     event_query_to_graph_params,
     simplify_event,
-    event_params_to_dict
+    event_params_to_dict,
+    simplify_event_with_attachment_names,
 )
 
 
@@ -23,29 +24,33 @@ class MicrosoftEventsRequests:
         self.token_manager = token_manager
         self.url = "https://graph.microsoft.com/v1.0/me/calendar"
 
-    def _get_url(self, calendar_id: str = None):
+    def _get_url(self, calendar_id: str = None) -> str:
         if calendar_id is None:
             return f"{self.url}/events"
         else:
             return f"{self.url}/{calendar_id}/events"
 
-    def _add_attachment(self, url: str, response_id: str, attachments: List[str]) -> int:
+    def _add_attachment(
+        self, url: str, response_id: str, attachments: List[str]
+    ) -> int:
         for file in attachments:
             file_name, encoded_content = read_file_and_encode_base64(file)
             attachment = {
-            "@odata.type": "#microsoft.graph.fileAttachment",
-            "name": file_name,
-            "contentBytes": encoded_content,
-            "contentType": "application/pdf"
+                "@odata.type": "#microsoft.graph.fileAttachment",
+                "name": file_name,
+                "contentBytes": encoded_content,
+                "contentType": "application/pdf",
             }
 
             url_attachment = f"{url}/{response_id}/attachments"
 
             status_code, response_attachment = microsoft_post(
-                url_attachment, self.token_manager.get_token(), data=attachment)
+                url_attachment, self.token_manager.get_token(), data=attachment
+            )
             return status_code
+
     @handle_microsoft_errors
-    def get_events(self, event_query: EventQuery, calendar_id: str = None):
+    def get_events(self, event_query: EventQuery, calendar_id: str = None) -> str:
         params = event_query_to_graph_params(event_query)
         url = self._get_url(calendar_id)
 
@@ -102,11 +107,25 @@ class MicrosoftEventsRequests:
         return json.dumps(response_final, indent=2)
 
     @handle_microsoft_errors
-    def get_event(self):
-        pass
+    def get_event(self, event_id:str):
+        url = self._get_url()
+        url = f"{url}/{event_id}"
+        status_code, response = microsoft_get(
+            url, self.token_manager.get_token()
+        )
+        response = simplify_event_with_attachment_names(response, self.token_manager.get_token())
+        
+        attachments_url = f"{url}/attachments"
+        status_code, attachments_response = microsoft_get(
+            attachments_url, self.token_manager.get_token()
+        )
+        attachments = attachments_response.get("value", [])
+        
+        response["attachments"] = download_attachments(attachments)
+        return json.dumps(response, indent=2)
 
     @handle_microsoft_errors
-    def create_event(self, event_params: EventParams, calendar_id: str = None):
+    def create_event(self, event_params: EventParams, calendar_id: str = None) -> str:
         url = self._get_url(calendar_id)
 
         data = event_params_to_dict(event_params)
@@ -116,17 +135,17 @@ class MicrosoftEventsRequests:
         response = simplify_event(response)
 
         response_id = response.get("id", "")
-        
+
         if event_params.attachments:
-            status_code = self._add_attachment(url, response_id, event_params.attachments)
+            status_code = self._add_attachment(
+                url, response_id, event_params.attachments
+            )
             if status_code != 201:
-                return json.dumps(
-                    {"error": "Failed to add attachments"}, indent=2
-                )
+                return json.dumps({"error": "Failed to add attachments"}, indent=2)
         return json.dumps(response, indent=2)
 
     @handle_microsoft_errors
-    def update_event(self, event_id:str, event_params: EventParams):
+    def update_event(self, event_id: str, event_params: EventParams) -> str:
         url = self._get_url()
 
         data = event_params_to_dict(event_params)
@@ -138,14 +157,27 @@ class MicrosoftEventsRequests:
         response_id = response.get("id", "")
 
         if event_params.attachments:
-            status_code = self._add_attachment(url, response_id, event_params.attachments)
+            status_code = self._add_attachment(
+                url, response_id, event_params.attachments
+            )
             if status_code != 201:
-                return json.dumps(
-                    {"error": "Failed to add attachments"}, indent=2
-                )
+                return json.dumps({"error": "Failed to add attachments"}, indent=2)
         return json.dumps(response, indent=2)
-        
 
     @handle_microsoft_errors
-    def delete_event(self):
+    def delete_event_attachment(self, event_id: str, attachment_id: str) -> str:
+        url = self._get_url()
+
+        status_code, response = microsoft_delete(
+            f"{url}/{event_id}/attachments/{attachment_id}",
+            self.token_manager.get_token(),
+        )
+
+        if status_code == 204:
+            return json.dumps({"message": "Attachment deleted successfully"}, indent=2)
+        else:
+            return json.dumps({"error": "Failed to delete attachment"}, indent=2)
+
+    @handle_microsoft_errors
+    def delete_event(self) -> str:
         pass

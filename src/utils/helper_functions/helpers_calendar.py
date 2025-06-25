@@ -1,3 +1,4 @@
+from  .general_helpers import microsoft_get
 from ..param_types import EventParams, EventQuery
 
 
@@ -149,3 +150,31 @@ def simplify_event(event: dict) -> dict:
         "start": event.get("start", {}).get("dateTime"),
         "end": event.get("end", {}).get("dateTime")
     }
+
+
+def simplify_event_with_attachment_names(event: dict, token: str) -> dict:
+    simplified_event = {
+        "id": event.get("id"),
+        "subject": event.get("subject"),
+        "start": event.get("start", {}).get("dateTime"),
+        "end": event.get("end", {}).get("dateTime"),
+        "organizer": event.get("organizer", {}).get("emailAddress", {}).get("address"),
+        "attendees": [
+            a["emailAddress"]["address"] for a in event.get("attendees", [])
+        ],
+        "web_link": event.get("webLink"),
+        "location": event.get("location", {}).get("displayName"),
+        "html_description": event.get("body", {}).get("content"),
+        "attachment_names": []
+    }
+
+    if event.get("hasAttachments"):
+        event_id = event["id"]
+        url = f"https://graph.microsoft.com/v1.0/me/events/{event_id}/attachments"
+       
+        status_code, response = microsoft_get(url, token)
+        if status_code == 200:
+            for attachment in response.get("value", []):
+                simplified_event["attachment_names"].append(attachment.get("name"))
+
+    return simplified_event

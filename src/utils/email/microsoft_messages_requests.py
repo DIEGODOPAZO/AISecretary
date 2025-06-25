@@ -7,6 +7,7 @@ from ..helper_functions.helpers_email import (
     remove_duplicate_messages,
 )
 from ..helper_functions.general_helpers import (
+    download_attachments,
     handle_microsoft_errors,
     microsoft_get,
     microsoft_post,
@@ -96,27 +97,7 @@ class MicrosoftMessagesRequests:
             attachments_url, self.token_manager.get_token()
         )
         attachments = att_data.get("value", [])
-        download_dir = os.path.join(os.path.expanduser("~"), "Downloads", "attachments")
-        os.makedirs(download_dir, exist_ok=True)
-        downloaded_attachments = []
-        for att in attachments:
-            if att.get("@odata.type") == "#microsoft.graph.fileAttachment":
-                name = att.get("name")
-                content_type = att.get("contentType")
-                content_bytes = att.get("contentBytes")
-                id = att.get("id")
-                if name and content_bytes:
-                    file_path = os.path.join(download_dir, name)
-                    with open(file_path, "wb") as f:
-                        f.write(base64.b64decode(content_bytes))
-                    downloaded_attachments.append(
-                        {
-                            "name": name,
-                            "contentType": content_type,
-                            "path": file_path,
-                            "attachment_id": id,
-                        }
-                    )
+        downloaded_attachments = download_attachments(attachments)
         return json.dumps(
             microsoft_simplify_message(
                 msg_data,

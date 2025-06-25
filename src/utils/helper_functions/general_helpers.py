@@ -76,3 +76,28 @@ def read_file_and_encode_base64(file_path: str) -> tuple[str, str]:
         encoded_content = base64.b64encode(file_content).decode("utf-8")
 
     return filename, encoded_content
+
+def download_attachments(attachments: list) -> list:
+    """Downloads attachments from a list of attachments."""
+    download_dir = os.path.join(os.path.expanduser("~"), "Downloads", "attachments")
+    os.makedirs(download_dir, exist_ok=True)
+    downloaded_attachments = []
+    for att in attachments:
+        if att.get("@odata.type") == "#microsoft.graph.fileAttachment":
+            name = att.get("name")
+            content_type = att.get("contentType")
+            content_bytes = att.get("contentBytes")
+            id = att.get("id")
+            if name and content_bytes:
+                file_path = os.path.join(download_dir, name)
+                with open(file_path, "wb") as f:
+                    f.write(base64.b64decode(content_bytes))
+                downloaded_attachments.append(
+                    {
+                        "name": name,
+                        "contentType": content_type,
+                        "path": file_path,
+                        "attachment_id": id,
+                    }
+                )
+    return downloaded_attachments

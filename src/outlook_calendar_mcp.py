@@ -33,6 +33,19 @@ def get_events_outlook_calendar(
     return events_requests.get_events(event_search_params, calendar_id)
 
 @mcp.tool()
+def get_event_full_information(event_id: str) -> str:
+    """
+    Get full information about a specific event in the Outlook calendar.
+
+    Args:
+        event_id (str): The ID of the event to retrieve information for.
+
+    Returns:
+        str: A JSON string containing the full information of the event.
+    """
+    return events_requests.get_event(event_id)
+
+@mcp.tool()
 def create_event_outlook_calendar(
     event_params: EventParams,
     calendar_id: Optional[str] = None,
