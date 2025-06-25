@@ -405,6 +405,7 @@ class EventParams:
         responseRequested (Optional[bool]): Whether a response is requested from attendees.
         allowNewTimeProposals (Optional[bool]): Whether to allow new time proposals from attendees.
         hideAttendees (Optional[bool]): Whether to hide attendees from the event details.
+        attachments (Optional[List[str]]): List of attachments files paths for the event.
     """
     subject: str
     start: DateTimeTimeZone
@@ -426,6 +427,7 @@ class EventParams:
     responseRequested: Optional[bool] = None
     allowNewTimeProposals: Optional[bool] = None
     hideAttendees: Optional[bool] = None
+    attachments: Optional[List[str]] = field(default_factory=list)
 
 
 @dataclass

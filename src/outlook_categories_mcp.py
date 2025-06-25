@@ -2,7 +2,7 @@ from utils.categories.microsoft_categories_requests import MicrosoftCategoriesRe
 from utils.param_types import *
 from utils.token_manager import TokenManager
 from utils.auth_microsoft import get_access_token, get_token_cache_path
-from dotenv import load_dotenv
+
 
 # server.py
 from mcp.server.fastmcp import FastMCP

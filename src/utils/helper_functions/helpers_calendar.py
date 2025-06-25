@@ -1,4 +1,4 @@
-from src.utils.param_types import EventParams, EventQuery
+from ..param_types import EventParams, EventQuery
 
 
 def event_params_to_dict(event_params: EventParams) -> dict:

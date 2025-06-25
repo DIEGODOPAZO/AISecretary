@@ -38,10 +38,10 @@ def create_event_outlook_calendar(
     calendar_id: Optional[str] = None,
 ) -> str:
     """
-    Create an event in the Outlook calendar.
+    Create an event in the Outlook calendar, it also can put file attachments on the event.
 
     Args:
-        event_params (EventParams): The parameters for the event to be created.
+        event_params (EventParams): The parameters for the event to be created. 
         calendar_id (str): The ID of the calendar where the event will be created.
 
     Returns:
@@ -49,4 +49,19 @@ def create_event_outlook_calendar(
     """
     return events_requests.create_event(event_params, calendar_id)
 
+@mcp.tool()
+def update_event_outlook_calendar(
+    event_id: str,
+    event_params: EventParams
+) -> str:
+    """
+    Update an event in the Outlook calendar, can also uptade its attachents.
 
+    Args:
+        event_params (EventParams): The parameters for the event to be updated.
+        calendar_id (str): The ID of the calendar where the event is located.
+
+    Returns:
+        str: A JSON string containing the response from the Microsoft Graph API.
+    """
+    return events_requests.update_event(event_id, event_params)
