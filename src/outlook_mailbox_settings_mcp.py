@@ -1,7 +1,7 @@
 from utils.token_manager import TokenManager
 from utils.auth_microsoft import get_access_token, get_token_cache_path
 from mcp.server.fastmcp import FastMCP
-from utils.mailboxSettings.microsoft_mailbox_settings import MicrosoftMailboxSettings
+from utils.mailbox_settings.microsoft_mailbox_settings import MicrosoftMailboxSettings
 from utils.param_types import MailboxSettingsParams
 # Create an MCP server
 mcp = FastMCP("AISecretary-Outlook-MailboxSettings", dependencies=["mcp[cli]", "msal"])

@@ -531,8 +531,8 @@ class AutomaticRepliesSetting:
         scheduledStartDateTime (DateTimeTimeZone): Start date and time for scheduled automatic replies
         scheduledEndDateTime (DateTimeTimeZone): End date and time for scheduled automatic replies
     """
-    status: str  # "disabled", "alwaysEnabled", "scheduled"
-    externalAudience: str  # "none", "contactsOnly", "all"
+    status: str 
+    externalAudience: str  
     internalReplyMessage: str
     externalReplyMessage: str
     scheduledStartDateTime: DateTimeTimeZone

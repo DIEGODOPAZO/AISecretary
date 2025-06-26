@@ -1,8 +1,8 @@
 from typing import Optional
-from utils.calendar.microsoft_calendar_groups_requests import MicrosoftCalendarGroupsRequests
+from utils.calendar_outlook.microsoft_calendar_groups_requests import MicrosoftCalendarGroupsRequests
 from utils.token_manager import TokenManager
 from utils.auth_microsoft import get_access_token, get_token_cache_path
-from utils.calendar.microsoft_events_requests import MicrosoftEventsRequests
+from utils.calendar_outlook.microsoft_events_requests import MicrosoftEventsRequests
 from utils.param_types import EventParams, EventQuery, CalendarGroupParams
 from mcp.server.fastmcp import FastMCP
 
