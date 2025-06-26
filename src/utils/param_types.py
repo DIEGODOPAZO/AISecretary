@@ -556,3 +556,40 @@ class MailboxSettingsParams:
     workingHours: Optional[WorkingHours] = None
     automaticRepliesSetting: Optional[AutomaticRepliesSetting] = None
     delegateMeetingMessageDeliveryOptions: Optional[str] = None 
+
+@dataclass
+class EventResponseParams:
+    """Parameters for accepting a calendar event.
+    Args:
+        event_id (str): ID of the event to accept.
+        send_response (bool): If True, sends a response to the organizer.
+        comment (Optional[str]): Optional comment to include in the response.
+    """
+    send_response: bool = True
+    comment: Optional[str] = None
+
+@dataclass
+class ProposedNewTime:
+    """Represents a proposed new time for an event.
+    Args:
+        start (DateTimeTimeZone): Proposed start date and time.
+        end (DateTimeTimeZone): Proposed end date and time.
+    """
+    start: DateTimeTimeZone
+    end: DateTimeTimeZone
+
+@dataclass
+class EventChangesParams: 
+    """Parameters for declining a calendar event.
+    Args:
+        event_id (str): ID of the event to decline.
+        send_response (bool): If True, sends a response to the organizer.
+        comment (Optional[str]): Optional comment to include in the response.
+    """
+    event_response_params: Optional[EventResponseParams]
+    proposed_new_time: Optional[ProposedNewTime] = None
+
+@dataclass
+class EventCancelParams:
+    comment: Optional[str] = None
+    meeting_cancelation_message: Optional[DraftEmailData] = None

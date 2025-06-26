@@ -1,7 +1,7 @@
 from typing import List
 import json
 from ..token_manager import TokenManager
-from ..param_types import EventParams, EventQuery
+from ..param_types import EventParams, EventQuery, EventResponseParams
 from ..helper_functions.general_helpers import (
     download_attachments,
     handle_microsoft_errors,
@@ -23,6 +23,7 @@ class MicrosoftEventsRequests:
     def __init__(self, token_manager: TokenManager):
         self.token_manager = token_manager
         self.url = "https://graph.microsoft.com/v1.0/me/calendar"
+        self.event_response_url = "https://graph.microsoft.com/v1.0/me/events"
 
     def _get_url(self, calendar_id: str = None) -> str:
         if calendar_id is None:
@@ -190,3 +191,17 @@ class MicrosoftEventsRequests:
             return json.dumps({"message": "Event deleted successfully"}, indent=2)
         else:
             return json.dumps({"error": "Failed to delete event"}, indent=2)
+
+    @handle_microsoft_errors
+    def accept_event_invitation(self, event_id: str, event_response_params: EventResponseParams) -> str:
+        url = self._get_url()
+
+        data = {
+            "comment": event_response_params.comment,
+            "sendResponse": event_response_params.send_response
+        }
+        status_code, response = microsoft_post(f"{self.event_response_url}/{event_id}/accept", self.token_manager.get_token(), data=data)
+        if status_code == 202:
+            return json.dumps({"message": "Event invitation accepted"}, indent=2)
+        else:
+            return json.dumps({"error": "Failed to accept event invitation"}, indent=2)
