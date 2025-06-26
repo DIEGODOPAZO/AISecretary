@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 import json
 from ..token_manager import TokenManager
 from ..param_types import EventChangesParams, EventParams, EventQuery, EventResponseParams
@@ -226,6 +226,20 @@ class MicrosoftEventsRequests:
         if status_code == 202:
             return json.dumps({"message": "Event invitation declined"}, indent=2)
         else:
-            return json.dumps({"error": "Failed to accept event invitation"}, indent=2)
+            return json.dumps({"error": "Failed to decline event invitation"}, indent=2)
 
     
+    @handle_microsoft_errors
+    def cancel_event(self, event_id:str, comment:Optional[str] = None) -> str:
+        data = {}
+
+
+        if comment:
+            data["comment"] = comment
+
+        status_code, response = microsoft_post(f"{self.event_response_url}/{event_id}/cancel", self.token_manager.get_token(), data=data)
+
+        if status_code == 202:
+            return json.dumps({"message": "Event canceled"}, indent=2)
+        else:
+            return json.dumps({"error": "Failed to cancel the even"}, indent=2)

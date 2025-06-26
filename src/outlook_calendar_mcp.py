@@ -150,6 +150,21 @@ def tentatively_accept_event_invitation(event_id: str, event_changes_params: Eve
         
     """
     return events_requests.tentatively_accept_event_invitation(event_id, event_changes_params)
+
+@mcp.tool()
+def cancel_event(event_id: str, comment: Optional[str]) -> str:
+    """
+    Cancels an event
+
+    Args:
+        event_id (str): The ID of the event to decline.
+        comment (Optional[str]): The comment to send to all the attendees to the event
+
+    Returns:
+        str: A JSON string containing the response from the Microsoft Graph API.
+    """
+    return events_requests.cancel_event(event_id, comment)
+
 @mcp.tool()
 def get_calendar_groups(calendar_group_params: CalendarGroupParams) -> str:
     """
@@ -159,7 +174,6 @@ def get_calendar_groups(calendar_group_params: CalendarGroupParams) -> str:
         str: A JSON string containing the list of calendar groups.
     """
     return calendar_groups.get_calendar_groups(calendar_group_params)
-
 
 @mcp.tool()
 def create_calendar_group(calendar_group_name: str) -> str:
