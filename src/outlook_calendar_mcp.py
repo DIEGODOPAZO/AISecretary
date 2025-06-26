@@ -1,8 +1,9 @@
 from typing import Optional
+from utils.calendar.microsoft_calendar_groups_requests import MicrosoftCalendarGroupsRequests
 from utils.token_manager import TokenManager
 from utils.auth_microsoft import get_access_token, get_token_cache_path
 from utils.calendar.microsoft_events_requests import MicrosoftEventsRequests
-from utils.param_types import EventParams, EventQuery
+from utils.param_types import EventParams, EventQuery, CalendarGroupParams
 from mcp.server.fastmcp import FastMCP
 
 # Create an MCP server
@@ -12,7 +13,7 @@ token_manager = TokenManager(
     get_token_cache_path(), get_access_token_func=get_access_token
 )
 events_requests = MicrosoftEventsRequests(token_manager)
-
+calendar_groups = MicrosoftCalendarGroupsRequests(token_manager)
 
 @mcp.tool()
 def get_events_outlook_calendar(
@@ -108,3 +109,14 @@ def delete_event_outlook_calendar(event_id: str) -> str:
         str: A JSON string containing the response from the Microsoft Graph API.
     """
     return events_requests.delete_event(event_id)
+
+
+@mcp.tool()
+def get_calendar_groups(calendar_group_params: CalendarGroupParams) -> str:
+    """
+    Get calendar groups from the Outlook calendar.
+
+    Returns:
+        str: A JSON string containing the list of calendar groups.
+    """
+    return calendar_groups.get_calendar_groups(calendar_group_params)

@@ -475,3 +475,13 @@ class EventQuery:
     filters: EventFilters = field(default_factory=EventFilters)
     search: Optional[EventSearchParams] = None
     number_events: int = 10
+
+@dataclass
+class CalendarGroupParams:
+    """Parameters for retrieving calendar groups.
+    Args:
+        top (Optional[int]): Number of calendar groups to retrieve. Default is 10.
+        filter_name (Optional[str]): Name to filter by calendar group name.
+    """
+    top: Optional[int] = 10
+    filter_name: Optional[str] = None
