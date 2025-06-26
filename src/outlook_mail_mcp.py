@@ -42,59 +42,9 @@ def search_emails_outlook(email_query: EmailQuery) -> str:
     Returns:
         str: A JSON string containing the emails and pagination information if available.
     """
-    has_search = bool(
-        email_query.search
-        and (email_query.search.keyword or email_query.search.subject)
-    )
-    has_filters = bool(
-        email_query.filters
-        and (
-            email_query.filters.date_filter
-            or email_query.filters.importance
-            or email_query.filters.sender
-            or email_query.filters.unread_only
-            or email_query.filters.has_attachments
-            or email_query.filters.categories
-        )
-    )
-
-    search_params = build_search_params(email_query.search)
-    filter_params = build_filter_params(email_query.filters)
-
-    if "$top" not in search_params:
-        search_params["$top"] = email_query.number_emails
-    if "$top" not in filter_params:
-        filter_params["$top"] = email_query.number_emails
-
-    # If both search and filter are provided, we need to handle them separately
-    if has_search and has_filters:
-        search_result = messages_requests.get_messages_from_folder_microsoft_api(
-            search_params, folder_id=email_query.folder_id
-        )
-        filter_result = messages_requests.get_messages_from_folder_microsoft_api(
-            filter_params, folder_id=email_query.folder_id
-        )
-
-        search_messages = json.loads(search_result).get("messages", [])
-        filter_messages = json.loads(filter_result).get("messages", [])
-
-        # Intersección por ID
-        search_ids = {msg["id"] for msg in search_messages}
-        filtered_ids = {msg["id"]: msg for msg in filter_messages}
-
-        intersected = [
-            filtered_ids[msg_id] for msg_id in search_ids if msg_id in filtered_ids
-        ]
-
-        return json.dumps({"messages": intersected}, indent=2)
-
-    # Solo search o solo filter
-    final_params = search_params if has_search else filter_params
-    if not final_params:
-        final_params = {"$top": email_query.number_emails}
 
     return messages_requests.get_messages_from_folder_microsoft_api(
-        final_params, folder_id=email_query.folder_id
+        email_query=email_query
     )
 
 

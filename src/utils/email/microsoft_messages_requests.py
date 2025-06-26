@@ -3,6 +3,8 @@ import json
 import os
 
 from ..helper_functions.helpers_email import (
+    build_filter_params,
+    build_search_params,
     microsoft_simplify_message,
     remove_duplicate_messages,
 )
@@ -27,40 +29,62 @@ class MicrosoftMessagesRequests:
 
     @handle_microsoft_errors
     def get_messages_from_folder_microsoft_api(
-        self, params: dict, folder_id: Optional[str] = None
-    ) -> dict:
-        """
-        Executes the actual API request to Microsoft Graph
+        self,
+        email_query: Optional[EmailQuery] = None,
+        params: Optional[dict] = None,
+        folder_id: Optional[str] = None
+    ) -> str:
+        
+        if params is not None:
+            return self._get_and_format_messages(params, folder_id)
 
-        Args:
-            params: Query parameters for the API call
-            folder_id: Optional folder ID to search within
+        if email_query is None:
+            raise json.dumps({"error": "You must provided search params"}, indent=2)
 
-        Returns:
-            JSON string with results
-        """
-        base_url = (
-            f"https://graph.microsoft.com/v1.0/me/mailFolders/{folder_id}/messages"
-            if folder_id
-            else self.base_url
+        has_search = bool(
+            email_query.search and (email_query.search.keyword or email_query.search.subject)
+        )
+        has_filters = bool(
+            email_query.filters and (
+                email_query.filters.date_filter
+                or email_query.filters.importance
+                or email_query.filters.sender
+                or email_query.filters.unread_only
+                or email_query.filters.has_attachments
+                or email_query.filters.categories
+            )
         )
 
-        (status_code, response) = microsoft_get(
-            base_url, self.token_manager.get_token(), params=params
-        )
+        search_params = build_search_params(email_query.search)
+        filter_params = build_filter_params(email_query.filters)
 
-        messages = response.get("value", [])
-        simplified_messages = [microsoft_simplify_message(msg) for msg in messages]
+        if "$top" not in search_params:
+            search_params["$top"] = email_query.number_emails
+        if "$top" not in filter_params:
+            filter_params["$top"] = email_query.number_emails
 
-        result = {"messages": simplified_messages}
-        if "@odata.nextLink" in response:
-            result["nextLink"] = response["@odata.nextLink"]
+        # If both search and filter are provided, we need to intersect the results
+        if has_search and has_filters:
+            search_result = self._get_and_format_messages(search_params, email_query.folder_id)
+            filter_result = self._get_and_format_messages(filter_params, email_query.folder_id)
 
-        unique_messages = remove_duplicate_messages(simplified_messages)
+            search_messages = json.loads(search_result).get("messages", [])
+            filter_messages = json.loads(filter_result).get("messages", [])
 
-        result = {"messages": unique_messages}
+            # Intersect the results based on message IDs
+            search_ids = {msg["id"] for msg in search_messages}
+            filtered_ids = {msg["id"]: msg for msg in filter_messages}
 
-        return json.dumps(result, indent=2)
+            intersected = [filtered_ids[msg_id] for msg_id in search_ids if msg_id in filtered_ids]
+            unique_messages = remove_duplicate_messages(intersected)
+            return json.dumps({"messages": unique_messages}, indent=2)
+
+        # Just search or filter
+        final_params = search_params if has_search else filter_params
+        if not final_params:
+            final_params = {"$top": email_query.number_emails}
+
+        return self._get_and_format_messages(final_params, email_query.folder_id)
 
     @handle_microsoft_errors
     def get_conversation_messages_microsoft_api(self, params: dict) -> str:
@@ -268,3 +292,21 @@ class MicrosoftMessagesRequests:
             url, self.token_manager.get_token(), data
         )
         return json.dumps(response, indent=2)
+
+    def _get_and_format_messages(self, params: dict, folder_id: Optional[str] = None) -> str:
+    
+        base_url = (
+            f"https://graph.microsoft.com/v1.0/me/mailFolders/{folder_id}/messages"
+            if folder_id else self.base_url
+        )
+
+        status_code, response = microsoft_get(base_url, self.token_manager.get_token(), params=params)
+        messages = response.get("value", [])
+        simplified_messages = [microsoft_simplify_message(msg) for msg in messages]
+        unique_messages = remove_duplicate_messages(simplified_messages)
+
+        result = {"messages": unique_messages}
+        if "@odata.nextLink" in response:
+            result["nextLink"] = response["@odata.nextLink"]
+        
+        return json.dumps(result, indent=2)
