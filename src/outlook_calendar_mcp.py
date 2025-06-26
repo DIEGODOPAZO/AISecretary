@@ -3,7 +3,7 @@ from utils.calendar_outlook.microsoft_calendar_groups_requests import MicrosoftC
 from utils.token_manager import TokenManager
 from utils.auth_microsoft import get_access_token, get_token_cache_path
 from utils.calendar_outlook.microsoft_events_requests import MicrosoftEventsRequests
-from utils.param_types import EventParams, EventQuery, CalendarGroupParams, EventResponseParams
+from utils.param_types import EventChangesParams, EventParams, EventQuery, CalendarGroupParams, EventResponseParams
 from mcp.server.fastmcp import FastMCP
 
 # Create an MCP server
@@ -111,7 +111,7 @@ def delete_event_outlook_calendar(event_id: str) -> str:
     return events_requests.delete_event(event_id)
 
 @mcp.tool()
-def accept_event(event_id: str, event_response_params: EventResponseParams) -> str:
+def accept_invitation_to_event(event_id: str, event_response_params: EventResponseParams) -> str:
     """
     Confirm your assistance to an event.
 
@@ -121,6 +121,20 @@ def accept_event(event_id: str, event_response_params: EventResponseParams) -> s
     """
 
     return events_requests.accept_event_invitation(event_id, event_response_params)
+
+@mcp.tool()
+def decline_invitation_to_event(event_id: str, event_changes_params: EventChangesParams) -> str:
+    """
+    Decline an invitation to an event.
+
+    Args:
+        event_id (str): The ID of the event to decline.
+        event_changes_params (EventChangesParams): The parameters for the response to the invitation.
+
+    Returns:
+        str: A JSON string containing the response from the Microsoft Graph API.
+    """
+    return events_requests.decline_event_invitation(event_id, event_changes_params)
 
 
 @mcp.tool()

@@ -1,7 +1,7 @@
 from typing import List
 import json
 from ..token_manager import TokenManager
-from ..param_types import EventParams, EventQuery, EventResponseParams
+from ..param_types import EventChangesParams, EventParams, EventQuery, EventResponseParams
 from ..helper_functions.general_helpers import (
     download_attachments,
     handle_microsoft_errors,
@@ -194,14 +194,42 @@ class MicrosoftEventsRequests:
 
     @handle_microsoft_errors
     def accept_event_invitation(self, event_id: str, event_response_params: EventResponseParams) -> str:
-        url = self._get_url()
-
         data = {
-            "comment": event_response_params.comment,
             "sendResponse": event_response_params.send_response
         }
+        if event_response_params.comment is not None:
+            data["comment"] = event_response_params.comment
         status_code, response = microsoft_post(f"{self.event_response_url}/{event_id}/accept", self.token_manager.get_token(), data=data)
         if status_code == 202:
             return json.dumps({"message": "Event invitation accepted"}, indent=2)
+        else:
+            return json.dumps({"error": "Failed to accept event invitation"}, indent=2)
+        
+    @handle_microsoft_errors
+    def decline_event_invitation(self, event_id: str, event_changes_params: EventChangesParams) -> str:
+        data = {
+        "sendResponse": event_changes_params.event_response_params.send_response
+        }
+
+        if event_changes_params.event_response_params.comment is not None:
+            data["comment"] = event_changes_params.event_response_params.comment
+
+        
+        if event_changes_params.proposed_new_time is not None:
+            data["proposedNewTime"] = {
+                "start": {
+                    "dateTime": event_changes_params.proposed_new_time.start.dateTime,
+                    "timeZone": event_changes_params.proposed_new_time.start.timeZone,
+                },
+                "end": {
+                    "dateTime": event_changes_params.proposed_new_time.end.dateTime,
+                    "timeZone": event_changes_params.proposed_new_time.end.timeZone,
+                },
+            }
+        
+        status_code, response = microsoft_post(f"{self.event_response_url}/{event_id}/decline", self.token_manager.get_token(), data=data)
+
+        if status_code == 202:
+            return json.dumps({"message": "Event invitation declined"}, indent=2)
         else:
             return json.dumps({"error": "Failed to accept event invitation"}, indent=2)
