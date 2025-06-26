@@ -120,3 +120,17 @@ def get_calendar_groups(calendar_group_params: CalendarGroupParams) -> str:
         str: A JSON string containing the list of calendar groups.
     """
     return calendar_groups.get_calendar_groups(calendar_group_params)
+
+
+@mcp.tool()
+def create_calendar_group(calendar_group_name: str) -> str:
+    """
+    Create a new calendar group in the Outlook calendar.
+
+    Args:
+        calendar_group_name (str): The name of the calendar group to be created.
+
+    Returns:
+        str: A JSON string containing the response from the Microsoft Graph API.
+    """
+    return calendar_groups.create_calendar_group(calendar_group_name)

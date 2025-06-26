@@ -4,7 +4,8 @@ from ..param_types import CalendarGroupParams
 from ..token_manager import TokenManager
 from ..helper_functions.general_helpers import (
     microsoft_get,
-    handle_microsoft_errors
+    handle_microsoft_errors,
+    microsoft_post
     )
 
 class MicrosoftCalendarGroupsRequests:
@@ -34,3 +35,25 @@ class MicrosoftCalendarGroupsRequests:
         )
         
         return json.dumps(response.get("value", []), indent=2)
+    
+    @handle_microsoft_errors
+    def create_calendar_group(self, calendar_group_name: str) -> str:
+        """
+        Creates a new calendar group in Microsoft Graph API.
+        
+        :param calendar_group_name: The name of the calendar group to be created.
+        :return: A JSON string containing the response from the API.
+        """
+        data = {
+            "name": calendar_group_name
+        }
+        
+        status_code, response = microsoft_post(
+            self.url, 
+            self.token_manage.get_token(), 
+            data=data
+        )
+        
+        return json.dumps(response, indent=2)
+    
+    
