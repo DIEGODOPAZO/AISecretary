@@ -136,7 +136,20 @@ def decline_invitation_to_event(event_id: str, event_changes_params: EventChange
     """
     return events_requests.decline_event_invitation(event_id, event_changes_params)
 
+@mcp.tool()
+def tentatively_accept_event_invitation(event_id: str, event_changes_params: EventChangesParams) -> str:
+    """
+    Accepts an invitation to an event and also sujest changes.
+    
+    Args:
+        event_id (str): The ID of the event to decline.
+        event_changes_params (EventChangesParams): The parameters for the response to the invitation.
 
+    Returns:
+        str: A JSON string containing the response from the Microsoft Graph API.
+        
+    """
+    return events_requests.tentatively_accept_event_invitation(event_id, event_changes_params)
 @mcp.tool()
 def get_calendar_groups(calendar_group_params: CalendarGroupParams) -> str:
     """

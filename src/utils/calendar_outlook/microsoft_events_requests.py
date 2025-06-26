@@ -12,6 +12,7 @@ from ..helper_functions.general_helpers import (
     read_file_and_encode_base64,
 )
 from ..helper_functions.helpers_calendar import (
+    construct_data_for_response_events,
     event_query_to_graph_params,
     simplify_event,
     event_params_to_dict,
@@ -207,25 +208,7 @@ class MicrosoftEventsRequests:
         
     @handle_microsoft_errors
     def decline_event_invitation(self, event_id: str, event_changes_params: EventChangesParams) -> str:
-        data = {
-        "sendResponse": event_changes_params.event_response_params.send_response
-        }
-
-        if event_changes_params.event_response_params.comment is not None:
-            data["comment"] = event_changes_params.event_response_params.comment
-
-        
-        if event_changes_params.proposed_new_time is not None:
-            data["proposedNewTime"] = {
-                "start": {
-                    "dateTime": event_changes_params.proposed_new_time.start.dateTime,
-                    "timeZone": event_changes_params.proposed_new_time.start.timeZone,
-                },
-                "end": {
-                    "dateTime": event_changes_params.proposed_new_time.end.dateTime,
-                    "timeZone": event_changes_params.proposed_new_time.end.timeZone,
-                },
-            }
+        data = construct_data_for_response_events(event_changes_params)
         
         status_code, response = microsoft_post(f"{self.event_response_url}/{event_id}/decline", self.token_manager.get_token(), data=data)
 
@@ -233,3 +216,16 @@ class MicrosoftEventsRequests:
             return json.dumps({"message": "Event invitation declined"}, indent=2)
         else:
             return json.dumps({"error": "Failed to accept event invitation"}, indent=2)
+
+    @handle_microsoft_errors
+    def tentatively_accept_event_invitation(self, event_id: str, event_changes_params: EventChangesParams):
+        data = construct_data_for_response_events(event_changes_params)
+
+        status_code, response = microsoft_post(f"{self.event_response_url}/{event_id}/tentativelyAccept", self.token_manager.get_token(), data=data)
+
+        if status_code == 202:
+            return json.dumps({"message": "Event invitation declined"}, indent=2)
+        else:
+            return json.dumps({"error": "Failed to accept event invitation"}, indent=2)
+
+    

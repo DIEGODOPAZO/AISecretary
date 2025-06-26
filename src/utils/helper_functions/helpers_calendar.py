@@ -1,5 +1,5 @@
 from  .general_helpers import microsoft_get
-from ..param_types import EventParams, EventQuery
+from ..param_types import EventChangesParams, EventParams, EventQuery
 
 
 def event_params_to_dict(event_params: EventParams) -> dict:
@@ -178,3 +178,26 @@ def simplify_event_with_attachment_names(event: dict, token: str) -> dict:
                 simplified_event["attachment_names"].append(attachment.get("name"))
 
     return simplified_event
+
+
+def construct_data_for_response_events(event_changes_params: EventChangesParams) -> dict:
+        data = {
+        "sendResponse": event_changes_params.event_response_params.send_response
+        }
+
+        if event_changes_params.event_response_params.comment is not None:
+            data["comment"] = event_changes_params.event_response_params.comment
+
+        
+        if event_changes_params.proposed_new_time is not None:
+            data["proposedNewTime"] = {
+                "start": {
+                    "dateTime": event_changes_params.proposed_new_time.start.dateTime,
+                    "timeZone": event_changes_params.proposed_new_time.start.timeZone,
+                },
+                "end": {
+                    "dateTime": event_changes_params.proposed_new_time.end.dateTime,
+                    "timeZone": event_changes_params.proposed_new_time.end.timeZone,
+                },
+            }
+        return data
