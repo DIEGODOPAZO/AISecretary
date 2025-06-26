@@ -134,3 +134,20 @@ def create_calendar_group(calendar_group_name: str) -> str:
         str: A JSON string containing the response from the Microsoft Graph API.
     """
     return calendar_groups.create_calendar_group(calendar_group_name)
+
+@mcp.tool()
+def update_calendar_group(
+    calendar_group_id: str,
+    calendar_group_name: str
+) -> str:
+    """
+    Update an existing calendar group in the Outlook calendar.
+
+    Args:
+        calendar_group_id (str): The ID of the calendar group to be updated.
+        calendar_group_name (str): The new name for the calendar group.
+
+    Returns:
+        str: A JSON string containing the response from the Microsoft Graph API.
+    """
+    return calendar_groups.update_calendar_group(calendar_group_id, calendar_group_name)

@@ -5,7 +5,9 @@ from ..token_manager import TokenManager
 from ..helper_functions.general_helpers import (
     microsoft_get,
     handle_microsoft_errors,
-    microsoft_post
+    microsoft_post,
+    microsoft_patch,
+    microsoft_delete
     )
 
 class MicrosoftCalendarGroupsRequests:
@@ -56,4 +58,25 @@ class MicrosoftCalendarGroupsRequests:
         
         return json.dumps(response, indent=2)
     
+    @handle_microsoft_errors
+    def update_calendar_group(self, calendar_group_id: str, calendar_group_name: str) -> str:
+        """
+        Updates an existing calendar group in Microsoft Graph API.
+        
+        :param calendar_group_id: The ID of the calendar group to be updated.
+        :param calendar_group_name: The new name for the calendar group.
+        :return: A JSON string containing the response from the API.
+        """
+        url = f"{self.url}/{calendar_group_id}"
+        data = {
+            "name": calendar_group_name
+        }
+        
+        status_code, response = microsoft_patch(
+            url, 
+            self.token_manage.get_token(), 
+            data=data
+        )
+        
+        return json.dumps(response, indent=2)
     
