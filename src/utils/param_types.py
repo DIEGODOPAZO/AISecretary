@@ -485,3 +485,74 @@ class CalendarGroupParams:
     """
     top: Optional[int] = 10
     filter_name: Optional[str] = None
+
+
+@dataclass
+class TimeZoneSettings:
+    """Represents time zone settings for mailbox configuration
+    
+    Args:
+        name (str): Name of the time zone (e.g. "America/Bogota")
+    """
+    name: str
+
+@dataclass
+class LanguageSettings:
+    """Represents language settings for mailbox configuration
+    Args
+        locale (str): Locale identifier (e.g. "es-CO")
+        displayName (str): Display name of the language (e.g. "Español (Colombia)")
+    """
+    locale: str
+    displayName: str
+
+@dataclass
+class WorkingHours:
+    """Represents working hours configuration for mailbox settings
+    Args:
+        daysOfWeek (List[str]): List of days of the week when the user is available (e.g. ["monday", "tuesday", ...])
+        startTime (str): Start time of the working hours in "HH:mm:ss.fffffff" format
+        endTime (str): End time of the working hours in "HH:mm:ss.fffffff" format
+        timeZone (TimeZoneSettings): Time zone settings for the working hours
+    """
+    daysOfWeek: List[str] 
+    startTime: str  
+    endTime: str    
+    timeZone: TimeZoneSettings
+
+@dataclass
+class AutomaticRepliesSetting:
+    """Represents automatic replies settings for mailbox configuration
+    Args:   
+        status (str): Status of automatic replies ("disabled", "alwaysEnabled", "scheduled")
+        externalAudience (str): Audience for external replies ("none", "contactsOnly", "all")
+        internalReplyMessage (str): Message for internal automatic replies
+        externalReplyMessage (str): Message for external automatic replies
+        scheduledStartDateTime (DateTimeTimeZone): Start date and time for scheduled automatic replies
+        scheduledEndDateTime (DateTimeTimeZone): End date and time for scheduled automatic replies
+    """
+    status: str  # "disabled", "alwaysEnabled", "scheduled"
+    externalAudience: str  # "none", "contactsOnly", "all"
+    internalReplyMessage: str
+    externalReplyMessage: str
+    scheduledStartDateTime: DateTimeTimeZone
+    scheduledEndDateTime: DateTimeTimeZone
+
+@dataclass
+class MailboxSettingsParams:
+    """Parameters for updating mailbox settings in Microsoft Graph API
+    
+    Args:
+        timeZone (Optional[str]): Time zone identifier (e.g. "America/Bogota")
+        language (Optional[LanguageSettings]): Language configuration
+        dateFormat (Optional[str]): Date format (e.g. "dd/MM/yyyy")
+        timeFormat (Optional[str]): Time format (e.g. "HH:mm")
+        workingHours (Optional[WorkingHours]): Working hours configuration
+    """
+    timeZone: Optional[str] = None
+    language: Optional[LanguageSettings] = None
+    dateFormat: Optional[str] = None
+    timeFormat: Optional[str] = None
+    workingHours: Optional[WorkingHours] = None
+    automaticRepliesSetting: Optional[AutomaticRepliesSetting] = None
+    delegateMeetingMessageDeliveryOptions: Optional[str] = None 
