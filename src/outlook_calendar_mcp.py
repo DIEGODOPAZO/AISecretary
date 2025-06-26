@@ -151,3 +151,16 @@ def update_calendar_group(
         str: A JSON string containing the response from the Microsoft Graph API.
     """
     return calendar_groups.update_calendar_group(calendar_group_id, calendar_group_name)
+
+@mcp.tool()
+def delete_calendar_group(calendar_group_id: str) -> str:
+    """
+    Delete a calendar group in the Outlook calendar.
+
+    Args:
+        calendar_group_id (str): The ID of the calendar group to be deleted.
+
+    Returns:
+        str: A JSON string containing the response from the Microsoft Graph API.
+    """
+    return calendar_groups.delete_calendar_group(calendar_group_id)

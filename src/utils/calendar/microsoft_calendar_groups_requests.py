@@ -80,3 +80,18 @@ class MicrosoftCalendarGroupsRequests:
         
         return json.dumps(response, indent=2)
     
+    def delete_calendar_group(self, calendar_group_id: str) -> str:
+        """
+        Deletes a calendar group in Microsoft Graph API.
+        
+        :param calendar_group_id: The ID of the calendar group to be deleted.
+        :return: A JSON string containing the response from the API.
+        """
+        url = f"{self.url}/{calendar_group_id}"
+        
+        status_code, response = microsoft_delete(
+            url, 
+            self.token_manage.get_token()
+        )
+        
+        return json.dumps(response, indent=2) if response else json.dumps({"status": "deleted"}, indent=2)
