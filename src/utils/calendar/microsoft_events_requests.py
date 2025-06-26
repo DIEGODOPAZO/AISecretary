@@ -179,5 +179,14 @@ class MicrosoftEventsRequests:
             return json.dumps({"error": "Failed to delete attachment"}, indent=2)
 
     @handle_microsoft_errors
-    def delete_event(self) -> str:
-        pass
+    def delete_event(self, event_id: str) -> str:
+        url = self._get_url()
+
+        status_code, response = microsoft_delete(
+            f"{url}/{event_id}", self.token_manager.get_token()
+        )
+
+        if status_code == 204:
+            return json.dumps({"message": "Event deleted successfully"}, indent=2)
+        else:
+            return json.dumps({"error": "Failed to delete event"}, indent=2)

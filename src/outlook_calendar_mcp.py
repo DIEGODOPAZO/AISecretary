@@ -78,3 +78,33 @@ def update_event_outlook_calendar(
         str: A JSON string containing the response from the Microsoft Graph API.
     """
     return events_requests.update_event(event_id, event_params)
+
+@mcp.tool()
+def delete_attachment_from_event(
+    event_id: str,
+    attachment_id: str
+) -> str:
+    """
+    Delete an attachment from an event in the Outlook calendar.
+
+    Args:
+        event_id (str): The ID of the event from which the attachment will be deleted.
+        attachment_id (str): The ID of the attachment to be deleted.
+
+    Returns:
+        str: A JSON string containing the response from the Microsoft Graph API.
+    """
+    return events_requests.delete_event_attachment(event_id, attachment_id)
+
+@mcp.tool()
+def delete_event_outlook_calendar(event_id: str) -> str:
+    """
+    Delete an event from the Outlook calendar.
+
+    Args:
+        event_id (str): The ID of the event to be deleted.
+
+    Returns:
+        str: A JSON string containing the response from the Microsoft Graph API.
+    """
+    return events_requests.delete_event(event_id)
