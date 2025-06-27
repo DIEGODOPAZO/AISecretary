@@ -62,9 +62,22 @@ def add_delete_category_to_email(
     returns:
         str: A confirmation message or an error message.
     """
-    return categories_requests.add_delete_category_to_resource_microsoft_api(
+    return categories_requests.add_delete_category_to_email(
         handle_category_to_resource_params
     )
+
+@mcp.tool()
+def add_delete_category_to_event(
+    handle_category_to_resource_params: HandleCategoryToResourceParams,
+) -> str:
+    """
+    Adds or deletes a category to/from an event in the Outlook mailbox.
+    params:
+        handle_category_to_resource_params (HandleCategoryToResourceParams): The parameters for adding or deleting a category to/from an event.
+    returns:
+        str: A confirmation message or an error message.
+    """
+    return categories_requests.add_delete_category_to_event(handle_category_to_resource_params)
 
 @mcp.tool()
 def get_preset_colors() -> str:
