@@ -224,9 +224,9 @@ class MicrosoftEventsRequests:
         status_code, response = microsoft_post(f"{self.event_response_url}/{event_id}/tentativelyAccept", self.token_manager.get_token(), data=data)
 
         if status_code == 202:
-            return json.dumps({"message": "Event invitation declined"}, indent=2)
+            return json.dumps({"message": "Event invitation tentatively accepted"}, indent=2)
         else:
-            return json.dumps({"error": "Failed to decline event invitation"}, indent=2)
+            return json.dumps({"error": "Failed to tentatively accept event invitation"}, indent=2)
 
     
     @handle_microsoft_errors
