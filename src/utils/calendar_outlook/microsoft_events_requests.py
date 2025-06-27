@@ -21,6 +21,15 @@ from ..helper_functions.helpers_calendar import (
 
 
 class MicrosoftEventsRequests:
+    """Handles Microsoft Graph API requests for calendar events.
+
+    This class provides methods to interact with Microsoft Outlook calendar events, including creating, retrieving, updating, and deleting events, as well as managing event invitations and attachments.
+
+    Attributes:
+        token_manager (TokenManager): The token manager for authentication.
+        url (str): The base URL for calendar events.
+        event_response_url (str): The base URL for event responses.
+    """
     def __init__(self, token_manager: TokenManager):
         self.token_manager = token_manager
         self.url = "https://graph.microsoft.com/v1.0/me/calendar"
@@ -53,6 +62,15 @@ class MicrosoftEventsRequests:
 
     @handle_microsoft_errors
     def get_events(self, event_query: EventQuery, calendar_id: str = None) -> str:
+        """Retrieve events from a calendar based on query parameters.
+
+        Args:
+            event_query (EventQuery): The query parameters for filtering events.
+            calendar_id (str, optional): The ID of the calendar. Defaults to None.
+
+        Returns:
+            str: A JSON-formatted string containing the list of events.
+        """
         params = event_query_to_graph_params(event_query)
         url = self._get_url(calendar_id)
 
@@ -110,6 +128,14 @@ class MicrosoftEventsRequests:
 
     @handle_microsoft_errors
     def get_event(self, event_id:str):
+        """Retrieve a single event by its ID, including its attachments.
+
+        Args:
+            event_id (str): The ID of the event to retrieve.
+
+        Returns:
+            str: A JSON-formatted string containing the event details and attachments.
+        """
         url = self._get_url()
         url = f"{url}/{event_id}"
         status_code, response = microsoft_get(
@@ -128,6 +154,15 @@ class MicrosoftEventsRequests:
 
     @handle_microsoft_errors
     def create_event(self, event_params: EventParams, calendar_id: str = None) -> str:
+        """Create a new event in a calendar.
+
+        Args:
+            event_params (EventParams): The parameters for the event to create.
+            calendar_id (str, optional): The ID of the calendar. Defaults to None.
+
+        Returns:
+            str: A JSON-formatted string containing the created event or an error message.
+        """
         url = self._get_url(calendar_id)
 
         data = event_params_to_dict(event_params)
@@ -148,6 +183,15 @@ class MicrosoftEventsRequests:
 
     @handle_microsoft_errors
     def update_event(self, event_id: str, event_params: EventParams) -> str:
+        """Update an existing event.
+
+        Args:
+            event_id (str): The ID of the event to update.
+            event_params (EventParams): The updated event parameters.
+
+        Returns:
+            str: A JSON-formatted string containing the updated event or an error message.
+        """
         url = self._get_url()
 
         data = event_params_to_dict(event_params)
@@ -168,6 +212,15 @@ class MicrosoftEventsRequests:
 
     @handle_microsoft_errors
     def delete_event_attachment(self, event_id: str, attachment_id: str) -> str:
+        """Delete an attachment from an event.
+
+        Args:
+            event_id (str): The ID of the event.
+            attachment_id (str): The ID of the attachment to delete.
+
+        Returns:
+            str: A JSON-formatted string indicating success or failure.
+        """
         url = self._get_url()
 
         status_code, response = microsoft_delete(
@@ -182,6 +235,14 @@ class MicrosoftEventsRequests:
 
     @handle_microsoft_errors
     def delete_event(self, event_id: str) -> str:
+        """Delete an event by its ID.
+
+        Args:
+            event_id (str): The ID of the event to delete.
+
+        Returns:
+            str: A JSON-formatted string indicating success or failure.
+        """
         url = self._get_url()
 
         status_code, response = microsoft_delete(
@@ -195,6 +256,15 @@ class MicrosoftEventsRequests:
 
     @handle_microsoft_errors
     def accept_event_invitation(self, event_id: str, event_response_params: EventResponseParams) -> str:
+        """Accept an event invitation.
+
+        Args:
+            event_id (str): The ID of the event invitation to accept.
+            event_response_params (EventResponseParams): Parameters for the response, such as comments and whether to send a response.
+
+        Returns:
+            str: A JSON-formatted string indicating success or failure.
+        """
         data = {
             "sendResponse": event_response_params.send_response
         }
@@ -208,6 +278,15 @@ class MicrosoftEventsRequests:
         
     @handle_microsoft_errors
     def decline_event_invitation(self, event_id: str, event_changes_params: EventChangesParams) -> str:
+        """Decline an event invitation.
+
+        Args:
+            event_id (str): The ID of the event invitation to decline.
+            event_changes_params (EventChangesParams): Parameters for the response, such as comments.
+
+        Returns:
+            str: A JSON-formatted string indicating success or failure.
+        """
         data = construct_data_for_response_events(event_changes_params)
         
         status_code, response = microsoft_post(f"{self.event_response_url}/{event_id}/decline", self.token_manager.get_token(), data=data)
@@ -219,6 +298,15 @@ class MicrosoftEventsRequests:
 
     @handle_microsoft_errors
     def tentatively_accept_event_invitation(self, event_id: str, event_changes_params: EventChangesParams):
+        """Tentatively accept an event invitation.
+
+        Args:
+            event_id (str): The ID of the event invitation to tentatively accept.
+            event_changes_params (EventChangesParams): Parameters for the response, such as comments.
+
+        Returns:
+            str: A JSON-formatted string indicating success or failure.
+        """
         data = construct_data_for_response_events(event_changes_params)
 
         status_code, response = microsoft_post(f"{self.event_response_url}/{event_id}/tentativelyAccept", self.token_manager.get_token(), data=data)
@@ -231,6 +319,15 @@ class MicrosoftEventsRequests:
     
     @handle_microsoft_errors
     def cancel_event(self, event_id:str, comment:Optional[str] = None) -> str:
+        """Cancel an event.
+
+        Args:
+            event_id (str): The ID of the event to cancel.
+            comment (str, optional): An optional comment to include with the cancellation.
+
+        Returns:
+            str: A JSON-formatted string indicating success or failure.
+        """
         data = {}
 
 

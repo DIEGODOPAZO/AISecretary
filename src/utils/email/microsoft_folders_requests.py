@@ -13,12 +13,33 @@ from ..helper_functions.general_helpers import (
 
 
 class MicrosoftFoldersRequests:
+    """
+    Handles Microsoft Graph API requests related to mail folders for a user's mailbox.
+
+    This class provides methods to retrieve, create, edit, and delete mail folders using the Microsoft Graph API.
+
+    Attributes:
+        base_url (str): The base URL for the Microsoft Graph mail folders endpoint.
+        token_manager (TokenManager): The token manager for authentication.
+    """
     def __init__(self, token_manager: TokenManager):
+        """
+        Initializes MicrosoftFoldersRequests with a token manager.
+
+        Args:
+            token_manager (TokenManager): The token manager used to obtain access tokens for API requests.
+        """
         self.base_url = "https://graph.microsoft.com/v1.0/me/mailFolders"
         self.token_manager = token_manager
 
     @handle_microsoft_errors
     def get_folder_names(self) -> str:
+        """
+        Retrieves the names and details of all mail folders in the user's mailbox.
+
+        Returns:
+            str: A JSON-formatted string containing a list of folders with their IDs, display names, and item counts. Includes '@odata.nextLink' if pagination is required.
+        """
         (status_code, response) = microsoft_get(
             self.base_url, self.token_manager.get_token()
         )
@@ -43,6 +64,15 @@ class MicrosoftFoldersRequests:
 
     @handle_microsoft_errors
     def get_subfolders_microsoft_api(self, folder_id: str) -> str:
+        """
+        Retrieves the subfolders of a specified mail folder.
+
+        Args:
+            folder_id (str): The ID of the parent folder whose subfolders are to be retrieved.
+
+        Returns:
+            str: A JSON-formatted string containing a list of subfolders with their IDs, display names, and item counts. Includes '@odata.nextLink' if pagination is required.
+        """
         url = f"{self.base_url}/{folder_id}/childFolders"
         (status_code, response) = microsoft_get(url, self.token_manager.get_token())
         folders = response.get("value", [])
@@ -66,11 +96,15 @@ class MicrosoftFoldersRequests:
     @handle_microsoft_errors
     def create_edit_folder_microsoft_api(self, folder_params: FolderParams) -> str:
         """
-        Creates or edits a folder in the user's mailbox.
+        Creates a new mail folder or edits an existing one in the user's mailbox.
 
-        :param folder_name: The name of the folder to create or edit.
-        :param folder_id: The ID of the folder to edit (if it exists).
-        :return: JSON response indicating success or failure.
+        If 'parent_folder_id' is provided, creates a new child folder under the specified parent. If 'folder_id' is provided, edits the folder with that ID. Otherwise, creates a new folder at the root level.
+
+        Args:
+            folder_params (FolderParams): Parameters for the folder, including name, parent folder ID, and folder ID.
+
+        Returns:
+            str: A JSON-formatted string indicating the result of the operation or an error message if the folder name is missing.
         """
         url = self.base_url
         data = {
@@ -99,10 +133,13 @@ class MicrosoftFoldersRequests:
     @handle_microsoft_errors
     def delete_folder_microsoft_api(self, folder_id: str) -> str:
         """
-        Deletes a folder from the user's mailbox.
+        Deletes a mail folder from the user's mailbox.
 
-        :param folder_id: The ID of the folder to delete.
-        :return: JSON response indicating success or failure.
+        Args:
+            folder_id (str): The ID of the folder to delete.
+
+        Returns:
+            str: A JSON-formatted string indicating success or an error message if the deletion fails.
         """
         url = f"{self.base_url}/{folder_id}"
         (status_code, response) = microsoft_delete(url, self.token_manager.get_token())

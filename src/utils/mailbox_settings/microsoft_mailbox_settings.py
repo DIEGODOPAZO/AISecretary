@@ -7,7 +7,20 @@ from ..helper_functions.general_helpers import (
 )
 
 class MicrosoftMailboxSettings:
+    """
+    Handles operations related to Microsoft mailbox settings using Microsoft Graph API.
+
+    Attributes:
+        token_manager (TokenManager): The token manager for authentication.
+        url (str): The Microsoft Graph API endpoint for mailbox settings.
+    """
     def __init__(self, token_manager: TokenManager):
+        """
+        Initializes MicrosoftMailboxSettings with a token manager.
+
+        Args:
+            token_manager (TokenManager): The token manager instance for authentication.
+        """
         self.token_manager = token_manager
         self.url = "https://graph.microsoft.com/v1.0/me/mailboxSettings"
 
@@ -16,7 +29,8 @@ class MicrosoftMailboxSettings:
         """
         Retrieves the mailbox settings from Microsoft Graph API.
 
-        :return: A JSON string containing the mailbox settings.
+        Returns:
+            str: A JSON string containing the mailbox settings.
         """
         status_code, response = microsoft_get(
             self.url, self.token_manager.get_token()
@@ -29,8 +43,11 @@ class MicrosoftMailboxSettings:
         """
         Updates the mailbox settings in Microsoft Graph API.
 
-        :param settings: A dictionary containing the mailbox settings to be updated.
-        :return: A JSON string containing the response from the API.
+        Args:
+            mailbox_settings_params (MailboxSettingsParams): The parameters for updating mailbox settings.
+
+        Returns:
+            str: A JSON string containing the response from the API.
         """
         data = {}
 

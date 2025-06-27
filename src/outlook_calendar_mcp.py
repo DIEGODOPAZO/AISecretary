@@ -21,28 +21,27 @@ def get_events_outlook_calendar(
     calendar_id: Optional[str] = None,
 ) -> str:
     """
-    Get events from the Outlook calendar.
+    Gets events from the Outlook calendar.
 
     Args:
-        event_search_params (EventSearchParams): The parameters to search for events.
-        calendar_id (str): The ID of the calendar to retrieve events from.
+        event_search_params (EventQuery): Parameters to search for events.
+        calendar_id (Optional[str], optional): The ID of the calendar to retrieve events from. Defaults to None.
 
     Returns:
-        str: A JSON string containing the list of events.
+        str: JSON string containing the list of events.
     """
-    
     return events_requests.get_events(event_search_params, calendar_id)
 
 @mcp.tool()
 def get_event_full_information(event_id: str) -> str:
     """
-    Get full information about a specific event in the Outlook calendar.
+    Gets full information about a specific event in the Outlook calendar.
 
     Args:
         event_id (str): The ID of the event to retrieve information for.
 
     Returns:
-        str: A JSON string containing the full information of the event.
+        str: JSON string containing the full information of the event.
     """
     return events_requests.get_event(event_id)
 
@@ -52,14 +51,14 @@ def create_event_outlook_calendar(
     calendar_id: Optional[str] = None,
 ) -> str:
     """
-    Create an event in the Outlook calendar, it also can put file attachments on the event.
+    Creates an event in the Outlook calendar. Can also add file attachments to the event.
 
     Args:
-        event_params (EventParams): The parameters for the event to be created. 
-        calendar_id (str): The ID of the calendar where the event will be created.
+        event_params (EventParams): Parameters for the event to be created.
+        calendar_id (Optional[str], optional): The ID of the calendar where the event will be created. Defaults to None.
 
     Returns:
-        str: A JSON string containing the response from the Microsoft Graph API.
+        str: JSON string containing the response from the Microsoft Graph API.
     """
     return events_requests.create_event(event_params, calendar_id)
 
@@ -69,14 +68,14 @@ def update_event_outlook_calendar(
     event_params: EventParams
 ) -> str:
     """
-    Update an event in the Outlook calendar, can also uptade its attachents.
+    Updates an event in the Outlook calendar. Can also update its attachments.
 
     Args:
-        event_params (EventParams): The parameters for the event to be updated.
-        calendar_id (str): The ID of the calendar where the event is located.
+        event_id (str): The ID of the event to update.
+        event_params (EventParams): Parameters for the event to be updated.
 
     Returns:
-        str: A JSON string containing the response from the Microsoft Graph API.
+        str: JSON string containing the response from the Microsoft Graph API.
     """
     return events_requests.update_event(event_id, event_params)
 
@@ -86,105 +85,109 @@ def delete_attachment_from_event(
     attachment_id: str
 ) -> str:
     """
-    Delete an attachment from an event in the Outlook calendar.
+    Deletes an attachment from an event in the Outlook calendar.
 
     Args:
         event_id (str): The ID of the event from which the attachment will be deleted.
         attachment_id (str): The ID of the attachment to be deleted.
 
     Returns:
-        str: A JSON string containing the response from the Microsoft Graph API.
+        str: JSON string containing the response from the Microsoft Graph API.
     """
     return events_requests.delete_event_attachment(event_id, attachment_id)
 
 @mcp.tool()
 def delete_event_outlook_calendar(event_id: str) -> str:
     """
-    Delete an event from the Outlook calendar.
+    Deletes an event from the Outlook calendar.
 
     Args:
         event_id (str): The ID of the event to be deleted.
 
     Returns:
-        str: A JSON string containing the response from the Microsoft Graph API.
+        str: JSON string containing the response from the Microsoft Graph API.
     """
     return events_requests.delete_event(event_id)
 
 @mcp.tool()
 def accept_invitation_to_event(event_id: str, event_response_params: EventResponseParams) -> str:
     """
-    Confirm your assistance to an event.
+    Confirms attendance to an event.
 
     Args:
-        event_id (str): The ID of the event to attend
-        event_response_params (EventResponseParams): The parameters for the response to the invitation
-    """
+        event_id (str): The ID of the event to attend.
+        event_response_params (EventResponseParams): Parameters for the response to the invitation.
 
+    Returns:
+        str: JSON string containing the response from the Microsoft Graph API.
+    """
     return events_requests.accept_event_invitation(event_id, event_response_params)
 
 @mcp.tool()
 def decline_invitation_to_event(event_id: str, event_changes_params: EventChangesParams) -> str:
     """
-    Decline an invitation to an event.
+    Declines an invitation to an event.
 
     Args:
         event_id (str): The ID of the event to decline.
-        event_changes_params (EventChangesParams): The parameters for the response to the invitation.
+        event_changes_params (EventChangesParams): Parameters for the response to the invitation.
 
     Returns:
-        str: A JSON string containing the response from the Microsoft Graph API.
+        str: JSON string containing the response from the Microsoft Graph API.
     """
     return events_requests.decline_event_invitation(event_id, event_changes_params)
 
 @mcp.tool()
 def tentatively_accept_event_invitation(event_id: str, event_changes_params: EventChangesParams) -> str:
     """
-    Accepts an invitation to an event and also sujest changes.
-    
+    Tentatively accepts an invitation to an event and can suggest changes.
+
     Args:
-        event_id (str): The ID of the event to decline.
-        event_changes_params (EventChangesParams): The parameters for the response to the invitation.
+        event_id (str): The ID of the event to tentatively accept.
+        event_changes_params (EventChangesParams): Parameters for the response to the invitation.
 
     Returns:
-        str: A JSON string containing the response from the Microsoft Graph API.
-        
+        str: JSON string containing the response from the Microsoft Graph API.
     """
     return events_requests.tentatively_accept_event_invitation(event_id, event_changes_params)
 
 @mcp.tool()
 def cancel_event(event_id: str, comment: Optional[str]) -> str:
     """
-    Cancels an event
+    Cancels an event.
 
     Args:
-        event_id (str): The ID of the event to decline.
-        comment (Optional[str]): The comment to send to all the attendees to the event
+        event_id (str): The ID of the event to cancel.
+        comment (Optional[str]): Comment to send to all attendees of the event.
 
     Returns:
-        str: A JSON string containing the response from the Microsoft Graph API.
+        str: JSON string containing the response from the Microsoft Graph API.
     """
     return events_requests.cancel_event(event_id, comment)
 
 @mcp.tool()
 def get_calendar_groups(calendar_group_params: CalendarGroupParams) -> str:
     """
-    Get calendar groups from the Outlook calendar.
+    Gets calendar groups from the Outlook calendar.
+
+    Args:
+        calendar_group_params (CalendarGroupParams): Parameters to filter or search calendar groups.
 
     Returns:
-        str: A JSON string containing the list of calendar groups.
+        str: JSON string containing the list of calendar groups.
     """
     return calendar_groups.get_calendar_groups(calendar_group_params)
 
 @mcp.tool()
 def create_calendar_group(calendar_group_name: str) -> str:
     """
-    Create a new calendar group in the Outlook calendar.
+    Creates a new calendar group in the Outlook calendar.
 
     Args:
         calendar_group_name (str): The name of the calendar group to be created.
 
     Returns:
-        str: A JSON string containing the response from the Microsoft Graph API.
+        str: JSON string containing the response from the Microsoft Graph API.
     """
     return calendar_groups.create_calendar_group(calendar_group_name)
 
@@ -194,26 +197,26 @@ def update_calendar_group(
     calendar_group_name: str
 ) -> str:
     """
-    Update an existing calendar group in the Outlook calendar.
+    Updates an existing calendar group in the Outlook calendar.
 
     Args:
         calendar_group_id (str): The ID of the calendar group to be updated.
         calendar_group_name (str): The new name for the calendar group.
 
     Returns:
-        str: A JSON string containing the response from the Microsoft Graph API.
+        str: JSON string containing the response from the Microsoft Graph API.
     """
     return calendar_groups.update_calendar_group(calendar_group_id, calendar_group_name)
 
 @mcp.tool()
 def delete_calendar_group(calendar_group_id: str) -> str:
     """
-    Delete a calendar group in the Outlook calendar.
+    Deletes a calendar group in the Outlook calendar.
 
     Args:
         calendar_group_id (str): The ID of the calendar group to be deleted.
 
     Returns:
-        str: A JSON string containing the response from the Microsoft Graph API.
+        str: JSON string containing the response from the Microsoft Graph API.
     """
     return calendar_groups.delete_calendar_group(calendar_group_id)

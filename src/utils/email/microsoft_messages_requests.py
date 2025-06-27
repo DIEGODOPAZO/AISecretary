@@ -23,7 +23,20 @@ from ..token_manager import TokenManager
 
 
 class MicrosoftMessagesRequests:
+    """Handles Microsoft Graph API requests related to email messages.
+
+    This class provides methods to interact with Microsoft Outlook messages, including retrieving, sending, editing, deleting, and managing attachments for emails using the Microsoft Graph API.
+
+    Attributes:
+        base_url (str): The base URL for Microsoft Graph API message endpoints.
+        token_manager (TokenManager): The token manager for authentication.
+    """
     def __init__(self, token_manager: TokenManager):
+        """Initializes MicrosoftMessagesRequests with a token manager.
+
+        Args:
+            token_manager (TokenManager): The token manager for authentication.
+        """
         self.base_url = "https://graph.microsoft.com/v1.0/me/messages"
         self.token_manager = token_manager
 
@@ -34,6 +47,16 @@ class MicrosoftMessagesRequests:
         params: Optional[dict] = None,
         folder_id: Optional[str] = None
     ) -> str:
+        """Retrieves messages from a specified folder using search and filter parameters.
+
+        Args:
+            email_query (Optional[EmailQuery]): The email query object containing search and filter parameters.
+            params (Optional[dict]): Direct query parameters for the API call.
+            folder_id (Optional[str]): The ID of the folder to retrieve messages from.
+
+        Returns:
+            str: A JSON string containing the retrieved messages.
+        """
         
         if params is not None:
             return self._get_and_format_messages(params, folder_id)
@@ -88,6 +111,14 @@ class MicrosoftMessagesRequests:
 
     @handle_microsoft_errors
     def get_conversation_messages_microsoft_api(self, params: dict) -> str:
+        """Retrieves messages in a conversation based on provided parameters.
+
+        Args:
+            params (dict): Query parameters for the API call.
+
+        Returns:
+            str: A JSON string containing the conversation messages.
+        """
         (status_code, response) = microsoft_get(
             self.base_url, self.token_manager.get_token(), params=params
         )
@@ -102,7 +133,15 @@ class MicrosoftMessagesRequests:
     def mark_as_read_unread_microsoft_api(
         self, message_id: str, is_read: bool = True
     ) -> str:
+        """Marks a message as read or unread.
 
+        Args:
+            message_id (str): The ID of the message to update.
+            is_read (bool, optional): Whether to mark as read (True) or unread (False). Defaults to True.
+
+        Returns:
+            str: A JSON string containing the updated message.
+        """
         url = f"{self.base_url}/{message_id}"
         data = {"isRead": is_read}
         microsoft_patch(url, self.token_manager.get_token(), data)
@@ -111,6 +150,14 @@ class MicrosoftMessagesRequests:
 
     @handle_microsoft_errors
     def get_full_message_and_attachments(self, message_id: str) -> str:
+        """Retrieves a full message and its attachments.
+
+        Args:
+            message_id (str): The ID of the message to retrieve.
+
+        Returns:
+            str: A JSON string containing the message and its attachments.
+        """
         base_url = f"{self.base_url}/{message_id}"
 
         (status_code, msg_data) = microsoft_get(
@@ -134,6 +181,14 @@ class MicrosoftMessagesRequests:
 
     @handle_microsoft_errors
     def delete_message_microsoft_api(self, message_id: str) -> str:
+        """Deletes a message by its ID.
+
+        Args:
+            message_id (str): The ID of the message to delete.
+
+        Returns:
+            str: A JSON string indicating the result of the deletion.
+        """
         url = f"{self.base_url}/{message_id}"
 
         (status_code, response) = microsoft_delete(url, self.token_manager.get_token())
@@ -145,7 +200,14 @@ class MicrosoftMessagesRequests:
 
     @handle_microsoft_errors
     def create_edit_draft_microsoft_api(self, draft_email_data: DraftEmailData) -> str:
+        """Creates or edits a draft email message.
 
+        Args:
+            draft_email_data (DraftEmailData): The data for the draft email.
+
+        Returns:
+            str: A JSON string containing the created or updated draft message.
+        """
         if not draft_email_data.subject or not draft_email_data.body:
             return json.dumps({"error": "Subject and body are required."}, indent=2)
         url = self.base_url
@@ -189,7 +251,16 @@ class MicrosoftMessagesRequests:
     def add_attachment_to_draft_microsoft_api(
         self, draft_id: str, attachment_path: str, content_type: str
     ) -> str:
+        """Adds an attachment to a draft email.
 
+        Args:
+            draft_id (str): The ID of the draft email.
+            attachment_path (str): The file path of the attachment.
+            content_type (str): The MIME type of the attachment.
+
+        Returns:
+            str: A JSON string containing the attachment details.
+        """
         url = f"{self.base_url}/{draft_id}/attachments"
         try:
             attachment_name, attachment_content = read_file_and_encode_base64(
@@ -216,7 +287,14 @@ class MicrosoftMessagesRequests:
 
     @handle_microsoft_errors
     def send_draft_email_microsoft_api(self, draft_id: str) -> str:
+        """Sends a draft email message.
 
+        Args:
+            draft_id (str): The ID of the draft email to send.
+
+        Returns:
+            str: A JSON string indicating the result of the send operation.
+        """
         url = f"{self.base_url}/{draft_id}/send"
         (status_code, response) = microsoft_post(
             url, self.token_manager.get_token(), data={}
@@ -227,6 +305,15 @@ class MicrosoftMessagesRequests:
     def delete_attachment_from_draft_microsoft_api(
         self, draft_id: str, attachment_id: str
     ) -> str:
+        """Deletes an attachment from a draft email.
+
+        Args:
+            draft_id (str): The ID of the draft email.
+            attachment_id (str): The ID of the attachment to delete.
+
+        Returns:
+            str: A JSON string indicating the result of the deletion.
+        """
         url = f"{self.base_url}/{draft_id}/attachments/{attachment_id}"
         (status_code, response) = microsoft_delete(url, self.token_manager.get_token())
         if status_code != 204:
@@ -240,6 +327,14 @@ class MicrosoftMessagesRequests:
     def move_or_copy_email_microsoft_api(
         self, email_operation_params: EmailOperationParams
     ) -> str:
+        """Moves or copies an email to another folder.
+
+        Args:
+            email_operation_params (EmailOperationParams): Parameters for the move or copy operation.
+
+        Returns:
+            str: A JSON string containing the result of the operation.
+        """
         url = (
             f"{self.base_url}/{email_operation_params.email_id}/move"
             if email_operation_params.move
@@ -253,6 +348,14 @@ class MicrosoftMessagesRequests:
 
     @handle_microsoft_errors
     def reply_to_email_microsoft_api(self, email_reply_params: EmailReplyParams) -> str:
+        """Replies to an email message.
+
+        Args:
+            email_reply_params (EmailReplyParams): Parameters for the reply operation.
+
+        Returns:
+            str: A JSON string containing the reply draft message.
+        """
         url = (
             f"{self.base_url}/{email_reply_params.email_id}/createReplyAll"
             if email_reply_params.reply_all
@@ -268,6 +371,14 @@ class MicrosoftMessagesRequests:
     def forward_email_microsoft_api(
         self, email_forward_params: EmailForwardParams
     ) -> str:
+        """Forwards an email message to specified recipients.
+
+        Args:
+            email_forward_params (EmailForwardParams): Parameters for the forward operation.
+
+        Returns:
+            str: A JSON string containing the result of the forward operation.
+        """
         url = f"{self.base_url}/{email_forward_params.email_id}/forward"
         data = {
             "toRecipients": (

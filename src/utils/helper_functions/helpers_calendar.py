@@ -3,6 +3,14 @@ from ..param_types import EventChangesParams, EventParams, EventQuery
 
 
 def event_params_to_dict(event_params: EventParams) -> dict:
+    """Converts EventParams object to a dictionary suitable for Microsoft Graph API.
+
+    Args:
+        event_params (EventParams): The event parameters to convert.
+
+    Returns:
+        dict: A dictionary representation of the event parameters.
+    """
     data = {
         "subject": event_params.subject,
         "start": {
@@ -99,6 +107,14 @@ def event_params_to_dict(event_params: EventParams) -> dict:
     return data
 
 def event_query_to_graph_params(event_query: EventQuery) -> dict:
+    """Converts an EventQuery object to Microsoft Graph API query parameters.
+
+    Args:
+        event_query (EventQuery): The event query parameters.
+
+    Returns:
+        dict: Dictionary of query parameters for Microsoft Graph API.
+    """
     params = {}
 
     # Número de eventos → $top
@@ -143,7 +159,14 @@ def event_query_to_graph_params(event_query: EventQuery) -> dict:
 
 
 def simplify_event(event: dict) -> dict:
-    """Simplifies an event object to a more manageable format."""
+    """Simplifies an event object to a more manageable format.
+
+    Args:
+        event (dict): The event object from Microsoft Graph API.
+
+    Returns:
+        dict: A simplified event dictionary with selected fields.
+    """
     return {
         "id": event.get("id"),
         "subject": event.get("subject"),
@@ -153,6 +176,15 @@ def simplify_event(event: dict) -> dict:
 
 
 def simplify_event_with_attachment_names(event: dict, token: str) -> dict:
+    """Simplifies an event object and includes attachment names if present.
+
+    Args:
+        event (dict): The event object from Microsoft Graph API.
+        token (str): The authentication token for Microsoft Graph API.
+
+    Returns:
+        dict: A simplified event dictionary including attachment names.
+    """
     simplified_event = {
         "id": event.get("id"),
         "subject": event.get("subject"),
@@ -181,23 +213,31 @@ def simplify_event_with_attachment_names(event: dict, token: str) -> dict:
 
 
 def construct_data_for_response_events(event_changes_params: EventChangesParams) -> dict:
-        data = {
+    """Constructs the data dictionary for responding to an event (accept, decline, etc.).
+
+    Args:
+        event_changes_params (EventChangesParams): Parameters for the event response, including comments and proposed new time.
+
+    Returns:
+        dict: Data dictionary for the Microsoft Graph API event response.
+    """
+    data = {
         "sendResponse": event_changes_params.event_response_params.send_response
+    }
+
+    if event_changes_params.event_response_params.comment is not None:
+        data["comment"] = event_changes_params.event_response_params.comment
+
+    
+    if event_changes_params.proposed_new_time is not None:
+        data["proposedNewTime"] = {
+            "start": {
+                "dateTime": event_changes_params.proposed_new_time.start.dateTime,
+                "timeZone": event_changes_params.proposed_new_time.start.timeZone,
+            },
+            "end": {
+                "dateTime": event_changes_params.proposed_new_time.end.dateTime,
+                "timeZone": event_changes_params.proposed_new_time.end.timeZone,
+            },
         }
-
-        if event_changes_params.event_response_params.comment is not None:
-            data["comment"] = event_changes_params.event_response_params.comment
-
-        
-        if event_changes_params.proposed_new_time is not None:
-            data["proposedNewTime"] = {
-                "start": {
-                    "dateTime": event_changes_params.proposed_new_time.start.dateTime,
-                    "timeZone": event_changes_params.proposed_new_time.start.timeZone,
-                },
-                "end": {
-                    "dateTime": event_changes_params.proposed_new_time.end.dateTime,
-                    "timeZone": event_changes_params.proposed_new_time.end.timeZone,
-                },
-            }
-        return data
+    return data
