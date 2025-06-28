@@ -241,3 +241,18 @@ def construct_data_for_response_events(event_changes_params: EventChangesParams)
             },
         }
     return data
+
+
+def simplify_calendar(calendar: dict) -> dict:
+    """Simplifies a calendar object to a more manageable format.
+
+    Args:
+        calendar (dict): The calendar object from Microsoft Graph API.
+
+    Returns:
+        dict: A simplified calendar dictionary with selected fields.
+    """
+    return {
+        "id": calendar.get("id"),
+        "name": calendar.get("name")
+    }

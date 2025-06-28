@@ -1,6 +1,7 @@
 from dataclasses import asdict
 import json
 
+from ..helper_functions.helpers_calendar import simplify_calendar
 from ..param_types import CalendarUpdateParams, ScheduleParams
 from ..token_manager import TokenManager
 from ..helper_functions.general_helpers import (
@@ -59,8 +60,11 @@ class MicrosoftCalendarRequests:
                 for calendar in response.get("value", [])
                 if calendar.get("name") == name
             ]
-
-        return json.dumps(response.get("value", []), indent=2)
+        simplify_calendars = []
+        calendars = response.get("value", [])
+        for calendar in calendars:
+            simplify_calendars.append(simplify_calendar(calendar))
+        return json.dumps({"calendars: ": simplify_calendars}, indent=2)
 
     @handle_microsoft_errors
     def get_calendar(self, calendar_id: str) -> str:
