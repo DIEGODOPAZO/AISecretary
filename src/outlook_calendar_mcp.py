@@ -1,10 +1,19 @@
 from typing import Optional
 from utils.calendar_outlook.microsoft_calendar_requests import MicrosoftCalendarRequests
-from utils.calendar_outlook.microsoft_calendar_groups_requests import MicrosoftCalendarGroupsRequests
+from utils.calendar_outlook.microsoft_calendar_groups_requests import (
+    MicrosoftCalendarGroupsRequests,
+)
 from utils.token_manager import TokenManager
 from utils.auth_microsoft import get_access_token, get_token_cache_path
 from utils.calendar_outlook.microsoft_events_requests import MicrosoftEventsRequests
-from utils.param_types import EventChangesParams, EventParams, EventQuery, CalendarGroupParams, EventResponseParams
+from utils.param_types import (
+    CalendarUpdateParams,
+    EventChangesParams,
+    EventParams,
+    EventQuery,
+    CalendarGroupParams,
+    EventResponseParams,
+)
 from mcp.server.fastmcp import FastMCP
 
 # Create an MCP server
@@ -16,6 +25,7 @@ token_manager = TokenManager(
 events_requests = MicrosoftEventsRequests(token_manager)
 calendar_groups = MicrosoftCalendarGroupsRequests(token_manager)
 calendars = MicrosoftCalendarRequests(token_manager)
+
 
 @mcp.tool()
 def get_events_outlook_calendar(
@@ -34,6 +44,7 @@ def get_events_outlook_calendar(
     """
     return events_requests.get_events(event_search_params, calendar_id)
 
+
 @mcp.tool()
 def get_event_full_information(event_id: str) -> str:
     """
@@ -46,6 +57,7 @@ def get_event_full_information(event_id: str) -> str:
         str: JSON string containing the full information of the event.
     """
     return events_requests.get_event(event_id)
+
 
 @mcp.tool()
 def create_event_outlook_calendar(
@@ -64,11 +76,9 @@ def create_event_outlook_calendar(
     """
     return events_requests.create_event(event_params, calendar_id)
 
+
 @mcp.tool()
-def update_event_outlook_calendar(
-    event_id: str,
-    event_params: EventParams
-) -> str:
+def update_event_outlook_calendar(event_id: str, event_params: EventParams) -> str:
     """
     Updates an event in the Outlook calendar. Can also update its attachments.
 
@@ -81,11 +91,9 @@ def update_event_outlook_calendar(
     """
     return events_requests.update_event(event_id, event_params)
 
+
 @mcp.tool()
-def delete_attachment_from_event(
-    event_id: str,
-    attachment_id: str
-) -> str:
+def delete_attachment_from_event(event_id: str, attachment_id: str) -> str:
     """
     Deletes an attachment from an event in the Outlook calendar.
 
@@ -97,6 +105,7 @@ def delete_attachment_from_event(
         str: JSON string containing the response from the Microsoft Graph API.
     """
     return events_requests.delete_event_attachment(event_id, attachment_id)
+
 
 @mcp.tool()
 def delete_event_outlook_calendar(event_id: str) -> str:
@@ -111,8 +120,11 @@ def delete_event_outlook_calendar(event_id: str) -> str:
     """
     return events_requests.delete_event(event_id)
 
+
 @mcp.tool()
-def accept_invitation_to_event(event_id: str, event_response_params: EventResponseParams) -> str:
+def accept_invitation_to_event(
+    event_id: str, event_response_params: EventResponseParams
+) -> str:
     """
     Confirms attendance to an event.
 
@@ -125,8 +137,11 @@ def accept_invitation_to_event(event_id: str, event_response_params: EventRespon
     """
     return events_requests.accept_event_invitation(event_id, event_response_params)
 
+
 @mcp.tool()
-def decline_invitation_to_event(event_id: str, event_changes_params: EventChangesParams) -> str:
+def decline_invitation_to_event(
+    event_id: str, event_changes_params: EventChangesParams
+) -> str:
     """
     Declines an invitation to an event.
 
@@ -139,8 +154,11 @@ def decline_invitation_to_event(event_id: str, event_changes_params: EventChange
     """
     return events_requests.decline_event_invitation(event_id, event_changes_params)
 
+
 @mcp.tool()
-def tentatively_accept_event_invitation(event_id: str, event_changes_params: EventChangesParams) -> str:
+def tentatively_accept_event_invitation(
+    event_id: str, event_changes_params: EventChangesParams
+) -> str:
     """
     Tentatively accepts an invitation to an event and can suggest changes.
 
@@ -151,7 +169,10 @@ def tentatively_accept_event_invitation(event_id: str, event_changes_params: Eve
     Returns:
         str: JSON string containing the response from the Microsoft Graph API.
     """
-    return events_requests.tentatively_accept_event_invitation(event_id, event_changes_params)
+    return events_requests.tentatively_accept_event_invitation(
+        event_id, event_changes_params
+    )
+
 
 @mcp.tool()
 def cancel_event(event_id: str, comment: Optional[str]) -> str:
@@ -167,6 +188,7 @@ def cancel_event(event_id: str, comment: Optional[str]) -> str:
     """
     return events_requests.cancel_event(event_id, comment)
 
+
 @mcp.tool()
 def get_calendar_groups(calendar_group_params: CalendarGroupParams) -> str:
     """
@@ -179,6 +201,7 @@ def get_calendar_groups(calendar_group_params: CalendarGroupParams) -> str:
         str: JSON string containing the list of calendar groups.
     """
     return calendar_groups.get_calendar_groups(calendar_group_params)
+
 
 @mcp.tool()
 def create_calendar_group(calendar_group_name: str) -> str:
@@ -193,11 +216,9 @@ def create_calendar_group(calendar_group_name: str) -> str:
     """
     return calendar_groups.create_calendar_group(calendar_group_name)
 
+
 @mcp.tool()
-def update_calendar_group(
-    calendar_group_id: str,
-    calendar_group_name: str
-) -> str:
+def update_calendar_group(calendar_group_id: str, calendar_group_name: str) -> str:
     """
     Updates an existing calendar group in the Outlook calendar.
 
@@ -209,6 +230,7 @@ def update_calendar_group(
         str: JSON string containing the response from the Microsoft Graph API.
     """
     return calendar_groups.update_calendar_group(calendar_group_id, calendar_group_name)
+
 
 @mcp.tool()
 def delete_calendar_group(calendar_group_id: str) -> str:
@@ -226,8 +248,7 @@ def delete_calendar_group(calendar_group_id: str) -> str:
 
 @mcp.tool()
 def get_calendars(
-    calendar_group_id: Optional[str] = None,
-    name: Optional[str] = None
+    calendar_group_id: Optional[str] = None, name: Optional[str] = None
 ) -> str:
     """
     Retrieves calendars from the Outlook calendar.
@@ -240,6 +261,7 @@ def get_calendars(
         str: JSON string containing the list of calendars.
     """
     return calendars.get_calendars(calendar_group_id, name)
+
 
 @mcp.tool()
 def get_calendar(calendar_id: str) -> str:
@@ -254,11 +276,9 @@ def get_calendar(calendar_id: str) -> str:
     """
     return calendars.get_calendar(calendar_id)
 
+
 @mcp.tool()
-def create_calendar(
-    calendar_name: str,
-    calendar_group_id: Optional[str] = None
-) -> str:
+def create_calendar(calendar_name: str, calendar_group_id: Optional[str] = None) -> str:
     """
     Creates a new calendar in the Outlook calendar.
 
@@ -270,3 +290,17 @@ def create_calendar(
         str: JSON string containing the response from the Microsoft Graph API.
     """
     return calendars.create_calendar(calendar_name, calendar_group_id)
+
+@mcp.tool()
+def update_calendar(calendar_id: str, calendar_update_params: CalendarUpdateParams) -> str:
+    """
+    Updates an existing calendar in the Outlook calendar.
+
+    Args:
+        calendar_id (str): The ID of the calendar to be updated.
+        calendar_update_params (CalendarUpdateParams): Parameters for the calendar to be updated.
+
+    Returns:
+        str: JSON string containing the response from the Microsoft Graph API.
+    """
+    return calendars.update_calendar(calendar_id, calendar_update_params)

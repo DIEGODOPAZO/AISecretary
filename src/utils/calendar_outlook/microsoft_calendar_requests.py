@@ -1,4 +1,6 @@
 import json
+
+from ..param_types import CalendarUpdateParams
 from ..token_manager import TokenManager
 from ..helper_functions.general_helpers import (
     microsoft_get,
@@ -94,6 +96,32 @@ class MicrosoftCalendarRequests:
 
         status_code, response = microsoft_post(
             final_url, self.token_manager.get_token(), data=data
+        )
+
+        return json.dumps(response, indent=2)
+    
+    @handle_microsoft_errors
+    def update_calendar(self, calendar_id: str, calendar_update_params: CalendarUpdateParams) -> str:
+        """
+        Updates an existing calendar in Microsoft Graph API.
+
+        Args:
+            calendar_id (str): The ID of the calendar to be updated.
+            calendar_name (str): The new name for the calendar.
+
+        Returns:
+            str: A JSON string containing the response from the API.
+        """
+        url = f"{self._get_url()}/{calendar_id}"
+        data = {"name": calendar_update_params.name}
+
+        if calendar_update_params.color:
+            data["color"] = calendar_update_params.color
+        if calendar_update_params.isDefaultCalendar:
+            data["isDefaultCalendar"] = calendar_update_params.isDefaultCalendar
+
+        status_code, response = microsoft_patch(
+            url, self.token_manager.get_token(), data=data
         )
 
         return json.dumps(response, indent=2)

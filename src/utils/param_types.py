@@ -673,3 +673,42 @@ class EventCancelParams:
     """
     comment: Optional[str] = None
     meeting_cancelation_message: Optional[DraftEmailData] = None
+
+CalendarColor = Literal[
+    "LightBlue",    
+    "LightGreen",   
+    "LightOrange",  
+    "LightGray",    
+    "LightYellow",  
+    "LightTeal",    
+    "LightPink",    
+    "LightBrown",   
+    "LightRed",     
+    "MaxColor",     
+    "Auto"          
+]
+
+@dataclass
+class CalendarUpdateParams:
+    """
+    Representa un calendario en Microsoft Graph API con propiedades esenciales.
+
+    Args:
+        name (str): El nombre del calendario.
+        isDefaultCalendar (bool): True si es el calendario predeterminado del usuario, False en caso contrario.
+        color (CalendarColor): Tema de color para distinguir el calendario. Valores posibles:
+            - "LightBlue" (0)
+            - "LightGreen" (1)
+            - "LightOrange" (2)
+            - "LightGray" (3)
+            - "LightYellow" (4)
+            - "LightTeal" (5)
+            - "LightPink" (6)
+            - "LightBrown" (7)
+            - "LightRed" (8)
+            - "MaxColor" (9)
+            - "Auto" (-1) [valor por defecto]
+    """
+    name: str
+    isDefaultCalendar: Optional[bool] = None
+    color: Optional[CalendarColor] = None
