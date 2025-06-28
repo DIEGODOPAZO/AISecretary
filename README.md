@@ -128,7 +128,8 @@ This are the funtionalities for each of the MCP servers:
 - View existing categories  
 - Create/edit categories  
 - Delete categories  
-- Assign categories to emails  
+- Assign categories to emails
+- Assign categories to events
 - Predefined colors  
 
 ### - Calendar  
