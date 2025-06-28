@@ -14,12 +14,14 @@ from ..helper_functions.general_helpers import (
 
 
 class MicrosoftCalendarRequests:
-    """
-    This class is a placeholder for Microsoft Calendar API requests.
-    """
 
     def __init__(self, token_manager: TokenManager):
-        """ """
+        """
+        Initializes the MicrosoftCalendarGroupsRequests with a token manager.
+
+        Args:
+            token_manage (TokenManager): An instance of TokenManager to handle authentication tokens.
+        """
         self.token_manager = token_manager
         self.url = "https://graph.microsoft.com/v1.0/me"
 
@@ -104,9 +106,11 @@ class MicrosoftCalendarRequests:
         )
 
         return json.dumps(response, indent=2)
-    
+
     @handle_microsoft_errors
-    def update_calendar(self, calendar_id: str, calendar_update_params: CalendarUpdateParams) -> str:
+    def update_calendar(
+        self, calendar_id: str, calendar_update_params: CalendarUpdateParams
+    ) -> str:
         """
         Updates an existing calendar in Microsoft Graph API.
 
@@ -147,9 +151,12 @@ class MicrosoftCalendarRequests:
         status_code, response = microsoft_delete(url, self.token_manager.get_token())
         if status_code != 204:
             return json.dumps({"error": "Failed to delete calendar"}, indent=2)
-        response = {"message": "Calendar deleted successfully", "status_code": status_code}
+        response = {
+            "message": "Calendar deleted successfully",
+            "status_code": status_code,
+        }
         return json.dumps(response, indent=2)
-    
+
     @handle_microsoft_errors
     def get_schedule(self, schedule_params: ScheduleParams) -> str:
         """
@@ -166,9 +173,11 @@ class MicrosoftCalendarRequests:
             "schedules": schedule_params.schedules,
             "startTime": asdict(schedule_params.start_time),
             "endTime": asdict(schedule_params.end_time),
-            "availabilityViewInterval": schedule_params.availability_view_interval
+            "availabilityViewInterval": schedule_params.availability_view_interval,
         }
 
-        status_code, response = microsoft_post(url, self.token_manager.get_token(), data=data)
+        status_code, response = microsoft_post(
+            url, self.token_manager.get_token(), data=data
+        )
 
         return json.dumps(response, indent=2)
