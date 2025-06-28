@@ -1,4 +1,5 @@
 from typing import Optional
+from utils.calendar_outlook.microsoft_calendar_requests import MicrosoftCalendarRequests
 from utils.calendar_outlook.microsoft_calendar_groups_requests import MicrosoftCalendarGroupsRequests
 from utils.token_manager import TokenManager
 from utils.auth_microsoft import get_access_token, get_token_cache_path
@@ -14,6 +15,7 @@ token_manager = TokenManager(
 )
 events_requests = MicrosoftEventsRequests(token_manager)
 calendar_groups = MicrosoftCalendarGroupsRequests(token_manager)
+calendars = MicrosoftCalendarRequests(token_manager)
 
 @mcp.tool()
 def get_events_outlook_calendar(
@@ -220,3 +222,38 @@ def delete_calendar_group(calendar_group_id: str) -> str:
         str: JSON string containing the response from the Microsoft Graph API.
     """
     return calendar_groups.delete_calendar_group(calendar_group_id)
+
+
+@mcp.tool()
+def get_calendars(
+    calendar_group_id: Optional[str] = None,
+    name: Optional[str] = None
+) -> str:
+    """
+    Retrieves calendars from the Outlook calendar.
+
+    Args:
+        calendar_group_id (Optional[str]): The ID of the calendar group to filter calendars. If None, all calendars are retrieved.
+        name (Optional[str]): The name of the calendar to filter.
+
+    Returns:
+        str: JSON string containing the list of calendars.
+    """
+    return calendars.get_calendars(calendar_group_id, name)
+
+@mcp.tool()
+def create_calendar(
+    calendar_name: str,
+    calendar_group_id: Optional[str] = None
+) -> str:
+    """
+    Creates a new calendar in the Outlook calendar.
+
+    Args:
+        calendar_name (str): The name of the calendar to be created.
+        calendar_group_id (Optional[str]): The ID of the calendar group where the calendar will be created. If None, the calendar is created in the default group.
+
+    Returns:
+        str: JSON string containing the response from the Microsoft Graph API.
+    """
+    return calendars.create_calendar(calendar_name, calendar_group_id)
