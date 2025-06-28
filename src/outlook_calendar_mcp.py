@@ -242,6 +242,19 @@ def get_calendars(
     return calendars.get_calendars(calendar_group_id, name)
 
 @mcp.tool()
+def get_calendar(calendar_id: str) -> str:
+    """
+    Retrieves a specific calendar from the Outlook calendar.
+
+    Args:
+        calendar_id (str): The ID of the calendar to be retrieved.
+
+    Returns:
+        str: JSON string containing the details of the calendar.
+    """
+    return calendars.get_calendar(calendar_id)
+
+@mcp.tool()
 def create_calendar(
     calendar_name: str,
     calendar_group_id: Optional[str] = None

@@ -5,8 +5,8 @@ from ..helper_functions.general_helpers import (
     handle_microsoft_errors,
     microsoft_post,
     microsoft_patch,
-    microsoft_delete
-    )
+    microsoft_delete,
+)
 
 
 class MicrosoftCalendarRequests:
@@ -15,8 +15,7 @@ class MicrosoftCalendarRequests:
     """
 
     def __init__(self, token_manager: TokenManager):
-        """
-        """
+        """ """
         self.token_manager = token_manager
         self.url = "https://graph.microsoft.com/v1.0/me"
 
@@ -33,7 +32,7 @@ class MicrosoftCalendarRequests:
         if calendar_group_id:
             return f"{self.url}/calendarGroups/{calendar_group_id}/calendars"
         return f"{self.url}/calendars"
-    
+
     @handle_microsoft_errors
     def get_calendars(self, calendar_group_id: str = None, name: str = None) -> str:
         """
@@ -48,20 +47,35 @@ class MicrosoftCalendarRequests:
         """
 
         final_url = self._get_url(calendar_group_id)
-        
 
-        status_code, response = microsoft_get(
-            final_url, self.token_manager.get_token()
-        )
-        
+        status_code, response = microsoft_get(final_url, self.token_manager.get_token())
+
         if name:
             response["value"] = [
-                calendar for calendar in response.get("value", [])
+                calendar
+                for calendar in response.get("value", [])
                 if calendar.get("name") == name
             ]
 
         return json.dumps(response.get("value", []), indent=2)
-    
+
+    @handle_microsoft_errors
+    def get_calendar(self, calendar_id: str) -> str:
+        """
+        Retrieves a specific calendar from Microsoft Graph API.
+
+        Args:
+            calendar_id (str): The ID of the calendar to be retrieved.
+
+        Returns:
+            str: A JSON string containing the details of the calendar.
+        """
+        url = f"{self._get_url()}/{calendar_id}"
+
+        status_code, response = microsoft_get(url, self.token_manager.get_token())
+
+        return json.dumps(response, indent=2)
+
     @handle_microsoft_errors
     def create_calendar(self, calendar_name: str, calendar_group_id: str = None) -> str:
         """
@@ -75,15 +89,11 @@ class MicrosoftCalendarRequests:
             str: A JSON string containing the response from the API.
         """
         final_url = self._get_url(calendar_group_id)
-        
-        data = {
-            "name": calendar_name
-        }
-        
+
+        data = {"name": calendar_name}
+
         status_code, response = microsoft_post(
-            final_url, 
-            self.token_manager.get_token(), 
-            data=data
+            final_url, self.token_manager.get_token(), data=data
         )
-        
+
         return json.dumps(response, indent=2)
