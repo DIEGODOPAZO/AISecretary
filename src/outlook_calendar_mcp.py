@@ -292,8 +292,11 @@ def create_calendar(calendar_name: str, calendar_group_id: Optional[str] = None)
     """
     return calendars.create_calendar(calendar_name, calendar_group_id)
 
+
 @mcp.tool()
-def update_calendar(calendar_id: str, calendar_update_params: CalendarUpdateParams) -> str:
+def update_calendar(
+    calendar_id: str, calendar_update_params: CalendarUpdateParams
+) -> str:
     """
     Updates an existing calendar in the Outlook calendar.
 
@@ -305,6 +308,7 @@ def update_calendar(calendar_id: str, calendar_update_params: CalendarUpdatePara
         str: JSON string containing the response from the Microsoft Graph API.
     """
     return calendars.update_calendar(calendar_id, calendar_update_params)
+
 
 @mcp.tool()
 def delete_calendar(calendar_id: str) -> str:
@@ -319,6 +323,7 @@ def delete_calendar(calendar_id: str) -> str:
     """
     return calendars.delete_calendar(calendar_id)
 
+
 @mcp.tool()
 def get_schedule(schedule_params: ScheduleParams) -> str:
     """
@@ -331,3 +336,42 @@ def get_schedule(schedule_params: ScheduleParams) -> str:
         str: JSON string containing the availability information.
     """
     return calendars.get_schedule(schedule_params)
+
+
+@mcp.resource("outlook://calendars")
+def get_calendars_resource() -> str:
+    """
+    Gets the calendars of the Outlook mailbox.
+
+    Returns:
+        str: A JSON string containing the calendars.
+    """
+    return calendars.get_calendars()
+
+
+@mcp.prompt()
+def create_event_at_calendar_prompt(
+    event_name: str,
+    start_time: str,
+    end_time: str,
+    calendar_name: str,
+    day: str,
+    month: str,
+    year: str,
+    location: Optional[str] = None,
+    description: Optional[str] = None,
+) -> str:
+    """
+    Creates a prompt for creating an event in the Outlook calendar.
+
+    Args:
+        event_name (str): The name of the event.
+        start_time (str): The start time of the event in ISO 8601 format.
+        end_time (str): The end time of the event in ISO 8601 format.
+        location (Optional[str]): The location of the event. Defaults to None.
+        description (Optional[str]): A description of the event. Defaults to None.
+
+    Returns:
+        str: A prompt string for creating an event.
+    """
+    return f"Fisrtly I want you to look for a calendar with a similar name to {calendar_name} and obtain its id, you can do this by geting the information about the calendars with the tool get_calendars. Then: Create an event named '{event_name}' starting at {start_time} and ending at {end_time}. Location: {location if location else 'No location provided'}. Description: {description if description else 'No description provided'}. The event will be created in the calendar with the id obtained from the previous step. The day of the event is {day}, the month is {month}, and the year is {year}. If you cannot find a calendar with a similar name, create a new calendar with that name and then create the event in it."
