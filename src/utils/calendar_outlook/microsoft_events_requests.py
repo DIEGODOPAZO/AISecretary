@@ -39,7 +39,7 @@ class MicrosoftEventsRequests:
         if calendar_id is None:
             return f"{self.url}/events"
         else:
-            return f"{self.url}/{calendar_id}/events"
+            return f"{self.url}s/{calendar_id}/events"
 
     def _add_attachment(
         self, url: str, response_id: str, attachments: List[str]
