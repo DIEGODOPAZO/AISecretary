@@ -125,3 +125,22 @@ class MicrosoftCalendarRequests:
         )
 
         return json.dumps(response, indent=2)
+
+    @handle_microsoft_errors
+    def delete_calendar(self, calendar_id: str) -> str:
+        """
+        Deletes a calendar from Microsoft Graph API.
+
+        Args:
+            calendar_id (str): The ID of the calendar to be deleted.
+
+        Returns:
+            str: A JSON string containing the response from the API.
+        """
+        url = f"{self._get_url()}/{calendar_id}"
+
+        status_code, response = microsoft_delete(url, self.token_manager.get_token())
+        if status_code != 204:
+            return json.dumps({"error": "Failed to delete calendar"}, indent=2)
+        response = {"message": "Calendar deleted successfully", "status_code": status_code}
+        return json.dumps(response, indent=2)

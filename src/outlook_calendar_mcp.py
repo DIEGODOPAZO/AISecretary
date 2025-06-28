@@ -255,7 +255,7 @@ def get_calendars(
 
     Args:
         calendar_group_id (Optional[str]): The ID of the calendar group to filter calendars. If None, all calendars are retrieved.
-        name (Optional[str]): The name of the calendar to filter.
+        name (Optional[str]): The name of the calendar to filter (it filters an exact match).
 
     Returns:
         str: JSON string containing the list of calendars.
@@ -304,3 +304,16 @@ def update_calendar(calendar_id: str, calendar_update_params: CalendarUpdatePara
         str: JSON string containing the response from the Microsoft Graph API.
     """
     return calendars.update_calendar(calendar_id, calendar_update_params)
+
+@mcp.tool()
+def delete_calendar(calendar_id: str) -> str:
+    """
+    Deletes a calendar in the Outlook calendar.
+
+    Args:
+        calendar_id (str): The ID of the calendar to be deleted.
+
+    Returns:
+        str: JSON string containing the response from the Microsoft Graph API.
+    """
+    return calendars.delete_calendar(calendar_id)
