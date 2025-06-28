@@ -13,6 +13,7 @@ from utils.param_types import (
     EventQuery,
     CalendarGroupParams,
     EventResponseParams,
+    ScheduleParams,
 )
 from mcp.server.fastmcp import FastMCP
 
@@ -317,3 +318,16 @@ def delete_calendar(calendar_id: str) -> str:
         str: JSON string containing the response from the Microsoft Graph API.
     """
     return calendars.delete_calendar(calendar_id)
+
+@mcp.tool()
+def get_schedule(schedule_params: ScheduleParams) -> str:
+    """
+    Gets the availability (free/busy) of one or more users.
+
+    Args:
+        schedule_params (ScheduleParams): Parameters for the schedule request, including the users and time range.
+
+    Returns:
+        str: JSON string containing the availability information.
+    """
+    return calendars.get_schedule(schedule_params)

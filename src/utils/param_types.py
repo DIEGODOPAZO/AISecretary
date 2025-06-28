@@ -712,3 +712,20 @@ class CalendarUpdateParams:
     name: str
     isDefaultCalendar: Optional[bool] = None
     color: Optional[CalendarColor] = None
+
+
+@dataclass
+class ScheduleParams:
+    """
+    Parameters for retrieving a schedule.
+
+    Args:
+        schedules (List[str]): List of email addresses to retrieve the schedule for.
+        start_time (DateTimeTimeZone): Start time for the schedule.
+        end_time (DateTimeTimeZone): End time for the schedule.
+        availability_view_interval (int): Interval in minutes for the availability view. Default is 30 minutes.
+    """
+    schedules: List[str]
+    start_time: DateTimeTimeZone
+    end_time: DateTimeTimeZone
+    availability_view_interval: int = 30

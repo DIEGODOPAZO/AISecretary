@@ -1,6 +1,7 @@
+from dataclasses import asdict
 import json
 
-from ..param_types import CalendarUpdateParams
+from ..param_types import CalendarUpdateParams, ScheduleParams
 from ..token_manager import TokenManager
 from ..helper_functions.general_helpers import (
     microsoft_get,
@@ -143,4 +144,27 @@ class MicrosoftCalendarRequests:
         if status_code != 204:
             return json.dumps({"error": "Failed to delete calendar"}, indent=2)
         response = {"message": "Calendar deleted successfully", "status_code": status_code}
+        return json.dumps(response, indent=2)
+    
+    @handle_microsoft_errors
+    def get_schedule(self, schedule_params: ScheduleParams) -> str:
+        """
+        Retrieves the schedule of a user or a list of users.
+
+        Args:
+            schedule_params (ScheduleParams): Parameters for the schedule request.
+
+        Returns:
+            str: A JSON string containing the schedule information.
+        """
+        url = f"{self.url}/calendar/getSchedule"
+        data = {
+            "schedules": schedule_params.schedules,
+            "startTime": asdict(schedule_params.start_time),
+            "endTime": asdict(schedule_params.end_time),
+            "availabilityViewInterval": schedule_params.availability_view_interval
+        }
+
+        status_code, response = microsoft_post(url, self.token_manager.get_token(), data=data)
+
         return json.dumps(response, indent=2)
