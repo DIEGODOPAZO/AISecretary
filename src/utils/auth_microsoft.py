@@ -1,3 +1,10 @@
+"""auth_microsoft.py
+
+Handles Microsoft authentication using MSAL and environment variables.
+
+This module loads environment variables from a .env file, manages token cache, and provides functions to obtain access tokens for Microsoft APIs.
+"""
+
 import os
 from pathlib import Path
 import msal
@@ -24,7 +31,11 @@ TOKEN_CACHE_FILE = (ENV_BASE_DIR / raw_token_cache_path).resolve()
 
 
 def load_cache():
-    """Carga la caché del token desde un archivo (si existe)."""
+    """Loads the token cache from a file if it exists.
+
+    Returns:
+        msal.SerializableTokenCache: The loaded token cache object.
+    """
     cache = msal.SerializableTokenCache()
     if os.path.exists(TOKEN_CACHE_FILE):
         with open(TOKEN_CACHE_FILE, "r") as f:
@@ -33,19 +44,37 @@ def load_cache():
 
 
 def save_cache(cache):
-    """Guarda el estado del token en el archivo si hubo cambios."""
+    """Saves the token cache to a file if its state has changed.
+
+    Args:
+        cache (msal.SerializableTokenCache): The token cache to save.
+    """
     if cache.has_state_changed:
         with open(TOKEN_CACHE_FILE, "w") as f:
             f.write(cache.serialize())
 
 
 def get_token_cache_path():
-    """Devuelve la ruta del archivo de caché del token."""
+    """Returns the path to the token cache file.
+
+    Returns:
+        pathlib.Path: The resolved path to the token cache file.
+    """
     return TOKEN_CACHE_FILE
 
 
 def get_access_token(scopes=SCOPES):
-    """Obtiene un token de acceso, usando la caché si es posible."""
+    """Obtains an access token, using the cache if possible.
+
+    Args:
+        scopes (list, optional): List of scopes for which to request the token. Defaults to SCOPES.
+
+    Returns:
+        str: The access token string.
+
+    Raises:
+        Exception: If authentication fails or no token is found.
+    """
     cache = load_cache()
     app = msal.PublicClientApplication(
         CLIENT_ID, authority=AUTHORITY, token_cache=cache

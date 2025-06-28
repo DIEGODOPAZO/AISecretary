@@ -5,7 +5,9 @@ from typing import List, Optional, Literal
 
 @dataclass
 class DateFilter:
-    """Filter for date ranges
+    """
+    Filter for date ranges.
+
     Args:
         start_date (Optional[DateTime]): Start date for the filter. Example: 2025-06-19T23:59:59.000Z
         end_date (Optional[DateTime]): End date for the filter. Example: 2025-06-19T23:59:59.000Z
@@ -17,7 +19,9 @@ class DateFilter:
 
 @dataclass
 class SearchParams:
-    """Parameters for search operations ($search in Graph API)
+    """
+    Parameters for search operations ($search in Graph API).
+
     Args:
         keyword (Optional[str]): Keyword to search for in the emails.
         subject (Optional[str]): Subject to search for in the emails.
@@ -29,7 +33,9 @@ class SearchParams:
 
 @dataclass
 class EmailFilters:
-    """All available email filters
+    """
+    All available email filters.
+
     Args:
         date_filter (Optional[DateFilter]): Filter for date ranges.
         importance (Optional[str]): Importance level of the email ('high', 'normal', 'low').
@@ -49,7 +55,9 @@ class EmailFilters:
 
 @dataclass
 class EmailQuery:
-    """Complete email query parameters
+    """
+    Complete email query parameters.
+
     Args:
         filters (EmailFilters): Filters to apply to the email query.
         search (Optional[SearchParams]): Search parameters for the email query.
@@ -195,19 +203,31 @@ class HandleCategoryToResourceParams:
 
 @dataclass
 class EmailAddressValue:
+    """
+    Represents an email address value.
+
+    Args:
+        address (str): The email address.
+    """
     address: str
 
 
 @dataclass
 class EmailAddress:
+    """
+    Represents an email address object.
+
+    Args:
+        emailAddress (EmailAddressValue): The email address value object.
+    """
     emailAddress: EmailAddressValue
 
 
 @dataclass
 class RuleConditions:
     """
-    Conditions for a mail rule.
-    All conditions are optional, so you can create a rule with no conditions.
+    Conditions for a mail rule. All conditions are optional, so you can create a rule with no conditions.
+
     Args:
         subjectContains (Optional[List[str]]): List of strings that the subject must contain.
         bodyContains (Optional[List[str]]): List of strings that the body must contain.
@@ -240,8 +260,8 @@ class RuleConditions:
 @dataclass
 class RuleActions:
     """
-    Actions for a mail rule.
-    All actions are optional, so you can create a rule with no actions.
+    Actions for a mail rule. All actions are optional, so you can create a rule with no actions.
+
     Args:
         moveToFolder (Optional[str]): Folder ID to move the email to.
         copyToFolder (Optional[str]): Folder ID to copy the email to.
@@ -285,3 +305,427 @@ class MailRule:
     actions: Optional[RuleActions] = None
     isEnabled: bool = True
     isReadOnly: bool = False
+
+
+@dataclass
+class EmailAddressCalendar:
+    """
+    Represents an email address with an optional name.
+
+    Args:
+        address (str): The email address.
+        name (Optional[str]): The name associated with the email address.
+    """
+    address: str
+    name: Optional[str] = None
+
+
+@dataclass
+class Attendee:
+    """
+    Represents an attendee for a calendar event.
+
+    Args:
+        emailAddress (EmailAddress): The email address of the attendee.
+        type (Optional[str]): The type of attendee, e.g., "required", "optional" or "resource".
+    """
+    emailAddress: EmailAddressCalendar
+    type: Optional[str] = "required"  # Puede ser "required", "optional", etc.
+
+
+@dataclass
+class EventBody:
+    """
+    Represents the body of an event.
+
+    Args:
+        contentType (str): Type of the content, e.g., "HTML" or "Text".
+        content (str): The content of the body.
+    """
+    contentType: str
+    content: str
+
+
+@dataclass
+class DateTimeTimeZone:
+    """
+    Represents a date and time with a time zone.
+
+    Args:
+        dateTime (str): The date and time in ISO 8601 format, e.g., "2025-06-24T14:00:00".
+        timeZone (str): The time zone, e.g., "America/Bogota".
+    """
+    dateTime: str  
+    timeZone: str  
+
+
+@dataclass
+class Location:
+    """
+    Represents a location for an event.
+
+    Args:
+        displayName (str): The name of the location.
+    """
+    displayName: str
+
+
+@dataclass
+class RecurrencePattern:
+    """
+    Represents the recurrence pattern for an event.
+
+    Args:
+        type (str): The type of recurrence, e.g., "daily", "weekly", "absoluteMonthly", etc.
+        interval (int): The interval of recurrence, e.g., every 2 weeks.
+        month (int): The month of recurrence, if applicable (1-12).
+        dayOfMonth (int): The day of the month for monthly recurrences (1-31).
+        firstDayOfWeek (str): The first day of the week, e.g., "sunday".
+        index (str): The index of the occurrence in the month, e.g., "first", "second", "third", etc.
+        daysOfWeek (List[str]): List of days of the week for weekly recurrences, e.g., ["monday", "wednesday"].
+    """
+    type: str
+    interval: int
+    month: int
+    dayOfMonth: int
+    firstDayOfWeek: str  
+    index: str 
+    daysOfWeek: List[str] = field(default_factory=list) 
+
+
+@dataclass
+class RecurrenceRange:
+    """
+    Represents the range of recurrence for an event.
+
+    Args:
+        type (str): The type of recurrence range, e.g., "endDate", "noEnd", "numbered".
+        startDate (str): The start date of the recurrence in "YYYY-MM-DD" format.
+        endDate (str): The end date of the recurrence, if type is "endDate".
+        numberOfOccurrences (int): The number of occurrences, if type is "numbered".
+        recurrenceTimeZone (str): The time zone for the recurrence.
+    """
+    type: str 
+    startDate: str  
+    endDate: str 
+    numberOfOccurrences: int
+    recurrenceTimeZone: str
+
+
+@dataclass
+class PatternedRecurrence:
+    """
+    Represents a recurrence pattern for an event.
+
+    Args:
+        pattern (RecurrencePattern): The recurrence pattern.    
+        range (RecurrenceRange): The range of the recurrence.
+    """
+    pattern: RecurrencePattern
+    range: RecurrenceRange
+
+
+@dataclass
+class EventParams:
+    """
+    Represents a calendar event.
+
+    Args:
+        subject (str): The subject of the event.
+        start (DateTimeTimeZone): Start date and time of the event.
+        end (DateTimeTimeZone): End date and time of the event.
+        body (Optional[EventBody]): Body of the event.
+        location (Optional[Location]): Location of the event.
+        locations (Optional[List[Location]]): List of locations for the event.
+        attendees (Optional[List[Attendee]]): List of attendees for the event.
+        isOnlineMeeting (Optional[bool]): Whether the event is an online meeting.
+        onlineMeetingProvider (Optional[str]): Provider for the online meeting, e.g., "teamsForBusiness".
+        recurrence (Optional[PatternedRecurrence]): Recurrence pattern for the event, if applicable.
+        sensitivity (Optional[str]): Sensitivity of the event, e.g., "normal", "personal", "private", "confidential".
+        importance (Optional[str]): Importance of the event, e.g., "low", "normal", "high".
+        showAs (Optional[str]): How the event should be shown, e.g., "free", "tentative", "busy".
+        isAllDay (Optional[bool]): Whether the event is an all-day event.
+        categories (Optional[List[str]]): List of categories for the event.
+        transactionId (Optional[str]): Transaction ID for the event, if applicable.
+        reminderMinutesBeforeStart (Optional[int]): Reminder time in minutes before the event starts.
+        responseRequested (Optional[bool]): Whether a response is requested from attendees.
+        allowNewTimeProposals (Optional[bool]): Whether to allow new time proposals from attendees.
+        hideAttendees (Optional[bool]): Whether to hide attendees from the event details.
+        attachments (Optional[List[str]]): List of attachments files paths for the event.
+    """
+    subject: str
+    start: DateTimeTimeZone
+    end: DateTimeTimeZone
+    body: Optional[EventBody] = None
+    location: Optional[Location] = None
+    locations: Optional[List[Location]] = field(default_factory=list)
+    attendees: Optional[List[Attendee]] = field(default_factory=list)
+    isOnlineMeeting: Optional[bool] = None
+    onlineMeetingProvider: Optional[str] = None  
+    recurrence: Optional[PatternedRecurrence] = None  
+    sensitivity: Optional[str] = None  
+    importance: Optional[str] = None 
+    showAs: Optional[str] = None 
+    isAllDay: Optional[bool] = None
+    categories: Optional[List[str]] = field(default_factory=list)
+    transactionId: Optional[str] = None
+    reminderMinutesBeforeStart: Optional[int] = None
+    responseRequested: Optional[bool] = None
+    allowNewTimeProposals: Optional[bool] = None
+    hideAttendees: Optional[bool] = None
+    attachments: Optional[List[str]] = field(default_factory=list)
+
+
+@dataclass
+class EventSearchParams:
+    """
+    Parameters for searching calendar events using filters.
+
+    Args:
+        subject (Optional[str]): Subject to filter events by.
+        body (Optional[str]): Body content to filter events by.
+    """
+    subject: Optional[str] = None
+    body: Optional[str] = None
+
+
+@dataclass
+class EventFilters:
+    """
+    All available filters for calendar events.
+
+    Args:
+        date_filter (Optional[DateFilter]): Start/end datetime range.
+        importance (Optional[str]): 'low', 'normal', 'high'.
+        is_all_day (Optional[bool]): If True, only all-day events.
+        has_attachments (Optional[bool]): Filter by presence of attachments.
+        categories (Optional[List[str]]): Filter by category tags.
+        is_cancelled (Optional[bool]): Include only cancelled events.
+    """
+    date_filter: Optional[DateFilter] = None
+    importance: Optional[str] = None  # 'low' | 'normal' | 'high'
+    is_all_day: Optional[bool] = None
+    has_attachments: Optional[bool] = None
+    categories: Optional[List[str]] = None
+    is_cancelled: Optional[bool] = None
+
+
+@dataclass
+class EventQuery:
+    """
+    Complete event query parameters.
+
+    Args:
+        filters (EventFilters): Filtering options for the event query.
+        search (Optional[EventSearchParams]): Search terms for events.
+        number_events (int): Number of events to retrieve. Default is 10.
+    """
+    filters: EventFilters = field(default_factory=EventFilters)
+    search: Optional[EventSearchParams] = None
+    number_events: int = 10
+
+
+@dataclass
+class CalendarGroupParams:
+    """
+    Parameters for retrieving calendar groups.
+
+    Args:
+        top (Optional[int]): Number of calendar groups to retrieve. Default is 10.
+        filter_name (Optional[str]): Name to filter by calendar group name.
+    """
+    top: Optional[int] = 10
+    filter_name: Optional[str] = None
+
+
+@dataclass
+class TimeZoneSettings:
+    """
+    Represents time zone settings for mailbox configuration.
+
+    Args:
+        name (str): Name of the time zone (e.g. "America/Bogota").
+    """
+    name: str
+
+
+@dataclass
+class LanguageSettings:
+    """
+    Represents language settings for mailbox configuration.
+
+    Args:
+        locale (str): Locale identifier (e.g. "es-CO").
+        displayName (str): Display name of the language (e.g. "Español (Colombia)").
+    """
+    locale: str
+    displayName: str
+
+
+@dataclass
+class WorkingHours:
+    """
+    Represents working hours configuration for mailbox settings.
+
+    Args:
+        daysOfWeek (List[str]): List of days of the week when the user is available (e.g. ["monday", "tuesday", ...]).
+        startTime (str): Start time of the working hours in "HH:mm:ss.fffffff" format.
+        endTime (str): End time of the working hours in "HH:mm:ss.fffffff" format.
+        timeZone (TimeZoneSettings): Time zone settings for the working hours.
+    """
+    daysOfWeek: List[str] 
+    startTime: str  
+    endTime: str    
+    timeZone: TimeZoneSettings
+
+
+@dataclass
+class AutomaticRepliesSetting:
+    """
+    Represents automatic replies settings for mailbox configuration.
+
+    Args:
+        status (str): Status of automatic replies ("disabled", "alwaysEnabled", "scheduled").
+        externalAudience (str): Audience for external replies ("none", "contactsOnly", "all").
+        internalReplyMessage (str): Message for internal automatic replies.
+        externalReplyMessage (str): Message for external automatic replies.
+        scheduledStartDateTime (DateTimeTimeZone): Start date and time for scheduled automatic replies.
+        scheduledEndDateTime (DateTimeTimeZone): End date and time for scheduled automatic replies.
+    """
+    status: str 
+    externalAudience: str  
+    internalReplyMessage: str
+    externalReplyMessage: str
+    scheduledStartDateTime: DateTimeTimeZone
+    scheduledEndDateTime: DateTimeTimeZone
+
+
+@dataclass
+class MailboxSettingsParams:
+    """
+    Parameters for updating mailbox settings in Microsoft Graph API.
+
+    Args:
+        timeZone (Optional[str]): Time zone identifier (e.g. "America/Bogota").
+        language (Optional[LanguageSettings]): Language configuration.
+        dateFormat (Optional[str]): Date format (e.g. "dd/MM/yyyy").
+        timeFormat (Optional[str]): Time format (e.g. "HH:mm").
+        workingHours (Optional[WorkingHours]): Working hours configuration.
+        automaticRepliesSetting (Optional[AutomaticRepliesSetting]): Automatic replies configuration.
+        delegateMeetingMessageDeliveryOptions (Optional[str]): Delegate meeting message delivery options.
+    """
+    timeZone: Optional[str] = None
+    language: Optional[LanguageSettings] = None
+    dateFormat: Optional[str] = None
+    timeFormat: Optional[str] = None
+    workingHours: Optional[WorkingHours] = None
+    automaticRepliesSetting: Optional[AutomaticRepliesSetting] = None
+    delegateMeetingMessageDeliveryOptions: Optional[str] = None 
+
+
+@dataclass
+class EventResponseParams:
+    """
+    Parameters for accepting a calendar event.
+
+    Args:
+        send_response (bool): If True, sends a response to the organizer.
+        comment (Optional[str]): Optional comment to include in the response.
+    """
+    send_response: bool = True
+    comment: Optional[str] = None
+
+
+@dataclass
+class ProposedNewTime:
+    """
+    Represents a proposed new time for an event.
+
+    Args:
+        start (DateTimeTimeZone): Proposed start date and time.
+        end (DateTimeTimeZone): Proposed end date and time.
+    """
+    start: DateTimeTimeZone
+    end: DateTimeTimeZone
+
+
+@dataclass
+class EventChangesParams: 
+    """
+    Parameters for declining a calendar event.
+
+    Args:
+        event_response_params (Optional[EventResponseParams]): Parameters for the event response.
+        proposed_new_time (Optional[ProposedNewTime]): Proposed new time for the event.
+    """
+    event_response_params: Optional[EventResponseParams]
+    proposed_new_time: Optional[ProposedNewTime] = None
+
+
+@dataclass
+class EventCancelParams:
+    """
+    Parameters for cancelling a calendar event.
+
+    Args:
+        comment (Optional[str]): Optional comment for the cancellation.
+        meeting_cancelation_message (Optional[DraftEmailData]): Optional draft email data for the cancellation message.
+    """
+    comment: Optional[str] = None
+    meeting_cancelation_message: Optional[DraftEmailData] = None
+
+CalendarColor = Literal[
+    "LightBlue",    
+    "LightGreen",   
+    "LightOrange",  
+    "LightGray",    
+    "LightYellow",  
+    "LightTeal",    
+    "LightPink",    
+    "LightBrown",   
+    "LightRed",     
+    "MaxColor",     
+    "Auto"          
+]
+
+@dataclass
+class CalendarUpdateParams:
+    """
+    Representa un calendario en Microsoft Graph API con propiedades esenciales.
+
+    Args:
+        name (str): El nombre del calendario.
+        isDefaultCalendar (bool): True si es el calendario predeterminado del usuario, False en caso contrario.
+        color (CalendarColor): Tema de color para distinguir el calendario. Valores posibles:
+            - "LightBlue" (0)
+            - "LightGreen" (1)
+            - "LightOrange" (2)
+            - "LightGray" (3)
+            - "LightYellow" (4)
+            - "LightTeal" (5)
+            - "LightPink" (6)
+            - "LightBrown" (7)
+            - "LightRed" (8)
+            - "MaxColor" (9)
+            - "Auto" (-1) [valor por defecto]
+    """
+    name: str
+    isDefaultCalendar: Optional[bool] = None
+    color: Optional[CalendarColor] = None
+
+
+@dataclass
+class ScheduleParams:
+    """
+    Parameters for retrieving a schedule.
+
+    Args:
+        schedules (List[str]): List of email addresses to retrieve the schedule for.
+        start_time (DateTimeTimeZone): Start time for the schedule.
+        end_time (DateTimeTimeZone): End time for the schedule.
+        availability_view_interval (int): Interval in minutes for the availability view. Default is 30 minutes.
+    """
+    schedules: List[str]
+    start_time: DateTimeTimeZone
+    end_time: DateTimeTimeZone
+    availability_view_interval: int = 30

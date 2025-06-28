@@ -73,7 +73,7 @@ def test_add_category_to_resource(mock_patch, mock_get, service):
         remove=False,
     )
 
-    result = service.add_delete_category_to_resource_microsoft_api(params)
+    result = service.add_delete_category_to_email(params)
     data = json.loads(result)
     assert "New" in data["categories"]
 

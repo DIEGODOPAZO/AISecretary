@@ -2,64 +2,123 @@ import base64
 import json
 import os
 
-from ..helpers import (
-    handle_microsoft_errors,
-    microsoft_delete,
-    microsoft_get,
-    microsoft_patch,
-    microsoft_post,
+from ..helper_functions.helpers_email import (
+    build_filter_params,
+    build_search_params,
     microsoft_simplify_message,
-    read_file_and_encode_base64,
     remove_duplicate_messages,
 )
+from ..helper_functions.general_helpers import (
+    download_attachments,
+    handle_microsoft_errors,
+    microsoft_get,
+    microsoft_post,
+    microsoft_patch,
+    microsoft_delete,
+    read_file_and_encode_base64,
+)
+
 from ..param_types import *
 from ..token_manager import TokenManager
 
 
 class MicrosoftMessagesRequests:
+    """Handles Microsoft Graph API requests related to email messages.
+
+    This class provides methods to interact with Microsoft Outlook messages, including retrieving, sending, editing, deleting, and managing attachments for emails using the Microsoft Graph API.
+
+    Attributes:
+        base_url (str): The base URL for Microsoft Graph API message endpoints.
+        token_manager (TokenManager): The token manager for authentication.
+    """
     def __init__(self, token_manager: TokenManager):
+        """Initializes MicrosoftMessagesRequests with a token manager.
+
+        Args:
+            token_manager (TokenManager): The token manager for authentication.
+        """
         self.base_url = "https://graph.microsoft.com/v1.0/me/messages"
         self.token_manager = token_manager
 
     @handle_microsoft_errors
     def get_messages_from_folder_microsoft_api(
-        self, params: dict, folder_id: Optional[str] = None
-    ) -> dict:
-        """
-        Executes the actual API request to Microsoft Graph
+        self,
+        email_query: Optional[EmailQuery] = None,
+        params: Optional[dict] = None,
+        folder_id: Optional[str] = None
+    ) -> str:
+        """Retrieves messages from a specified folder using search and filter parameters.
 
         Args:
-            params: Query parameters for the API call
-            folder_id: Optional folder ID to search within
+            email_query (Optional[EmailQuery]): The email query object containing search and filter parameters.
+            params (Optional[dict]): Direct query parameters for the API call.
+            folder_id (Optional[str]): The ID of the folder to retrieve messages from.
 
         Returns:
-            JSON string with results
+            str: A JSON string containing the retrieved messages.
         """
-        base_url = (
-            f"https://graph.microsoft.com/v1.0/me/mailFolders/{folder_id}/messages"
-            if folder_id
-            else self.base_url
+        
+        if params is not None:
+            return self._get_and_format_messages(params, folder_id)
+
+        if email_query is None:
+            raise json.dumps({"error": "You must provided search params"}, indent=2)
+
+        has_search = bool(
+            email_query.search and (email_query.search.keyword or email_query.search.subject)
+        )
+        has_filters = bool(
+            email_query.filters and (
+                email_query.filters.date_filter
+                or email_query.filters.importance
+                or email_query.filters.sender
+                or email_query.filters.unread_only
+                or email_query.filters.has_attachments
+                or email_query.filters.categories
+            )
         )
 
-        (status_code, response) = microsoft_get(
-            base_url, self.token_manager.get_token(), params=params
-        )
+        search_params = build_search_params(email_query.search)
+        filter_params = build_filter_params(email_query.filters)
 
-        messages = response.get("value", [])
-        simplified_messages = [microsoft_simplify_message(msg) for msg in messages]
+        if "$top" not in search_params:
+            search_params["$top"] = email_query.number_emails
+        if "$top" not in filter_params:
+            filter_params["$top"] = email_query.number_emails
 
-        result = {"messages": simplified_messages}
-        if "@odata.nextLink" in response:
-            result["nextLink"] = response["@odata.nextLink"]
+        # If both search and filter are provided, we need to intersect the results
+        if has_search and has_filters:
+            search_result = self._get_and_format_messages(search_params, email_query.folder_id)
+            filter_result = self._get_and_format_messages(filter_params, email_query.folder_id)
 
-        unique_messages = remove_duplicate_messages(simplified_messages)
+            search_messages = json.loads(search_result).get("messages", [])
+            filter_messages = json.loads(filter_result).get("messages", [])
 
-        result = {"messages": unique_messages}
+            # Intersect the results based on message IDs
+            search_ids = {msg["id"] for msg in search_messages}
+            filtered_ids = {msg["id"]: msg for msg in filter_messages}
 
-        return json.dumps(result, indent=2)
+            intersected = [filtered_ids[msg_id] for msg_id in search_ids if msg_id in filtered_ids]
+            unique_messages = remove_duplicate_messages(intersected)
+            return json.dumps({"messages": unique_messages}, indent=2)
+
+        # Just search or filter
+        final_params = search_params if has_search else filter_params
+        if not final_params:
+            final_params = {"$top": email_query.number_emails}
+
+        return self._get_and_format_messages(final_params, email_query.folder_id)
 
     @handle_microsoft_errors
     def get_conversation_messages_microsoft_api(self, params: dict) -> str:
+        """Retrieves messages in a conversation based on provided parameters.
+
+        Args:
+            params (dict): Query parameters for the API call.
+
+        Returns:
+            str: A JSON string containing the conversation messages.
+        """
         (status_code, response) = microsoft_get(
             self.base_url, self.token_manager.get_token(), params=params
         )
@@ -74,7 +133,15 @@ class MicrosoftMessagesRequests:
     def mark_as_read_unread_microsoft_api(
         self, message_id: str, is_read: bool = True
     ) -> str:
+        """Marks a message as read or unread.
 
+        Args:
+            message_id (str): The ID of the message to update.
+            is_read (bool, optional): Whether to mark as read (True) or unread (False). Defaults to True.
+
+        Returns:
+            str: A JSON string containing the updated message.
+        """
         url = f"{self.base_url}/{message_id}"
         data = {"isRead": is_read}
         microsoft_patch(url, self.token_manager.get_token(), data)
@@ -83,6 +150,14 @@ class MicrosoftMessagesRequests:
 
     @handle_microsoft_errors
     def get_full_message_and_attachments(self, message_id: str) -> str:
+        """Retrieves a full message and its attachments.
+
+        Args:
+            message_id (str): The ID of the message to retrieve.
+
+        Returns:
+            str: A JSON string containing the message and its attachments.
+        """
         base_url = f"{self.base_url}/{message_id}"
 
         (status_code, msg_data) = microsoft_get(
@@ -93,27 +168,7 @@ class MicrosoftMessagesRequests:
             attachments_url, self.token_manager.get_token()
         )
         attachments = att_data.get("value", [])
-        download_dir = os.path.join(os.path.expanduser("~"), "Downloads", "attachments")
-        os.makedirs(download_dir, exist_ok=True)
-        downloaded_attachments = []
-        for att in attachments:
-            if att.get("@odata.type") == "#microsoft.graph.fileAttachment":
-                name = att.get("name")
-                content_type = att.get("contentType")
-                content_bytes = att.get("contentBytes")
-                id = att.get("id")
-                if name and content_bytes:
-                    file_path = os.path.join(download_dir, name)
-                    with open(file_path, "wb") as f:
-                        f.write(base64.b64decode(content_bytes))
-                    downloaded_attachments.append(
-                        {
-                            "name": name,
-                            "contentType": content_type,
-                            "path": file_path,
-                            "attachment_id": id,
-                        }
-                    )
+        downloaded_attachments = download_attachments(attachments)
         return json.dumps(
             microsoft_simplify_message(
                 msg_data,
@@ -126,6 +181,14 @@ class MicrosoftMessagesRequests:
 
     @handle_microsoft_errors
     def delete_message_microsoft_api(self, message_id: str) -> str:
+        """Deletes a message by its ID.
+
+        Args:
+            message_id (str): The ID of the message to delete.
+
+        Returns:
+            str: A JSON string indicating the result of the deletion.
+        """
         url = f"{self.base_url}/{message_id}"
 
         (status_code, response) = microsoft_delete(url, self.token_manager.get_token())
@@ -137,7 +200,14 @@ class MicrosoftMessagesRequests:
 
     @handle_microsoft_errors
     def create_edit_draft_microsoft_api(self, draft_email_data: DraftEmailData) -> str:
+        """Creates or edits a draft email message.
 
+        Args:
+            draft_email_data (DraftEmailData): The data for the draft email.
+
+        Returns:
+            str: A JSON string containing the created or updated draft message.
+        """
         if not draft_email_data.subject or not draft_email_data.body:
             return json.dumps({"error": "Subject and body are required."}, indent=2)
         url = self.base_url
@@ -181,7 +251,16 @@ class MicrosoftMessagesRequests:
     def add_attachment_to_draft_microsoft_api(
         self, draft_id: str, attachment_path: str, content_type: str
     ) -> str:
+        """Adds an attachment to a draft email.
 
+        Args:
+            draft_id (str): The ID of the draft email.
+            attachment_path (str): The file path of the attachment.
+            content_type (str): The MIME type of the attachment.
+
+        Returns:
+            str: A JSON string containing the attachment details.
+        """
         url = f"{self.base_url}/{draft_id}/attachments"
         try:
             attachment_name, attachment_content = read_file_and_encode_base64(
@@ -208,7 +287,14 @@ class MicrosoftMessagesRequests:
 
     @handle_microsoft_errors
     def send_draft_email_microsoft_api(self, draft_id: str) -> str:
+        """Sends a draft email message.
 
+        Args:
+            draft_id (str): The ID of the draft email to send.
+
+        Returns:
+            str: A JSON string indicating the result of the send operation.
+        """
         url = f"{self.base_url}/{draft_id}/send"
         (status_code, response) = microsoft_post(
             url, self.token_manager.get_token(), data={}
@@ -219,6 +305,15 @@ class MicrosoftMessagesRequests:
     def delete_attachment_from_draft_microsoft_api(
         self, draft_id: str, attachment_id: str
     ) -> str:
+        """Deletes an attachment from a draft email.
+
+        Args:
+            draft_id (str): The ID of the draft email.
+            attachment_id (str): The ID of the attachment to delete.
+
+        Returns:
+            str: A JSON string indicating the result of the deletion.
+        """
         url = f"{self.base_url}/{draft_id}/attachments/{attachment_id}"
         (status_code, response) = microsoft_delete(url, self.token_manager.get_token())
         if status_code != 204:
@@ -232,6 +327,14 @@ class MicrosoftMessagesRequests:
     def move_or_copy_email_microsoft_api(
         self, email_operation_params: EmailOperationParams
     ) -> str:
+        """Moves or copies an email to another folder.
+
+        Args:
+            email_operation_params (EmailOperationParams): Parameters for the move or copy operation.
+
+        Returns:
+            str: A JSON string containing the result of the operation.
+        """
         url = (
             f"{self.base_url}/{email_operation_params.email_id}/move"
             if email_operation_params.move
@@ -245,6 +348,14 @@ class MicrosoftMessagesRequests:
 
     @handle_microsoft_errors
     def reply_to_email_microsoft_api(self, email_reply_params: EmailReplyParams) -> str:
+        """Replies to an email message.
+
+        Args:
+            email_reply_params (EmailReplyParams): Parameters for the reply operation.
+
+        Returns:
+            str: A JSON string containing the reply draft message.
+        """
         url = (
             f"{self.base_url}/{email_reply_params.email_id}/createReplyAll"
             if email_reply_params.reply_all
@@ -260,6 +371,14 @@ class MicrosoftMessagesRequests:
     def forward_email_microsoft_api(
         self, email_forward_params: EmailForwardParams
     ) -> str:
+        """Forwards an email message to specified recipients.
+
+        Args:
+            email_forward_params (EmailForwardParams): Parameters for the forward operation.
+
+        Returns:
+            str: A JSON string containing the result of the forward operation.
+        """
         url = f"{self.base_url}/{email_forward_params.email_id}/forward"
         data = {
             "toRecipients": (
@@ -284,3 +403,21 @@ class MicrosoftMessagesRequests:
             url, self.token_manager.get_token(), data
         )
         return json.dumps(response, indent=2)
+
+    def _get_and_format_messages(self, params: dict, folder_id: Optional[str] = None) -> str:
+    
+        base_url = (
+            f"https://graph.microsoft.com/v1.0/me/mailFolders/{folder_id}/messages"
+            if folder_id else self.base_url
+        )
+
+        status_code, response = microsoft_get(base_url, self.token_manager.get_token(), params=params)
+        messages = response.get("value", [])
+        simplified_messages = [microsoft_simplify_message(msg) for msg in messages]
+        unique_messages = remove_duplicate_messages(simplified_messages)
+
+        result = {"messages": unique_messages}
+        if "@odata.nextLink" in response:
+            result["nextLink"] = response["@odata.nextLink"]
+        
+        return json.dumps(result, indent=2)

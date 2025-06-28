@@ -38,6 +38,11 @@ After registering the app, add the following **delegated permissions**:
   - Mail.Send
   - Mail.ReadWrite
   - MailboxSettings.ReadWrite
+- For the calendar:
+  - Calendars.Read
+  - Calendars.ReadWrite
+  - Calendars.Read.Shared
+  - Calendars.ReadWrite.Shared
 
 ---
 

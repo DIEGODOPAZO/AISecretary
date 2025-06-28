@@ -1,85 +1,17 @@
-import base64
-import requests
-import os
-from functools import wraps
+"""
+Helper functions for processing Microsoft Graph API email messages, filters, and categories.
+
+This module provides utilities to:
+    - Simplify Microsoft Graph API message objects for easier handling.
+    - Build OData filter and search parameters for querying emails.
+    - Remove duplicate messages from lists.
+    - Handle color schemes and dataclass cleaning for Microsoft Outlook/Graph API email data.
+"""
 import json
 from dataclasses import asdict, is_dataclass
 from typing import Any, List
 
-from .param_types import DateFilter
-
-
-def handle_microsoft_errors(func):
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        try:
-            return func(*args, **kwargs)
-        except requests.HTTPError as e:
-            return json.dumps(
-                {"error": f"HTTP error: {e.response.status_code} - {e.response.text}"},
-                indent=2,
-            )
-        except requests.RequestException as e:
-            return json.dumps({"error": f"Request failed: {str(e)}"}, indent=2)
-        except Exception as e:
-            return json.dumps({"error": f"Internal error: {str(e)}"}, indent=2)
-
-    return wrapper
-
-
-def microsoft_get(url: str, token: str, params: dict = {}) -> tuple[int, dict]:
-    """Sends a GET request to the Microsoft Graph API."""
-    headers = {"Authorization": f"Bearer {token}", "Accept": "application/json"}
-    response = requests.get(url, headers=headers, params=params)
-    response.raise_for_status()
-    return response.status_code, response.json()
-
-
-def microsoft_delete(url: str, token: str) -> tuple[int, str]:
-    """Sends a DELETE request to the Microsoft Graph API and returns status code and response text."""
-    headers = {"Authorization": f"Bearer {token}", "Accept": "application/json"}
-    response = requests.delete(url, headers=headers)
-    response.raise_for_status()
-    return response.status_code, response.text
-
-
-def microsoft_post(url: str, token: str, data: dict = {}) -> tuple[int, dict]:
-    response = requests.post(
-        url,
-        headers={
-            "Authorization": f"Bearer {token}",
-            "Content-Type": "application/json",
-        },
-        json=data,
-    )
-    response.raise_for_status()
-    try:
-        return response.status_code, response.json()
-    except ValueError:
-        return response.status_code, {}
-
-
-def microsoft_patch(url: str, token: str, data: dict = {}) -> tuple[int, dict]:
-    """Sends a PATCH request to the Microsoft Graph API and returns status code and response json/text."""
-    headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
-    response = requests.patch(url, headers=headers, json=data)
-    response.raise_for_status()
-
-    return response.status_code, response.json()
-
-
-def read_file_and_encode_base64(file_path: str) -> tuple[str, str]:
-    """Reads a file and encodes its content to base64."""
-    if not os.path.isfile(file_path):
-        raise FileNotFoundError(f"The file '{file_path}' does not exist.")
-
-    filename = os.path.basename(file_path)
-
-    with open(file_path, "rb") as file:
-        file_content = file.read()
-        encoded_content = base64.b64encode(file_content).decode("utf-8")
-
-    return filename, encoded_content
+from ..param_types import DateFilter
 
 
 def microsoft_simplify_message(
@@ -88,8 +20,16 @@ def microsoft_simplify_message(
     attachments: list = None,
     attachments_download_path: list = None,
 ) -> dict:
-    """
-    Simplifies a Microsoft Graph API message object to a more manageable format.
+    """Simplifies a Microsoft Graph API message object to a more manageable format.
+
+    Args:
+        msg (dict): The message object from Microsoft Graph API.
+        full (bool, optional): If True, includes full body and attachments. Defaults to False.
+        attachments (list, optional): List of attachment objects. Defaults to None.
+        attachments_download_path (list, optional): List of download paths for attachments. Defaults to None.
+
+    Returns:
+        dict: A simplified message dictionary.
     """
     data = {
         "id": msg.get("id"),
@@ -151,8 +91,11 @@ def microsoft_simplify_message(
 
 
 def get_preset_color_scheme() -> str:
-    """Returns a preset color scheme for the Microsoft Graph API."""
+    """Returns a preset color scheme for the Microsoft Graph API.
 
+    Returns:
+        str: JSON string of preset color names and their hex codes.
+    """
     preset_colors = {
         "preset0": ("Rojo", "#E81123"),
         "preset1": ("Naranja oscuro", "#F7630C"),
@@ -185,6 +128,14 @@ def get_preset_color_scheme() -> str:
 
 
 def dataclass_to_clean_dict(obj: Any) -> Any:
+    """Recursively converts a dataclass to a dictionary, omitting None values and cleaning nested structures.
+
+    Args:
+        obj (Any): The dataclass instance or nested structure.
+
+    Returns:
+        Any: A cleaned dictionary or list, or the original value if not a dataclass, list, or dict.
+    """
     if is_dataclass(obj):
         result = {}
         for k, v in asdict(obj).items():
@@ -210,7 +161,14 @@ def dataclass_to_clean_dict(obj: Any) -> Any:
 
 
 def build_date_filter(date_filter: DateFilter) -> str:
-    """Helper to build date filter clause"""
+    """Helper to build date filter clause for OData queries.
+
+    Args:
+        date_filter (DateFilter): The date filter object with start and/or end date.
+
+    Returns:
+        str: OData filter string for date range, or empty string if not applicable.
+    """
     clauses = []
     if date_filter.start_date:
         clauses.append(f"receivedDateTime ge {date_filter.start_date.isoformat()}")
@@ -220,7 +178,14 @@ def build_date_filter(date_filter: DateFilter) -> str:
 
 
 def build_categories_filter(categories: List[str]) -> str:
-    """Helper to build categories filter"""
+    """Helper to build categories filter for OData queries.
+
+    Args:
+        categories (List[str]): List of category names.
+
+    Returns:
+        str: OData filter string for categories, or empty string if not applicable.
+    """
     if not categories:
         return ""
 
@@ -238,7 +203,14 @@ def build_categories_filter(categories: List[str]) -> str:
 
 
 def remove_duplicate_messages(messages: List[dict]) -> List[dict]:
-    """Remove duplicate messages based on their ID while preserving order."""
+    """Remove duplicate messages based on their ID while preserving order.
+
+    Args:
+        messages (List[dict]): List of message dictionaries.
+
+    Returns:
+        List[dict]: List of unique message dictionaries.
+    """
     seen_ids = set()
     unique_messages = []
 
@@ -252,6 +224,14 @@ def remove_duplicate_messages(messages: List[dict]) -> List[dict]:
 
 
 def build_search_params(search) -> dict:
+    """Builds search parameters for Microsoft Graph API queries.
+
+    Args:
+        search: An object with search attributes (keyword, subject).
+
+    Returns:
+        dict: Dictionary with $search parameter for the API, or empty dict.
+    """
     if not search:
         return {}
     if search.keyword:
@@ -262,6 +242,14 @@ def build_search_params(search) -> dict:
 
 
 def build_filter_params(filters) -> dict:
+    """Builds filter parameters for Microsoft Graph API queries.
+
+    Args:
+        filters: An object with filter attributes (date_filter, importance, sender, unread_only, has_attachments, categories).
+
+    Returns:
+        dict: Dictionary with $filter parameter for the API, or empty dict.
+    """
     parts = []
     if filters.date_filter:
         date_filter = build_date_filter(filters.date_filter)
