@@ -63,6 +63,8 @@ Other option to install your server in Claude Desktop is to edit the configurati
 }
 ```
 
+If you want all the MCP servers you can just also run the script `src/claude_setup.py`.
+
 #### Alternative: Running with OpenWebUI
 
 If you're using platforms like OpenWebUI:
@@ -128,6 +130,56 @@ This are the funtionalities for each of the MCP servers:
 - Delete categories  
 - Assign categories to emails  
 - Predefined colors  
+
+### - Calendar  
+
+#### Event Management  
+- Retrieve events  
+- Create events  
+- Update events  
+- Delete events  
+- Get full event details  
+
+#### Invitation Handling  
+- Accept invitations  
+- Decline invitations  
+- Tentative response  
+- Cancel events  
+
+#### Attachment Management  
+- Add attachments  
+- Remove attachments  
+
+#### Calendar Management  
+- List calendars  
+- Get specific calendar  
+- Create calendars  
+- Update calendars  
+- Delete calendars  
+
+#### Calendar Group Management  
+- List groups  
+- Create groups  
+- Update groups  
+- Delete groups  
+
+#### Availability Lookup  
+- Get free/busy schedule  
+
+### - Mailbox Settings  
+
+#### General Settings Management  
+- Get settings  
+- Update settings  
+
+#### Available Specific Settings  
+- Automatic replies  
+- Date and time format  
+- Time zone  
+- Language  
+- Working hours  
+- Delivery options  
+
 ## Adding New Servers
 
 To add support for new tools, create a new Python file following the structure of the existing servers and register the functions you want to expose as MCP tools.
