@@ -18,7 +18,7 @@ from utils.param_types import (
 from mcp.server.fastmcp import FastMCP
 
 # Create an MCP server
-mcp = FastMCP("AISecretary-Outlook-Calendar", dependencies=["mcp[cli]", "msal"])
+mcp = FastMCP("Calendar-AISecretary-Outlook", dependencies=["mcp[cli]", "msal"])
 
 token_manager = TokenManager(
     get_token_cache_path(), get_access_token_func=get_access_token

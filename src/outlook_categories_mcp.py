@@ -7,7 +7,7 @@ from utils.auth_microsoft import get_access_token, get_token_cache_path
 # server.py
 from mcp.server.fastmcp import FastMCP
 
-mcp = FastMCP("AISecretary-Outlook-Categories", dependencies=["mcp[cli]", "msal"])
+mcp = FastMCP("Categories-AISecretary-Outlook", dependencies=["mcp[cli]", "msal"])
 
 token_manager = TokenManager(
     get_token_cache_path(), get_access_token_func=get_access_token
