@@ -1,3 +1,4 @@
+import json
 from ..param_types import MailboxSettingsParams
 from ..token_manager import TokenManager
 from ..helper_functions.general_helpers import (
@@ -36,7 +37,7 @@ class MicrosoftMailboxSettings:
             self.url, self.token_manager.get_token()
         )
 
-        return response
+        return json.dumps(response, indent=2)
     
     @handle_microsoft_errors
     def update_mailbox_settings(self, mailbox_settings_params: MailboxSettingsParams) -> str:
@@ -102,4 +103,4 @@ class MicrosoftMailboxSettings:
             data=data
         )
 
-        return response
+        return json.dumps(response, indent=2)
