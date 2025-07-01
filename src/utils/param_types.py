@@ -564,21 +564,25 @@ class WorkingHours:
     endTime: str    
     timeZone: TimeZoneSettings
 
-
+Status = Literal[
+    "disabled",
+    "alwaysEnabled",
+    "scheduled"
+]
 @dataclass
 class AutomaticRepliesSetting:
     """
     Represents automatic replies settings for mailbox configuration.
 
     Args:
-        status (str): Status of automatic replies ("disabled", "alwaysEnabled", "scheduled").
+        status (Status): Status of automatic replies ("disabled", "alwaysEnabled", "scheduled").
         externalAudience (str): Audience for external replies ("none", "contactsOnly", "all").
         internalReplyMessage (str): Message for internal automatic replies.
         externalReplyMessage (str): Message for external automatic replies.
         scheduledStartDateTime (DateTimeTimeZone): Start date and time for scheduled automatic replies.
         scheduledEndDateTime (DateTimeTimeZone): End date and time for scheduled automatic replies.
     """
-    status: str 
+    status: Status 
     externalAudience: str  
     internalReplyMessage: str
     externalReplyMessage: str

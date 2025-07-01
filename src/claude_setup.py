@@ -6,6 +6,7 @@ tool_paths = [
     r".\src\outlook_categories_mcp.py",
     r".\src\outlook_mail_mcp.py",
     r".\src\outlook_contacts_mcp.py",
+    r".\src\outlook_to_do_mcp.py"
 ]
 
 for path in tool_paths:

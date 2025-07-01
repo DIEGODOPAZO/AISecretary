@@ -46,6 +46,8 @@ After registering the app, add the following **delegated permissions**:
 - For contacts:
   - Contacts.Read
   - Contacts.ReadWrite
+- For to-do:
+  - Tasks.ReadWrite
 
 ---
 
