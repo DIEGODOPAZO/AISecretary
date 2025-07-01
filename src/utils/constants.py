@@ -16,7 +16,8 @@ MASTER_CATEGORIES_URL = f"{GRAPH_BASE_URL}/outlook/masterCategories"
 
 # Contacts
 CONTACT_FOLDERS_URL = f"{GRAPH_BASE_URL}/contactFolders"
-
+CONTACTS_URL = f"{GRAPH_BASE_URL}/contacts"
+CONTACTS_BY_FOLDER_URL = lambda folder_id: f"{CONTACT_FOLDERS_URL}/{folder_id}/contacts"
 # Mail folders
 MAIL_FOLDERS_URL = f"{GRAPH_BASE_URL}/mailFolders"
 MAIL_FOLDER_CHILDREN_URL = lambda folder_id: f"{MAIL_FOLDERS_URL}/{folder_id}/childFolders"
