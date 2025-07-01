@@ -12,8 +12,10 @@ from ..helper_functions.general_helpers import (
     microsoft_delete,
 )
 from ..constants import MASTER_CATEGORIES_URL, MESSAGES_URL, CALENDAR_EVENTS_URL
+from ..microsoft_base_request import MicrosoftBaseRequest
 
-class MicrosoftCategoriesRequests:
+
+class MicrosoftCategoriesRequests(MicrosoftBaseRequest):
     """
     Handles Microsoft Outlook category operations via Microsoft Graph API.
 
@@ -23,15 +25,6 @@ class MicrosoftCategoriesRequests:
         url (str): Base URL for the master categories endpoint.
         token_manager (TokenManager): Manages access tokens for Microsoft API requests.
     """
-    def __init__(self, token_manager: TokenManager):
-        """
-        Initializes MicrosoftCategoriesRequests with a token manager.
-
-        Args:
-            token_manager (TokenManager): An instance to manage Microsoft API tokens.
-        """
-        
-        self.token_manager = token_manager
 
     @handle_microsoft_errors
     def get_categories_microsoft_api(self) -> str:

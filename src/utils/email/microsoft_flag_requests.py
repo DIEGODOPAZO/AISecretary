@@ -5,19 +5,13 @@ from ..helper_functions.helpers_email import *
 from ..token_manager import TokenManager
 from ..helper_functions.general_helpers import handle_microsoft_errors, microsoft_patch
 from ..constants import MESSAGES_URL
+from ..microsoft_base_request import MicrosoftBaseRequest
 
-class MicrosoftFlagRequests:
+class MicrosoftFlagRequests(MicrosoftBaseRequest):
     """Handles flag management for Microsoft Outlook emails via Microsoft Graph API.
 
     This class provides methods to set or update the flag status of an email message using the Microsoft Graph API.
     """
-    def __init__(self, token_manager: TokenManager):
-        """Initializes MicrosoftFlagRequests with a TokenManager.
-
-        Args:
-            token_manager (TokenManager): An instance of TokenManager to handle authentication tokens.
-        """
-        self.token_manager = token_manager
 
     @handle_microsoft_errors
     def manage_flags_microsoft_api(self, email_id: str, flag: str):

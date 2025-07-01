@@ -12,18 +12,10 @@ from ..helper_functions.general_helpers import (
     microsoft_delete,
 )
 from ..constants import GRAPH_BASE_URL
+from ..microsoft_base_request import MicrosoftBaseRequest
 
-class MicrosoftCalendarRequests:
 
-    def __init__(self, token_manager: TokenManager):
-        """
-        Initializes the MicrosoftCalendarGroupsRequests with a token manager.
-
-        Args:
-            token_manage (TokenManager): An instance of TokenManager to handle authentication tokens.
-        """
-        self.token_manager = token_manager
-        
+class MicrosoftCalendarRequests(MicrosoftBaseRequest):
 
     def _get_url(self, calendar_group_id: str = None) -> str:
         """

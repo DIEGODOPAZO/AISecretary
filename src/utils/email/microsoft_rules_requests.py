@@ -11,26 +11,16 @@ from ..helper_functions.general_helpers import (
     microsoft_delete,
 )
 from ..constants import MESSAGE_RULES_URL, MESSAGE_RULES_URL_BY_ID_URL
+from ..microsoft_base_request import MicrosoftBaseRequest
 
-class MicrosoftRulesRequests:
+
+class MicrosoftRulesRequests(MicrosoftBaseRequest):
     """Handles Microsoft Graph API requests for Outlook message rules.
 
     This class provides methods to interact with the Microsoft Graph API for managing
     message rules in the user's inbox, including retrieving, creating, updating, and
     deleting rules.
-
-    Attributes:
-        token_manager (TokenManager): The token manager for authentication.
     """
-    
-
-    def __init__(self, token_manager: TokenManager):
-        """Initializes MicrosoftRulesRequests with a token manager.
-
-        Args:
-            token_manager (TokenManager): The token manager for authentication.
-        """
-        self.token_manager = token_manager
 
     @handle_microsoft_errors
     def get_message_rules_microsoft_api(self) -> str:
@@ -39,8 +29,10 @@ class MicrosoftRulesRequests:
         Returns:
             str: A JSON-formatted string containing the list of message rules.
         """
-        
-        (status_code, response) = microsoft_get(MESSAGE_RULES_URL, self.token_manager.get_token())
+
+        (status_code, response) = microsoft_get(
+            MESSAGE_RULES_URL, self.token_manager.get_token()
+        )
         return json.dumps(response, indent=2)
 
     @handle_microsoft_errors

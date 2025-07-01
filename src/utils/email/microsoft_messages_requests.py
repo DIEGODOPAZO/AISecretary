@@ -20,31 +20,37 @@ from ..helper_functions.general_helpers import (
 
 from ..param_types import *
 from ..token_manager import TokenManager
-from ..constants import ADD_ATTACHMENT_TO_DRAFT_URL, ATTACHMENT_BY_ID_URL, COPY_EMAIL_URL, CREATE_REPLY_ALL_URL, CREATE_REPLY_URL, DRAFT_BY_ID_URL, FORWARD_EMAIL_URL, MESSAGE_ATTACHMENTS_URL, MESSAGE_BY_ID_URL, MESSAGES_IN_FOLDER_URL, MESSAGES_URL, MOVE_EMAIL_URL, SEND_DRAFT_URL
+from ..constants import (
+    ADD_ATTACHMENT_TO_DRAFT_URL,
+    ATTACHMENT_BY_ID_URL,
+    COPY_EMAIL_URL,
+    CREATE_REPLY_ALL_URL,
+    CREATE_REPLY_URL,
+    DRAFT_BY_ID_URL,
+    FORWARD_EMAIL_URL,
+    MESSAGE_ATTACHMENTS_URL,
+    MESSAGE_BY_ID_URL,
+    MESSAGES_IN_FOLDER_URL,
+    MESSAGES_URL,
+    MOVE_EMAIL_URL,
+    SEND_DRAFT_URL,
+)
+from ..microsoft_base_request import MicrosoftBaseRequest
 
-class MicrosoftMessagesRequests:
+
+class MicrosoftMessagesRequests(MicrosoftBaseRequest):
     """Handles Microsoft Graph API requests related to email messages.
 
     This class provides methods to interact with Microsoft Outlook messages, including retrieving, sending, editing, deleting, and managing attachments for emails using the Microsoft Graph API.
 
-    Attributes:
-        base_url (str): The base URL for Microsoft Graph API message endpoints.
-        token_manager (TokenManager): The token manager for authentication.
     """
-    def __init__(self, token_manager: TokenManager):
-        """Initializes MicrosoftMessagesRequests with a token manager.
-
-        Args:
-            token_manager (TokenManager): The token manager for authentication.
-        """
-        self.token_manager = token_manager
 
     @handle_microsoft_errors
     def get_messages_from_folder_microsoft_api(
         self,
         email_query: Optional[EmailQuery] = None,
         params: Optional[dict] = None,
-        folder_id: Optional[str] = None
+        folder_id: Optional[str] = None,
     ) -> str:
         """Retrieves messages from a specified folder using search and filter parameters.
 
@@ -56,7 +62,7 @@ class MicrosoftMessagesRequests:
         Returns:
             str: A JSON string containing the retrieved messages.
         """
-        
+
         if params is not None:
             return self._get_and_format_messages(params, folder_id)
 
@@ -64,10 +70,12 @@ class MicrosoftMessagesRequests:
             raise json.dumps({"error": "You must provided search params"}, indent=2)
 
         has_search = bool(
-            email_query.search and (email_query.search.keyword or email_query.search.subject)
+            email_query.search
+            and (email_query.search.keyword or email_query.search.subject)
         )
         has_filters = bool(
-            email_query.filters and (
+            email_query.filters
+            and (
                 email_query.filters.date_filter
                 or email_query.filters.importance
                 or email_query.filters.sender
@@ -87,8 +95,12 @@ class MicrosoftMessagesRequests:
 
         # If both search and filter are provided, we need to intersect the results
         if has_search and has_filters:
-            search_result = self._get_and_format_messages(search_params, email_query.folder_id)
-            filter_result = self._get_and_format_messages(filter_params, email_query.folder_id)
+            search_result = self._get_and_format_messages(
+                search_params, email_query.folder_id
+            )
+            filter_result = self._get_and_format_messages(
+                filter_params, email_query.folder_id
+            )
 
             search_messages = json.loads(search_result).get("messages", [])
             filter_messages = json.loads(filter_result).get("messages", [])
@@ -97,7 +109,9 @@ class MicrosoftMessagesRequests:
             search_ids = {msg["id"] for msg in search_messages}
             filtered_ids = {msg["id"]: msg for msg in filter_messages}
 
-            intersected = [filtered_ids[msg_id] for msg_id in search_ids if msg_id in filtered_ids]
+            intersected = [
+                filtered_ids[msg_id] for msg_id in search_ids if msg_id in filtered_ids
+            ]
             unique_messages = remove_duplicate_messages(intersected)
             return json.dumps({"messages": unique_messages}, indent=2)
 
@@ -162,7 +176,7 @@ class MicrosoftMessagesRequests:
         (status_code, msg_data) = microsoft_get(
             base_url, self.token_manager.get_token()
         )
-        attachments_url = MESSAGE_ATTACHMENTS_URL(message_id) 
+        attachments_url = MESSAGE_ATTACHMENTS_URL(message_id)
         (att_status, att_data) = microsoft_get(
             attachments_url, self.token_manager.get_token()
         )
@@ -294,7 +308,7 @@ class MicrosoftMessagesRequests:
         Returns:
             str: A JSON string indicating the result of the send operation.
         """
-        
+
         (status_code, response) = microsoft_post(
             SEND_DRAFT_URL(draft_id), self.token_manager.get_token(), data={}
         )
@@ -313,8 +327,11 @@ class MicrosoftMessagesRequests:
         Returns:
             str: A JSON string indicating the result of the deletion.
         """
-       
-        (status_code, response) = microsoft_delete(ATTACHMENT_BY_ID_URL(draft_id, attachment_id), self.token_manager.get_token())
+
+        (status_code, response) = microsoft_delete(
+            ATTACHMENT_BY_ID_URL(draft_id, attachment_id),
+            self.token_manager.get_token(),
+        )
         if status_code != 204:
             return json.dumps({"error": response}, indent=2)
         return json.dumps(
@@ -403,14 +420,15 @@ class MicrosoftMessagesRequests:
         )
         return json.dumps(response, indent=2)
 
-    def _get_and_format_messages(self, params: dict, folder_id: Optional[str] = None) -> str:
-    
-        base_url = (
-            MESSAGES_IN_FOLDER_URL(folder_id)
-            if folder_id else MESSAGES_URL
-        )
+    def _get_and_format_messages(
+        self, params: dict, folder_id: Optional[str] = None
+    ) -> str:
 
-        status_code, response = microsoft_get(base_url, self.token_manager.get_token(), params=params)
+        base_url = MESSAGES_IN_FOLDER_URL(folder_id) if folder_id else MESSAGES_URL
+
+        status_code, response = microsoft_get(
+            base_url, self.token_manager.get_token(), params=params
+        )
         messages = response.get("value", [])
         simplified_messages = [microsoft_simplify_message(msg) for msg in messages]
         unique_messages = remove_duplicate_messages(simplified_messages)
@@ -418,5 +436,5 @@ class MicrosoftMessagesRequests:
         result = {"messages": unique_messages}
         if "@odata.nextLink" in response:
             result["nextLink"] = response["@odata.nextLink"]
-        
+
         return json.dumps(result, indent=2)

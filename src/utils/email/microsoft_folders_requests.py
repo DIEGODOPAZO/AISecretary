@@ -11,24 +11,15 @@ from ..helper_functions.general_helpers import (
     microsoft_delete,
 )
 from ..constants import MAIL_FOLDER_CHILDREN_URL, MAIL_FOLDERS_URL
+from ..microsoft_base_request import MicrosoftBaseRequest
 
-class MicrosoftFoldersRequests:
+
+class MicrosoftFoldersRequests(MicrosoftBaseRequest):
     """
     Handles Microsoft Graph API requests related to mail folders for a user's mailbox.
 
     This class provides methods to retrieve, create, edit, and delete mail folders using the Microsoft Graph API.
-
-    Attributes:
-        token_manager (TokenManager): The token manager for authentication.
     """
-    def __init__(self, token_manager: TokenManager):
-        """
-        Initializes MicrosoftFoldersRequests with a token manager.
-
-        Args:
-            token_manager (TokenManager): The token manager used to obtain access tokens for API requests.
-        """
-        self.token_manager = token_manager
 
     @handle_microsoft_errors
     def get_folder_names(self) -> str:
