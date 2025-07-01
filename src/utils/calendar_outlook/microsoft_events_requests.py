@@ -19,6 +19,8 @@ from ..helper_functions.helpers_calendar import (
     simplify_event_with_attachment_names,
 )
 
+from ..constants import CALENDAR_URL, CALENDAR_EVENTS_URL
+
 
 class MicrosoftEventsRequests:
     """Handles Microsoft Graph API requests for calendar events.
@@ -27,19 +29,17 @@ class MicrosoftEventsRequests:
 
     Attributes:
         token_manager (TokenManager): The token manager for authentication.
-        url (str): The base URL for calendar events.
-        event_response_url (str): The base URL for event responses.
     """
     def __init__(self, token_manager: TokenManager):
         self.token_manager = token_manager
-        self.url = "https://graph.microsoft.com/v1.0/me/calendar"
-        self.event_response_url = "https://graph.microsoft.com/v1.0/me/events"
+        
+    
 
     def _get_url(self, calendar_id: str = None) -> str:
         if calendar_id is None:
-            return f"{self.url}/events"
+            return f"{CALENDAR_URL}/events"
         else:
-            return f"{self.url}s/{calendar_id}/events"
+            return f"{CALENDAR_URL}s/{calendar_id}/events"
 
     def _add_attachment(
         self, url: str, response_id: str, attachments: List[str]
@@ -270,7 +270,7 @@ class MicrosoftEventsRequests:
         }
         if event_response_params.comment is not None:
             data["comment"] = event_response_params.comment
-        status_code, response = microsoft_post(f"{self.event_response_url}/{event_id}/accept", self.token_manager.get_token(), data=data)
+        status_code, response = microsoft_post(f"{CALENDAR_EVENTS_URL}/{event_id}/accept", self.token_manager.get_token(), data=data)
         if status_code == 202:
             return json.dumps({"message": "Event invitation accepted"}, indent=2)
         else:
@@ -289,7 +289,7 @@ class MicrosoftEventsRequests:
         """
         data = construct_data_for_response_events(event_changes_params)
         
-        status_code, response = microsoft_post(f"{self.event_response_url}/{event_id}/decline", self.token_manager.get_token(), data=data)
+        status_code, response = microsoft_post(f"{CALENDAR_EVENTS_URL}/{event_id}/decline", self.token_manager.get_token(), data=data)
 
         if status_code == 202:
             return json.dumps({"message": "Event invitation declined"}, indent=2)
@@ -309,7 +309,7 @@ class MicrosoftEventsRequests:
         """
         data = construct_data_for_response_events(event_changes_params)
 
-        status_code, response = microsoft_post(f"{self.event_response_url}/{event_id}/tentativelyAccept", self.token_manager.get_token(), data=data)
+        status_code, response = microsoft_post(f"{CALENDAR_EVENTS_URL}/{event_id}/tentativelyAccept", self.token_manager.get_token(), data=data)
 
         if status_code == 202:
             return json.dumps({"message": "Event invitation tentatively accepted"}, indent=2)
@@ -334,7 +334,7 @@ class MicrosoftEventsRequests:
         if comment:
             data["comment"] = comment
 
-        status_code, response = microsoft_post(f"{self.event_response_url}/{event_id}/cancel", self.token_manager.get_token(), data=data)
+        status_code, response = microsoft_post(f"{CALENDAR_EVENTS_URL}/{event_id}/cancel", self.token_manager.get_token(), data=data)
 
         if status_code == 202:
             return json.dumps({"message": "Event canceled"}, indent=2)

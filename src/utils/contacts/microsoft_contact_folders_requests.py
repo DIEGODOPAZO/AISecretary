@@ -1,14 +1,14 @@
 import json
 from ..token_manager import TokenManager
 from ..helper_functions.general_helpers import handle_microsoft_errors, microsoft_post, microsoft_get
-
+from ..constants import CONTACT_FOLDERS_URL
 class MicrosoftContactFoldersRequests:
     """
     Handles Microsoft Graph API requests related to contact folders for a user's mailbox.
 
     Attributes:
         token_manager (TokenManager): The token manager for authentication.
-        base_url (str): The base URL for the Microsoft Graph contact folders endpoint.
+      
     """
 
     def __init__(self, token_manager: TokenManager):
@@ -19,7 +19,7 @@ class MicrosoftContactFoldersRequests:
             token_manager (TokenManager): An instance of TokenManager to handle authentication tokens.
         """
         self.token_manager = token_manager
-        self.base_url = "https://graph.microsoft.com/v1.0/me/contactFolders"
+        
 
     @handle_microsoft_errors
     def create_contact_folder(self, folder_name: str) -> str:
@@ -35,7 +35,7 @@ class MicrosoftContactFoldersRequests:
         data = {"displayName": folder_name}
 
         status_code, response = microsoft_post(
-            self.base_url, self.token_manager.get_token(), data=data
+            CONTACT_FOLDERS_URL, self.token_manager.get_token(), data=data
         )
         return json.dumps(response, indent=2)
     
@@ -48,7 +48,7 @@ class MicrosoftContactFoldersRequests:
             str: A JSON string containing the API response with the list of contact folders.
         """
         status_code, response = microsoft_get(
-            self.base_url, self.token_manager.get_token()
+            CONTACT_FOLDERS_URL, self.token_manager.get_token()
         )
         return json.dumps(response, indent=2)
 

@@ -11,7 +11,7 @@ from ..helper_functions.general_helpers import (
     microsoft_patch,
     microsoft_delete,
 )
-
+from ..constants import MASTER_CATEGORIES_URL, MESSAGES_URL, CALENDAR_EVENTS_URL
 
 class MicrosoftCategoriesRequests:
     """
@@ -30,7 +30,7 @@ class MicrosoftCategoriesRequests:
         Args:
             token_manager (TokenManager): An instance to manage Microsoft API tokens.
         """
-        self.url = "https://graph.microsoft.com/v1.0/me/outlook/masterCategories"
+        
         self.token_manager = token_manager
 
     @handle_microsoft_errors
@@ -42,7 +42,7 @@ class MicrosoftCategoriesRequests:
             str: JSON-formatted list of categories with their IDs and display names.
         """
         (status_code, response) = microsoft_get(
-            self.url, self.token_manager.get_token()
+            MASTER_CATEGORIES_URL, self.token_manager.get_token()
         )
         categories = response.get("value", [])
         simplified_categories = [
@@ -64,7 +64,7 @@ class MicrosoftCategoriesRequests:
         Returns:
             str: JSON-formatted response from the Microsoft API.
         """
-        url = self.url
+        url = MASTER_CATEGORIES_URL
         params = {
             "displayName": category_params.category_name,
             "color": category_params.preset_color,
@@ -93,7 +93,7 @@ class MicrosoftCategoriesRequests:
         Returns:
             str: JSON-formatted message indicating success or error.
         """
-        url = f"{self.url}/{category_id}"
+        url = f"{MASTER_CATEGORIES_URL}/{category_id}"
         (status_code, response) = microsoft_delete(url, self.token_manager.get_token())
         if status_code != 204:
             return json.dumps({"error": response}, indent=2)
@@ -116,7 +116,7 @@ class MicrosoftCategoriesRequests:
         Returns:
             str: JSON-formatted response with the updated message.
         """
-        url = f"https://graph.microsoft.com/v1.0/me/messages/{handle_category_to_resource_params.resource_id}"
+        url = f"{MESSAGES_URL}/{handle_category_to_resource_params.resource_id}"
         # get current categories
         status_code, message_data = microsoft_get(url, self.token_manager.get_token())
         existing_categories = message_data.get("categories", [])
@@ -150,7 +150,7 @@ class MicrosoftCategoriesRequests:
         Returns:
             str: JSON-formatted response with the updated event.
         """
-        url = f"https://graph.microsoft.com/v1.0/me/events/{handle_category_to_resource_params.resource_id}"
+        url = f"{CALENDAR_EVENTS_URL}/{handle_category_to_resource_params.resource_id}"
         status_code, event_data = microsoft_get(url, self.token_manager.get_token())
         existing_categories = set(event_data.get("categories", []))
         new_categories = set(handle_category_to_resource_params.category_names)

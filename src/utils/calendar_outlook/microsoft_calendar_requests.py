@@ -11,7 +11,7 @@ from ..helper_functions.general_helpers import (
     microsoft_patch,
     microsoft_delete,
 )
-
+from ..constants import GRAPH_BASE_URL
 
 class MicrosoftCalendarRequests:
 
@@ -23,7 +23,7 @@ class MicrosoftCalendarRequests:
             token_manage (TokenManager): An instance of TokenManager to handle authentication tokens.
         """
         self.token_manager = token_manager
-        self.url = "https://graph.microsoft.com/v1.0/me"
+        
 
     def _get_url(self, calendar_group_id: str = None) -> str:
         """
@@ -36,8 +36,8 @@ class MicrosoftCalendarRequests:
             str: The complete URL for the request.
         """
         if calendar_group_id:
-            return f"{self.url}/calendarGroups/{calendar_group_id}/calendars"
-        return f"{self.url}/calendars"
+            return f"{GRAPH_BASE_URL}/calendarGroups/{calendar_group_id}/calendars"
+        return f"{GRAPH_BASE_URL}/calendars"
 
     @handle_microsoft_errors
     def get_calendars(self, calendar_group_id: str = None, name: str = None) -> str:

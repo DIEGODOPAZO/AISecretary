@@ -20,7 +20,7 @@ from ..helper_functions.general_helpers import (
 
 from ..param_types import *
 from ..token_manager import TokenManager
-
+from ..constants import ADD_ATTACHMENT_TO_DRAFT_URL, ATTACHMENT_BY_ID_URL, COPY_EMAIL_URL, CREATE_REPLY_ALL_URL, CREATE_REPLY_URL, DRAFT_BY_ID_URL, FORWARD_EMAIL_URL, MESSAGE_ATTACHMENTS_URL, MESSAGE_BY_ID_URL, MESSAGES_IN_FOLDER_URL, MESSAGES_URL, MOVE_EMAIL_URL, SEND_DRAFT_URL
 
 class MicrosoftMessagesRequests:
     """Handles Microsoft Graph API requests related to email messages.
@@ -37,7 +37,6 @@ class MicrosoftMessagesRequests:
         Args:
             token_manager (TokenManager): The token manager for authentication.
         """
-        self.base_url = "https://graph.microsoft.com/v1.0/me/messages"
         self.token_manager = token_manager
 
     @handle_microsoft_errors
@@ -120,7 +119,7 @@ class MicrosoftMessagesRequests:
             str: A JSON string containing the conversation messages.
         """
         (status_code, response) = microsoft_get(
-            self.base_url, self.token_manager.get_token(), params=params
+            MESSAGES_URL, self.token_manager.get_token(), params=params
         )
         messages = response.get("value", [])
         simplified_messages = [microsoft_simplify_message(msg) for msg in messages]
@@ -142,7 +141,7 @@ class MicrosoftMessagesRequests:
         Returns:
             str: A JSON string containing the updated message.
         """
-        url = f"{self.base_url}/{message_id}"
+        url = MESSAGE_BY_ID_URL(message_id)
         data = {"isRead": is_read}
         microsoft_patch(url, self.token_manager.get_token(), data)
         (status_code, response) = microsoft_get(url, self.token_manager.token)
@@ -158,12 +157,12 @@ class MicrosoftMessagesRequests:
         Returns:
             str: A JSON string containing the message and its attachments.
         """
-        base_url = f"{self.base_url}/{message_id}"
+        base_url = MESSAGE_BY_ID_URL(message_id)
 
         (status_code, msg_data) = microsoft_get(
             base_url, self.token_manager.get_token()
         )
-        attachments_url = f"{base_url}/attachments"
+        attachments_url = MESSAGE_ATTACHMENTS_URL(message_id) 
         (att_status, att_data) = microsoft_get(
             attachments_url, self.token_manager.get_token()
         )
@@ -189,7 +188,7 @@ class MicrosoftMessagesRequests:
         Returns:
             str: A JSON string indicating the result of the deletion.
         """
-        url = f"{self.base_url}/{message_id}"
+        url = MESSAGE_BY_ID_URL(message_id)
 
         (status_code, response) = microsoft_delete(url, self.token_manager.get_token())
         if status_code != 204:
@@ -210,7 +209,7 @@ class MicrosoftMessagesRequests:
         """
         if not draft_email_data.subject or not draft_email_data.body:
             return json.dumps({"error": "Subject and body are required."}, indent=2)
-        url = self.base_url
+        url = MESSAGES_URL
         if draft_email_data.importance.lower() not in ["low", "normal", "high"]:
             return json.dumps(
                 {"error": "Importance must be one of: low, normal, high."}, indent=2
@@ -237,7 +236,7 @@ class MicrosoftMessagesRequests:
             "importance": draft_email_data.importance.lower(),
         }
         if draft_email_data.draft_id:
-            url = f"{url}/{draft_email_data.draft_id}"
+            url = DRAFT_BY_ID_URL(draft_email_data.draft_id)
             (status_code, response) = microsoft_patch(
                 url, self.token_manager.get_token(), data
             )
@@ -261,7 +260,7 @@ class MicrosoftMessagesRequests:
         Returns:
             str: A JSON string containing the attachment details.
         """
-        url = f"{self.base_url}/{draft_id}/attachments"
+        url = ADD_ATTACHMENT_TO_DRAFT_URL(draft_id)
         try:
             attachment_name, attachment_content = read_file_and_encode_base64(
                 attachment_path
@@ -295,9 +294,9 @@ class MicrosoftMessagesRequests:
         Returns:
             str: A JSON string indicating the result of the send operation.
         """
-        url = f"{self.base_url}/{draft_id}/send"
+        
         (status_code, response) = microsoft_post(
-            url, self.token_manager.get_token(), data={}
+            SEND_DRAFT_URL(draft_id), self.token_manager.get_token(), data={}
         )
         return json.dumps({"message": "Email sent successfully."}, indent=2)
 
@@ -314,8 +313,8 @@ class MicrosoftMessagesRequests:
         Returns:
             str: A JSON string indicating the result of the deletion.
         """
-        url = f"{self.base_url}/{draft_id}/attachments/{attachment_id}"
-        (status_code, response) = microsoft_delete(url, self.token_manager.get_token())
+       
+        (status_code, response) = microsoft_delete(ATTACHMENT_BY_ID_URL(draft_id, attachment_id), self.token_manager.get_token())
         if status_code != 204:
             return json.dumps({"error": response}, indent=2)
         return json.dumps(
@@ -336,9 +335,9 @@ class MicrosoftMessagesRequests:
             str: A JSON string containing the result of the operation.
         """
         url = (
-            f"{self.base_url}/{email_operation_params.email_id}/move"
+            MOVE_EMAIL_URL(email_operation_params.email_id)
             if email_operation_params.move
-            else f"{self.base_url}/{email_operation_params.email_id}/copy"
+            else COPY_EMAIL_URL(email_operation_params.email_id)
         )
         data = {"destinationId": email_operation_params.destination_folder_id}
         (status_code, response) = microsoft_post(
@@ -357,9 +356,9 @@ class MicrosoftMessagesRequests:
             str: A JSON string containing the reply draft message.
         """
         url = (
-            f"{self.base_url}/{email_reply_params.email_id}/createReplyAll"
+            CREATE_REPLY_ALL_URL(email_reply_params.email_id)
             if email_reply_params.reply_all
-            else f"{self.base_url}/{email_reply_params.email_id}/createReply"
+            else CREATE_REPLY_URL(email_reply_params.email_id)
         )
         data = {"comment": email_reply_params.body}
         (status_code, response) = microsoft_post(
@@ -379,7 +378,7 @@ class MicrosoftMessagesRequests:
         Returns:
             str: A JSON string containing the result of the forward operation.
         """
-        url = f"{self.base_url}/{email_forward_params.email_id}/forward"
+        url = FORWARD_EMAIL_URL(email_forward_params.email_id)
         data = {
             "toRecipients": (
                 [
@@ -407,8 +406,8 @@ class MicrosoftMessagesRequests:
     def _get_and_format_messages(self, params: dict, folder_id: Optional[str] = None) -> str:
     
         base_url = (
-            f"https://graph.microsoft.com/v1.0/me/mailFolders/{folder_id}/messages"
-            if folder_id else self.base_url
+            MESSAGES_IN_FOLDER_URL(folder_id)
+            if folder_id else MESSAGES_URL
         )
 
         status_code, response = microsoft_get(base_url, self.token_manager.get_token(), params=params)

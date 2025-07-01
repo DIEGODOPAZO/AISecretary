@@ -10,6 +10,7 @@ from ..helper_functions.general_helpers import (
     microsoft_delete
     )
 
+from ..constants import CALENDAR_GROUPS_URL
 class MicrosoftCalendarGroupsRequests:
 
     def __init__(self, token_manage: TokenManager):
@@ -20,7 +21,6 @@ class MicrosoftCalendarGroupsRequests:
             token_manage (TokenManager): An instance of TokenManager to handle authentication tokens.
         """
         self.token_manage = token_manage
-        self.url = "https://graph.microsoft.com/v1.0/me/calendarGroups"
 
     @handle_microsoft_errors
     def get_calendar_groups(self, calendar_group_params: CalendarGroupParams) -> str:
@@ -38,7 +38,7 @@ class MicrosoftCalendarGroupsRequests:
             "filter": f"name eq '{calendar_group_params.filter_name}'" if calendar_group_params.filter_name else None
         }
         status_code, response = microsoft_get(
-            self.url, self.token_manage.get_token(), params=params
+            CALENDAR_GROUPS_URL, self.token_manage.get_token(), params=params
         )
         
         return json.dumps(response.get("value", []), indent=2)
@@ -59,7 +59,7 @@ class MicrosoftCalendarGroupsRequests:
         }
         
         status_code, response = microsoft_post(
-            self.url, 
+            CALENDAR_GROUPS_URL, 
             self.token_manage.get_token(), 
             data=data
         )
@@ -78,7 +78,7 @@ class MicrosoftCalendarGroupsRequests:
         Returns:
             str: A JSON string containing the response from the API.
         """
-        url = f"{self.url}/{calendar_group_id}"
+        url = f"{CALENDAR_GROUPS_URL}/{calendar_group_id}"
         data = {
             "name": calendar_group_name
         }
@@ -101,7 +101,7 @@ class MicrosoftCalendarGroupsRequests:
         Returns:
             str: A JSON string containing the response from the API or a status message if deleted.
         """
-        url = f"{self.url}/{calendar_group_id}"
+        url = f"{CALENDAR_GROUPS_URL}/{calendar_group_id}"
         
         status_code, response = microsoft_delete(
             url, 

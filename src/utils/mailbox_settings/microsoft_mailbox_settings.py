@@ -6,6 +6,7 @@ from ..helper_functions.general_helpers import (
     microsoft_patch,
     handle_microsoft_errors
 )
+from ..constants import MAILBOX_SETTINGS_URL
 
 class MicrosoftMailboxSettings:
     """
@@ -13,7 +14,7 @@ class MicrosoftMailboxSettings:
 
     Attributes:
         token_manager (TokenManager): The token manager for authentication.
-        url (str): The Microsoft Graph API endpoint for mailbox settings.
+    
     """
     def __init__(self, token_manager: TokenManager):
         """
@@ -23,7 +24,6 @@ class MicrosoftMailboxSettings:
             token_manager (TokenManager): The token manager instance for authentication.
         """
         self.token_manager = token_manager
-        self.url = "https://graph.microsoft.com/v1.0/me/mailboxSettings"
 
     @handle_microsoft_errors
     def get_mailbox_settings(self) -> str:
@@ -34,7 +34,7 @@ class MicrosoftMailboxSettings:
             str: A JSON string containing the mailbox settings.
         """
         status_code, response = microsoft_get(
-            self.url, self.token_manager.get_token()
+            MailboxSettingsParams, self.token_manager.get_token()
         )
 
         return json.dumps(response, indent=2)
@@ -98,7 +98,7 @@ class MicrosoftMailboxSettings:
             data["delegateMeetingMessageDeliveryOptions"] = mailbox_settings_params.delegateMeetingMessageDeliveryOptions
             
         status_code, response = microsoft_patch(
-            self.url, 
+            MAILBOX_SETTINGS_URL, 
             self.token_manager.get_token(), 
             data=data
         )

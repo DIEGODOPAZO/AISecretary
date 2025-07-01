@@ -10,7 +10,7 @@ from ..helper_functions.general_helpers import (
     microsoft_patch,
     microsoft_delete,
 )
-
+from ..constants import MESSAGE_RULES_URL, MESSAGE_RULES_URL_BY_ID_URL
 
 class MicrosoftRulesRequests:
     """Handles Microsoft Graph API requests for Outlook message rules.
@@ -20,10 +20,9 @@ class MicrosoftRulesRequests:
     deleting rules.
 
     Attributes:
-        BASE_URL (str): The base URL for the message rules endpoint.
         token_manager (TokenManager): The token manager for authentication.
     """
-    BASE_URL = "https://graph.microsoft.com/v1.0/me/mailFolders/inbox/messageRules"
+    
 
     def __init__(self, token_manager: TokenManager):
         """Initializes MicrosoftRulesRequests with a token manager.
@@ -40,8 +39,8 @@ class MicrosoftRulesRequests:
         Returns:
             str: A JSON-formatted string containing the list of message rules.
         """
-        url = self.BASE_URL
-        (status_code, response) = microsoft_get(url, self.token_manager.get_token())
+        
+        (status_code, response) = microsoft_get(MESSAGE_RULES_URL, self.token_manager.get_token())
         return json.dumps(response, indent=2)
 
     @handle_microsoft_errors
@@ -57,9 +56,9 @@ class MicrosoftRulesRequests:
         Returns:
             str: A JSON-formatted string containing the created or updated rule's details.
         """
-        url = self.BASE_URL
+
         if rule_id:
-            url = f"{url}/{rule_id}"
+            url = MESSAGE_RULES_URL_BY_ID_URL(rule_id)
             (status_code, response) = microsoft_patch(
                 url,
                 self.token_manager.get_token(),
@@ -67,7 +66,7 @@ class MicrosoftRulesRequests:
             )
         else:
             (status_code, response) = microsoft_post(
-                url,
+                MESSAGE_RULES_URL,
                 self.token_manager.get_token(),
                 data=dataclass_to_clean_dict(mail_rule),
             )
@@ -83,7 +82,7 @@ class MicrosoftRulesRequests:
         Returns:
             str: A JSON-formatted string indicating success or containing an error message.
         """
-        url = f"{self.BASE_URL}/{rule_id}"
+        url = MESSAGE_RULES_URL_BY_ID_URL(rule_id)
         (status_code, response) = microsoft_delete(url, self.token_manager.get_token())
         if status_code != 204:
             return json.dumps({"error": response}, indent=2)

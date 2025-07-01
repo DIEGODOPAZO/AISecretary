@@ -10,7 +10,7 @@ from ..helper_functions.general_helpers import (
     microsoft_patch,
     microsoft_delete,
 )
-
+from ..constants import MAIL_FOLDER_CHILDREN_URL, MAIL_FOLDERS_URL
 
 class MicrosoftFoldersRequests:
     """
@@ -19,7 +19,6 @@ class MicrosoftFoldersRequests:
     This class provides methods to retrieve, create, edit, and delete mail folders using the Microsoft Graph API.
 
     Attributes:
-        base_url (str): The base URL for the Microsoft Graph mail folders endpoint.
         token_manager (TokenManager): The token manager for authentication.
     """
     def __init__(self, token_manager: TokenManager):
@@ -29,7 +28,6 @@ class MicrosoftFoldersRequests:
         Args:
             token_manager (TokenManager): The token manager used to obtain access tokens for API requests.
         """
-        self.base_url = "https://graph.microsoft.com/v1.0/me/mailFolders"
         self.token_manager = token_manager
 
     @handle_microsoft_errors
@@ -41,7 +39,7 @@ class MicrosoftFoldersRequests:
             str: A JSON-formatted string containing a list of folders with their IDs, display names, and item counts. Includes '@odata.nextLink' if pagination is required.
         """
         (status_code, response) = microsoft_get(
-            self.base_url, self.token_manager.get_token()
+            MAIL_FOLDERS_URL, self.token_manager.get_token()
         )
         folders = response.get("value", [])
         simplified_folders = []
@@ -73,7 +71,7 @@ class MicrosoftFoldersRequests:
         Returns:
             str: A JSON-formatted string containing a list of subfolders with their IDs, display names, and item counts. Includes '@odata.nextLink' if pagination is required.
         """
-        url = f"{self.base_url}/{folder_id}/childFolders"
+        url = MAIL_FOLDER_CHILDREN_URL(folder_id)
         (status_code, response) = microsoft_get(url, self.token_manager.get_token())
         folders = response.get("value", [])
         simplified_folders = []
@@ -106,7 +104,7 @@ class MicrosoftFoldersRequests:
         Returns:
             str: A JSON-formatted string indicating the result of the operation or an error message if the folder name is missing.
         """
-        url = self.base_url
+        url = MAIL_FOLDERS_URL
         data = {
             "displayName": folder_params.folder_name,
         }
@@ -114,7 +112,7 @@ class MicrosoftFoldersRequests:
             return json.dumps({"error": "Folder name is required."}, indent=2)
 
         if folder_params.parent_folder_id:
-            url = f"{url}/{folder_params.parent_folder_id}/childFolders"
+            url = MAIL_FOLDER_CHILDREN_URL(folder_params.parent_folder_id)
             (status_code, response) = microsoft_post(
                 url, self.token_manager.get_token(), data
             )
@@ -141,7 +139,7 @@ class MicrosoftFoldersRequests:
         Returns:
             str: A JSON-formatted string indicating success or an error message if the deletion fails.
         """
-        url = f"{self.base_url}/{folder_id}"
+        url = f"{MAIL_FOLDERS_URL}/{folder_id}"
         (status_code, response) = microsoft_delete(url, self.token_manager.get_token())
         if status_code != 204:
             return json.dumps({"error": response}, indent=2)
