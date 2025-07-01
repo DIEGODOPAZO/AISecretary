@@ -43,6 +43,9 @@ After registering the app, add the following **delegated permissions**:
   - Calendars.ReadWrite
   - Calendars.Read.Shared
   - Calendars.ReadWrite.Shared
+- For contacts:
+  - Contacts.Read
+  - Contacts.ReadWrite
 
 ---
 
