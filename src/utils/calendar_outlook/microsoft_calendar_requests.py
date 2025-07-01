@@ -11,19 +11,11 @@ from ..helper_functions.general_helpers import (
     microsoft_patch,
     microsoft_delete,
 )
+from ..constants import CALENDAR_SCHEDULES_URL, GRAPH_BASE_URL
+from ..microsoft_base_request import MicrosoftBaseRequest
 
 
-class MicrosoftCalendarRequests:
-
-    def __init__(self, token_manager: TokenManager):
-        """
-        Initializes the MicrosoftCalendarGroupsRequests with a token manager.
-
-        Args:
-            token_manage (TokenManager): An instance of TokenManager to handle authentication tokens.
-        """
-        self.token_manager = token_manager
-        self.url = "https://graph.microsoft.com/v1.0/me"
+class MicrosoftCalendarRequests(MicrosoftBaseRequest):
 
     def _get_url(self, calendar_group_id: str = None) -> str:
         """
@@ -36,8 +28,8 @@ class MicrosoftCalendarRequests:
             str: The complete URL for the request.
         """
         if calendar_group_id:
-            return f"{self.url}/calendarGroups/{calendar_group_id}/calendars"
-        return f"{self.url}/calendars"
+            return f"{GRAPH_BASE_URL}/calendarGroups/{calendar_group_id}/calendars"
+        return f"{GRAPH_BASE_URL}/calendars"
 
     @handle_microsoft_errors
     def get_calendars(self, calendar_group_id: str = None, name: str = None) -> str:
@@ -168,7 +160,6 @@ class MicrosoftCalendarRequests:
         Returns:
             str: A JSON string containing the schedule information.
         """
-        url = f"{self.url}/calendar/getSchedule"
         data = {
             "schedules": schedule_params.schedules,
             "startTime": asdict(schedule_params.start_time),
@@ -177,7 +168,7 @@ class MicrosoftCalendarRequests:
         }
 
         status_code, response = microsoft_post(
-            url, self.token_manager.get_token(), data=data
+            CALENDAR_SCHEDULES_URL, self.token_manager.get_token(), data=data
         )
 
         return json.dumps(response, indent=2)

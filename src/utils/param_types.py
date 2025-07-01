@@ -548,20 +548,6 @@ class TimeZoneSettings:
     """
     name: str
 
-
-@dataclass
-class LanguageSettings:
-    """
-    Represents language settings for mailbox configuration.
-
-    Args:
-        locale (str): Locale identifier (e.g. "es-CO").
-        displayName (str): Display name of the language (e.g. "Español (Colombia)").
-    """
-    locale: str
-    displayName: str
-
-
 @dataclass
 class WorkingHours:
     """
@@ -607,20 +593,15 @@ class MailboxSettingsParams:
 
     Args:
         timeZone (Optional[str]): Time zone identifier (e.g. "America/Bogota").
-        language (Optional[LanguageSettings]): Language configuration.
         dateFormat (Optional[str]): Date format (e.g. "dd/MM/yyyy").
-        timeFormat (Optional[str]): Time format (e.g. "HH:mm").
+        timeFormat (Optional[str]): Time format (e.g. "2024-07-01T10:00:00Z").
         workingHours (Optional[WorkingHours]): Working hours configuration.
         automaticRepliesSetting (Optional[AutomaticRepliesSetting]): Automatic replies configuration.
         delegateMeetingMessageDeliveryOptions (Optional[str]): Delegate meeting message delivery options.
     """
     timeZone: Optional[str] = None
-    language: Optional[LanguageSettings] = None
-    dateFormat: Optional[str] = None
-    timeFormat: Optional[str] = None
     workingHours: Optional[WorkingHours] = None
     automaticRepliesSetting: Optional[AutomaticRepliesSetting] = None
-    delegateMeetingMessageDeliveryOptions: Optional[str] = None 
 
 
 @dataclass
@@ -729,3 +710,32 @@ class ScheduleParams:
     start_time: DateTimeTimeZone
     end_time: DateTimeTimeZone
     availability_view_interval: int = 30
+
+@dataclass
+class EmailAddressContact:
+    """
+    Represents an email address with an optional name for a contact.
+
+    Args:
+        address (str): The email address.
+        name (Optional[str]): The name associated with the email address.
+    """
+    address: str
+    name: Optional[str] = None
+
+@dataclass
+class Contact:
+    """
+    Represents a contact with personal and business information.
+    Attributes:
+        givenName (str): The given name (first name) of the contact.
+        surname (str): The surname (last name) of the contact.
+        emailAddresses (List[EmailAddressContact]): A list of email addresses associated with the contact.
+        businessPhones (List[str]): A list of business phone numbers for the contact.
+        mobilePhone (str): The mobile phone number of the contact.
+    """
+    givenName: str
+    surname: str
+    emailAddresses: List[EmailAddressContact] = field(default_factory=list)
+    businessPhones: List[str] = field(default_factory=list)
+    mobilePhone: str = ""

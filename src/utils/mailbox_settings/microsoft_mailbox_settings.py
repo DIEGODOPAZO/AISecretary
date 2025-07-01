@@ -4,26 +4,17 @@ from ..token_manager import TokenManager
 from ..helper_functions.general_helpers import (
     microsoft_get,
     microsoft_patch,
-    handle_microsoft_errors
+    handle_microsoft_errors,
 )
+from ..constants import MAILBOX_SETTINGS_URL
+from ..microsoft_base_request import MicrosoftBaseRequest
 
-class MicrosoftMailboxSettings:
+
+class MicrosoftMailboxSettings(MicrosoftBaseRequest):
     """
     Handles operations related to Microsoft mailbox settings using Microsoft Graph API.
 
-    Attributes:
-        token_manager (TokenManager): The token manager for authentication.
-        url (str): The Microsoft Graph API endpoint for mailbox settings.
     """
-    def __init__(self, token_manager: TokenManager):
-        """
-        Initializes MicrosoftMailboxSettings with a token manager.
-
-        Args:
-            token_manager (TokenManager): The token manager instance for authentication.
-        """
-        self.token_manager = token_manager
-        self.url = "https://graph.microsoft.com/v1.0/me/mailboxSettings"
 
     @handle_microsoft_errors
     def get_mailbox_settings(self) -> str:
@@ -34,13 +25,15 @@ class MicrosoftMailboxSettings:
             str: A JSON string containing the mailbox settings.
         """
         status_code, response = microsoft_get(
-            self.url, self.token_manager.get_token()
+            MAILBOX_SETTINGS_URL, self.token_manager.get_token()
         )
 
         return json.dumps(response, indent=2)
-    
+
     @handle_microsoft_errors
-    def update_mailbox_settings(self, mailbox_settings_params: MailboxSettingsParams) -> str:
+    def update_mailbox_settings(
+        self, mailbox_settings_params: MailboxSettingsParams
+    ) -> str:
         """
         Updates the mailbox settings in Microsoft Graph API.
 
@@ -55,17 +48,6 @@ class MicrosoftMailboxSettings:
         if mailbox_settings_params.timeZone:
             data["timeZone"] = mailbox_settings_params.timeZone
 
-        if mailbox_settings_params.language:
-            data["language"] = {
-                "locale": mailbox_settings_params.language.locale,
-                "displayName": mailbox_settings_params.language.displayName,
-            }
-
-        if mailbox_settings_params.dateFormat:
-            data["dateFormat"] = mailbox_settings_params.dateFormat
-
-        if mailbox_settings_params.timeFormat:
-            data["timeFormat"] = mailbox_settings_params.timeFormat
 
         if mailbox_settings_params.workingHours:
             data["workingHours"] = {
@@ -74,7 +56,7 @@ class MicrosoftMailboxSettings:
                 "endTime": mailbox_settings_params.workingHours.endTime,
                 "timeZone": {
                     "name": mailbox_settings_params.workingHours.timeZone.name
-                }
+                },
             }
 
         if mailbox_settings_params.automaticRepliesSetting:
@@ -94,13 +76,8 @@ class MicrosoftMailboxSettings:
                 },
             }
 
-        if mailbox_settings_params.delegateMeetingMessageDeliveryOptions:
-            data["delegateMeetingMessageDeliveryOptions"] = mailbox_settings_params.delegateMeetingMessageDeliveryOptions
-            
         status_code, response = microsoft_patch(
-            self.url, 
-            self.token_manager.get_token(), 
-            data=data
+            MAILBOX_SETTINGS_URL, self.token_manager.get_token(), data=data
         )
 
         return json.dumps(response, indent=2)

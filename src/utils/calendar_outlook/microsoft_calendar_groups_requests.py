@@ -7,21 +7,13 @@ from ..helper_functions.general_helpers import (
     handle_microsoft_errors,
     microsoft_post,
     microsoft_patch,
-    microsoft_delete
-    )
+    microsoft_delete,
+)
+from ..microsoft_base_request import MicrosoftBaseRequest
+from ..constants import CALENDAR_GROUPS_URL
 
-class MicrosoftCalendarGroupsRequests:
 
-    def __init__(self, token_manage: TokenManager):
-        """
-        Initializes the MicrosoftCalendarGroupsRequests with a token manager.
-
-        Args:
-            token_manage (TokenManager): An instance of TokenManager to handle authentication tokens.
-        """
-        self.token_manage = token_manage
-        self.url = "https://graph.microsoft.com/v1.0/me/calendarGroups"
-
+class MicrosoftCalendarGroupsRequests(MicrosoftBaseRequest):
     @handle_microsoft_errors
     def get_calendar_groups(self, calendar_group_params: CalendarGroupParams) -> str:
         """
@@ -35,14 +27,18 @@ class MicrosoftCalendarGroupsRequests:
         """
         params = {
             "top": calendar_group_params.top,
-            "filter": f"name eq '{calendar_group_params.filter_name}'" if calendar_group_params.filter_name else None
+            "filter": (
+                f"name eq '{calendar_group_params.filter_name}'"
+                if calendar_group_params.filter_name
+                else None
+            ),
         }
         status_code, response = microsoft_get(
-            self.url, self.token_manage.get_token(), params=params
+            CALENDAR_GROUPS_URL, self.token_manager.get_token(), params=params
         )
-        
+
         return json.dumps(response.get("value", []), indent=2)
-    
+
     @handle_microsoft_errors
     def create_calendar_group(self, calendar_group_name: str) -> str:
         """
@@ -54,20 +50,18 @@ class MicrosoftCalendarGroupsRequests:
         Returns:
             str: A JSON string containing the response from the API.
         """
-        data = {
-            "name": calendar_group_name
-        }
-        
+        data = {"name": calendar_group_name}
+
         status_code, response = microsoft_post(
-            self.url, 
-            self.token_manage.get_token(), 
-            data=data
+            CALENDAR_GROUPS_URL, self.token_manager.get_token(), data=data
         )
-        
+
         return json.dumps(response, indent=2)
-    
+
     @handle_microsoft_errors
-    def update_calendar_group(self, calendar_group_id: str, calendar_group_name: str) -> str:
+    def update_calendar_group(
+        self, calendar_group_id: str, calendar_group_name: str
+    ) -> str:
         """
         Updates an existing calendar group in Microsoft Graph API.
 
@@ -78,19 +72,15 @@ class MicrosoftCalendarGroupsRequests:
         Returns:
             str: A JSON string containing the response from the API.
         """
-        url = f"{self.url}/{calendar_group_id}"
-        data = {
-            "name": calendar_group_name
-        }
-        
+        url = f"{CALENDAR_GROUPS_URL}/{calendar_group_id}"
+        data = {"name": calendar_group_name}
+
         status_code, response = microsoft_patch(
-            url, 
-            self.token_manage.get_token(), 
-            data=data
+            url, self.token_manager.get_token(), data=data
         )
-        
+
         return json.dumps(response, indent=2)
-    
+
     def delete_calendar_group(self, calendar_group_id: str) -> str:
         """
         Deletes a calendar group in Microsoft Graph API.
@@ -101,11 +91,12 @@ class MicrosoftCalendarGroupsRequests:
         Returns:
             str: A JSON string containing the response from the API or a status message if deleted.
         """
-        url = f"{self.url}/{calendar_group_id}"
-        
-        status_code, response = microsoft_delete(
-            url, 
-            self.token_manage.get_token()
+        url = f"{CALENDAR_GROUPS_URL}/{calendar_group_id}"
+
+        status_code, response = microsoft_delete(url, self.token_manager.get_token())
+
+        return (
+            json.dumps(response, indent=2)
+            if response
+            else json.dumps({"status": "deleted"}, indent=2)
         )
-        
-        return json.dumps(response, indent=2) if response else json.dumps({"status": "deleted"}, indent=2)
