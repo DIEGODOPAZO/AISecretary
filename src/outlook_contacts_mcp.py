@@ -1,9 +1,12 @@
 from typing import Optional
 from utils.token_manager import TokenManager
 from utils.auth_microsoft import get_access_token, get_token_cache_path
-from utils.contacts.microsoft_contact_folders_requests import MicrosoftContactFoldersRequests
+from utils.contacts.microsoft_contact_folders_requests import (
+    MicrosoftContactFoldersRequests,
+)
 from utils.contacts.microsoft_contacts_requests import MicrosoftContactsRequests
 from utils.param_types import Contact
+
 # server.py
 from mcp.server.fastmcp import FastMCP
 
@@ -17,6 +20,7 @@ token_manager = TokenManager(
 contact_folders_requests = MicrosoftContactFoldersRequests(token_manager)
 contacts = MicrosoftContactsRequests(token_manager)
 
+
 @mcp.tool()
 def create_contact_folder(folder_name: str) -> str:
     """Creates a new contact folder in Microsoft Outlook.
@@ -28,8 +32,9 @@ def create_contact_folder(folder_name: str) -> str:
         str: A message indicating the result of the operation.
     """
     response = contact_folders_requests.create_contact_folder(folder_name)
-    
+
     return response
+
 
 @mcp.tool()
 def get_contact_folders() -> str:
@@ -39,8 +44,24 @@ def get_contact_folders() -> str:
         str: A JSON string containing the list of contact folders.
     """
     response = contact_folders_requests.get_contact_folders()
-    
+
     return response
+
+
+@mcp.tool()
+def delete_contact_folder(folder_id: str) -> str:
+    """Deletes a contact folder by its ID.
+
+    Args:
+        folder_id (str): The ID of the contact folder to delete.
+
+    Returns:
+        str: A message indicating the result of the operation.
+    """
+    response = contact_folders_requests.delete_contact_folder(folder_id)
+
+    return response
+
 
 @mcp.tool()
 def get_contacts(folder_id: Optional[str], name: str = None) -> str:
@@ -54,8 +75,9 @@ def get_contacts(folder_id: Optional[str], name: str = None) -> str:
         str: A JSON string containing the list of contacts.
     """
     response = contacts.get_contacts(folder_id, name)
-    
+
     return response
+
 
 @mcp.tool()
 def get_contact_info(contact_id: str) -> str:
@@ -68,8 +90,9 @@ def get_contact_info(contact_id: str) -> str:
         str: A JSON string containing the details of the contact.
     """
     response = contacts.get_contact_info(contact_id)
-    
+
     return response
+
 
 @mcp.tool()
 def create_contact(contact: Contact, folder_id: Optional[str]) -> str:
@@ -83,8 +106,9 @@ def create_contact(contact: Contact, folder_id: Optional[str]) -> str:
         str: A JSON string containing the details of the created contact.
     """
     response = contacts.create_contact(contact, folder_id)
-    
+
     return response
+
 
 if __name__ == "__main__":
     # Start the MCP server
