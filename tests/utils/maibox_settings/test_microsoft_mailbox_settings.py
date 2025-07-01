@@ -3,7 +3,7 @@ from types import SimpleNamespace
 import pytest
 from unittest.mock import patch, MagicMock
 from src.utils.mailbox_settings.microsoft_mailbox_settings import MicrosoftMailboxSettings
-from src.utils.param_types import MailboxSettingsParams, LanguageSettings, WorkingHours, AutomaticRepliesSetting, DateTimeTimeZone
+from src.utils.param_types import MailboxSettingsParams, WorkingHours, AutomaticRepliesSetting, DateTimeTimeZone
 
 
 @pytest.fixture
@@ -35,9 +35,6 @@ def test_update_mailbox_settings_success(mock_patch, mock_token_manager):
 
     params = MailboxSettingsParams(
         timeZone="Pacific Standard Time",
-        language=LanguageSettings(locale="en-US", displayName="English (United States)"),
-        dateFormat="dd/MM/yyyy",
-        timeFormat="HH:mm",
         workingHours=WorkingHours(
             daysOfWeek=["Monday", "Tuesday"],
             startTime="08:00:00",
@@ -55,8 +52,7 @@ def test_update_mailbox_settings_success(mock_patch, mock_token_manager):
             scheduledEndDateTime=DateTimeTimeZone(
                 dateTime="2025-07-10T23:59:59", timeZone="UTC"
             )
-        ),
-        delegateMeetingMessageDeliveryOptions="sendToDelegatesAndMe"
+        )
     )
 
     client = MicrosoftMailboxSettings(mock_token_manager)

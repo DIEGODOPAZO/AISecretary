@@ -48,17 +48,6 @@ class MicrosoftMailboxSettings(MicrosoftBaseRequest):
         if mailbox_settings_params.timeZone:
             data["timeZone"] = mailbox_settings_params.timeZone
 
-        if mailbox_settings_params.language:
-            data["language"] = {
-                "locale": mailbox_settings_params.language.locale,
-                "displayName": mailbox_settings_params.language.displayName,
-            }
-
-        if mailbox_settings_params.dateFormat:
-            data["dateFormat"] = mailbox_settings_params.dateFormat
-
-        if mailbox_settings_params.timeFormat:
-            data["timeFormat"] = mailbox_settings_params.timeFormat
 
         if mailbox_settings_params.workingHours:
             data["workingHours"] = {
@@ -86,11 +75,6 @@ class MicrosoftMailboxSettings(MicrosoftBaseRequest):
                     "timeZone": ar.scheduledEndDateTime.timeZone,
                 },
             }
-
-        if mailbox_settings_params.delegateMeetingMessageDeliveryOptions:
-            data["delegateMeetingMessageDeliveryOptions"] = (
-                mailbox_settings_params.delegateMeetingMessageDeliveryOptions
-            )
 
         status_code, response = microsoft_patch(
             MAILBOX_SETTINGS_URL, self.token_manager.get_token(), data=data

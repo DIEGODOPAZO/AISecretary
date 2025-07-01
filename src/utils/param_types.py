@@ -548,20 +548,6 @@ class TimeZoneSettings:
     """
     name: str
 
-
-@dataclass
-class LanguageSettings:
-    """
-    Represents language settings for mailbox configuration.
-
-    Args:
-        locale (str): Locale identifier (e.g. "es-CO").
-        displayName (str): Display name of the language (e.g. "Español (Colombia)").
-    """
-    locale: str
-    displayName: str
-
-
 @dataclass
 class WorkingHours:
     """
@@ -607,20 +593,15 @@ class MailboxSettingsParams:
 
     Args:
         timeZone (Optional[str]): Time zone identifier (e.g. "America/Bogota").
-        language (Optional[LanguageSettings]): Language configuration.
         dateFormat (Optional[str]): Date format (e.g. "dd/MM/yyyy").
-        timeFormat (Optional[str]): Time format (e.g. "HH:mm").
+        timeFormat (Optional[str]): Time format (e.g. "2024-07-01T10:00:00Z").
         workingHours (Optional[WorkingHours]): Working hours configuration.
         automaticRepliesSetting (Optional[AutomaticRepliesSetting]): Automatic replies configuration.
         delegateMeetingMessageDeliveryOptions (Optional[str]): Delegate meeting message delivery options.
     """
     timeZone: Optional[str] = None
-    language: Optional[LanguageSettings] = None
-    dateFormat: Optional[str] = None
-    timeFormat: Optional[str] = None
     workingHours: Optional[WorkingHours] = None
     automaticRepliesSetting: Optional[AutomaticRepliesSetting] = None
-    delegateMeetingMessageDeliveryOptions: Optional[str] = None 
 
 
 @dataclass

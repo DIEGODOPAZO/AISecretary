@@ -175,11 +175,9 @@ This are the funtionalities for each of the MCP servers:
 
 #### Available Specific Settings  
 - Automatic replies  
-- Date and time format  
-- Time zone  
-- Language  
+- Time zone   
 - Working hours  
-- Delivery options  
+
 
 ## Adding New Servers
 
