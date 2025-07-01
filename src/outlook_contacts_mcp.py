@@ -95,8 +95,8 @@ def get_contact_info(contact_id: str) -> str:
 
 
 @mcp.tool()
-def create_contact(contact: Contact, folder_id: Optional[str]) -> str:
-    """Creates a new contact in a specific folder in Microsoft Outlook, if folder_id is None, it will be created in the default folder.
+def create_update_contact(contact: Contact, folder_id: Optional[str], contact_id: Optional[str]) -> str:
+    """Creates a new contact in a specific folder in Microsoft Outlook, if folder_id is None, it will be created in the default folder. If contact_id is provided, it updates the existing contact with that ID.
 
     Args:
         contact (Contact): The contact information to create.
@@ -105,10 +105,23 @@ def create_contact(contact: Contact, folder_id: Optional[str]) -> str:
     Returns:
         str: A JSON string containing the details of the created contact.
     """
-    response = contacts.create_contact(contact, folder_id)
+    response = contacts.create_edit_contact(contact, folder_id, contact_id)
 
     return response
 
+@mcp.tool()
+def delete_contact(contact_id: str) -> str:
+    """Deletes a contact by its ID.
+
+    Args:
+        contact_id (str): The ID of the contact to delete.
+
+    Returns:
+        str: A message indicating the result of the operation.
+    """
+    response = contacts.delete_contact(contact_id)
+
+    return response
 
 if __name__ == "__main__":
     # Start the MCP server

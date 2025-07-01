@@ -6,10 +6,12 @@ from ..helper_functions.general_helpers import (
     handle_microsoft_errors,
     microsoft_post,
     microsoft_get,
+    microsoft_delete,
+    microsoft_patch,
 )
 
 from ..microsoft_base_request import MicrosoftBaseRequest
-from ..constants import CONTACTS_BY_FOLDER_URL, CONTACTS_URL
+from ..constants import CONTACTS_BY_FOLDER_URL, CONTACTS_BY_ID_URL, CONTACTS_URL
 from ..param_types import Contact
 
 
@@ -59,13 +61,16 @@ class MicrosoftContactsRequests(MicrosoftBaseRequest):
             str: A JSON string containing the API response with the contact details.
         """
         url = f"{CONTACTS_URL}/{contact_id}"
-        status_code, response = microsoft_get(
-            url, self.token_manager.get_token()
-        )
+        status_code, response = microsoft_get(url, self.token_manager.get_token())
         return json.dumps(response, indent=2)
 
     @handle_microsoft_errors
-    def create_contact(self, contact: Contact, folder_id: Optional[str] = None) -> str:
+    def create_edit_contact(
+        self,
+        contact: Contact,
+        folder_id: Optional[str] = None,
+        contact_id: Optional[str] = None,
+    ) -> str:
         """
         Creates a new contact in Microsoft Outlook.
 
@@ -78,7 +83,34 @@ class MicrosoftContactsRequests(MicrosoftBaseRequest):
         """
         data = asdict(contact)
         url = CONTACTS_BY_FOLDER_URL(folder_id) if folder_id else CONTACTS_URL
+
+        if contact_id:
+            url = f"{url}/{contact_id}"
+            status_code, response = microsoft_patch(
+                url, self.token_manager.get_token(), data=data
+            )
+
+            return json.dumps(response, indent=2)
+
         status_code, response = microsoft_post(
             url, self.token_manager.get_token(), data=data
         )
         return json.dumps(response, indent=2)
+
+    @handle_microsoft_errors
+    def delete_contact(self, contact_id: str) -> str:
+        """
+        Deletes a contact by its ID.
+
+        Args:
+            contact_id (str): The ID of the contact to delete.
+
+        Returns:
+            str: A message indicating the result of the operation.
+        """
+        url = CONTACTS_BY_ID_URL(contact_id)
+        status_code, response = microsoft_delete(url, self.token_manager.get_token())
+        if status_code == 204:
+            return json.dumps({"message": "Contact deleted successfully."}, indent=2)
+        else:
+            return json.dumps({"error": "Failed to delete contact."}, indent=2)
