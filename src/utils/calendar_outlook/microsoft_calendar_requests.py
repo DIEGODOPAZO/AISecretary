@@ -11,7 +11,7 @@ from ..helper_functions.general_helpers import (
     microsoft_patch,
     microsoft_delete,
 )
-from ..constants import GRAPH_BASE_URL
+from ..constants import CALENDAR_SCHEDULES_URL, GRAPH_BASE_URL
 from ..microsoft_base_request import MicrosoftBaseRequest
 
 
@@ -160,7 +160,6 @@ class MicrosoftCalendarRequests(MicrosoftBaseRequest):
         Returns:
             str: A JSON string containing the schedule information.
         """
-        url = f"{self.url}/calendar/getSchedule"
         data = {
             "schedules": schedule_params.schedules,
             "startTime": asdict(schedule_params.start_time),
@@ -169,7 +168,7 @@ class MicrosoftCalendarRequests(MicrosoftBaseRequest):
         }
 
         status_code, response = microsoft_post(
-            url, self.token_manager.get_token(), data=data
+            CALENDAR_SCHEDULES_URL, self.token_manager.get_token(), data=data
         )
 
         return json.dumps(response, indent=2)

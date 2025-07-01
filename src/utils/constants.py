@@ -8,6 +8,7 @@ CALENDAR_GROUPS_URL = f"{GRAPH_BASE_URL}/calendarGroups"
 CALENDAR_URL = f"{GRAPH_BASE_URL}/calendar"
 CALENDAR_EVENTS_URL = f"{CALENDAR_URL}/events"
 CALENDAR_VIEW_URL = f"{GRAPH_BASE_URL}/calendarView"
+CALENDAR_SCHEDULES_URL =  f"{GRAPH_BASE_URL}/calendar/getSchedule"
 EVENTS_URL = f"{GRAPH_BASE_URL}/events"
 
 # Categories

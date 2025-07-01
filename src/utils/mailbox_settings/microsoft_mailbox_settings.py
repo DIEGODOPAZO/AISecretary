@@ -25,7 +25,7 @@ class MicrosoftMailboxSettings(MicrosoftBaseRequest):
             str: A JSON string containing the mailbox settings.
         """
         status_code, response = microsoft_get(
-            MailboxSettingsParams, self.token_manager.get_token()
+            MAILBOX_SETTINGS_URL, self.token_manager.get_token()
         )
 
         return json.dumps(response, indent=2)

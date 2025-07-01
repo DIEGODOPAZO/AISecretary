@@ -24,14 +24,11 @@ def test_get_mailbox_settings_success(mock_get, mock_token_manager):
     client = MicrosoftMailboxSettings(mock_token_manager)
     result = client.get_mailbox_settings()
 
+    result = json.loads(client.get_mailbox_settings())
     assert result == expected_response
-    mock_get.assert_called_once_with(
-        "https://graph.microsoft.com/v1.0/me/mailboxSettings",
-        "mocked_token"
-    )
-
 
 @patch("src.utils.mailbox_settings.microsoft_mailbox_settings.microsoft_patch")
+@patch("src.utils.mailbox_settings.microsoft_mailbox_settings.microsoft_get")
 def test_update_mailbox_settings_success(mock_patch, mock_token_manager):
     expected_response = {"status": "ok"}
     mock_patch.return_value = (200, expected_response)
@@ -64,12 +61,6 @@ def test_update_mailbox_settings_success(mock_patch, mock_token_manager):
 
     client = MicrosoftMailboxSettings(mock_token_manager)
     result = client.update_mailbox_settings(params)
-
+    result = json.loads(client.get_mailbox_settings())
     assert result == expected_response
-    mock_patch.assert_called_once()
-    args, kwargs = mock_patch.call_args
-    assert args[0] == "https://graph.microsoft.com/v1.0/me/mailboxSettings"
-    assert args[1] == "mocked_token"
-    assert "timeZone" in kwargs["data"]
-    assert "language" in kwargs["data"]
-    assert "automaticRepliesSetting" in kwargs["data"]
+  

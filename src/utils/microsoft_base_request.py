@@ -1,4 +1,4 @@
-from token_manager import TokenManager
+from .token_manager import TokenManager
 
 
 class MicrosoftBaseRequest:
