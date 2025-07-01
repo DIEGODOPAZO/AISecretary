@@ -2,6 +2,9 @@
 
 AISecretary is a collection of MCP servers designed to automate the tasks of a virtual secretary insede the Outlook suite. Each server handles a specific tool, such as:
 - Outlook Mail
+- Outlook Calendar
+- Outlook Contacts
+- Outlook Mailbox Settings
 - Categories
 
 ## Features
@@ -88,96 +91,113 @@ http://127.0.0.1:9000
 You can now interact with **AISecretary** through the OpenWebUI interface.
 
 ## Functionalities
-This are the funtionalities for each of the MCP servers:
 
-### - Email
+These are the available functionalities for each of the MCP servers:
+
+### 📧 Email
 
 #### Email Management
-
 - Advanced email search  
 - Retrieve conversations  
 - Mark as read/unread  
-- Get full email with attachments  
+- Retrieve full emails with attachments  
 - Delete emails  
-- Move/copy emails  
-- Flag management  
+- Move or copy emails  
+- Manage flags  
 
 #### Email Creation and Sending
-
-- Create/edit drafts  
-- Attachment handling  
+- Create or edit drafts  
+- Handle attachments  
 - Send drafts  
 - Reply to emails  
 - Forward emails  
 
 #### Folder Organization
-
 - View folder structure  
-- Create/edit folders  
+- Create or edit folders  
 - Delete folders  
-- Hierarchical navigation  
+- Navigate folder hierarchy  
 
 #### Mail Rules
-
 - View existing rules  
-- Create/edit rules  
+- Create or edit rules  
 - Delete rules  
 
-### - Categories
+---
 
+### 🏷️ Categories
 - View existing categories  
-- Create/edit categories  
+- Create or edit categories  
 - Delete categories  
-- Assign categories to emails
-- Assign categories to events
-- Predefined colors  
+- Assign categories to emails  
+- Assign categories to events  
+- Use predefined colors  
 
-### - Calendar  
+---
 
-#### Event Management  
+### 📅 Calendar
+
+#### Event Management
 - Retrieve events  
 - Create events  
 - Update events  
 - Delete events  
-- Get full event details  
+- Retrieve detailed event information  
 
-#### Invitation Handling  
+#### Invitation Handling
 - Accept invitations  
 - Decline invitations  
-- Tentative response  
+- Respond tentatively  
 - Cancel events  
 
-#### Attachment Management  
+#### Attachment Management
 - Add attachments  
 - Remove attachments  
 
-#### Calendar Management  
+#### Calendar Management
 - List calendars  
-- Get specific calendar  
+- Retrieve specific calendars  
 - Create calendars  
 - Update calendars  
 - Delete calendars  
 
-#### Calendar Group Management  
+#### Calendar Group Management
 - List groups  
 - Create groups  
 - Update groups  
 - Delete groups  
 
-#### Availability Lookup  
-- Get free/busy schedule  
+#### Availability Lookup
+- Retrieve free/busy schedule  
 
-### - Mailbox Settings  
+---
 
-#### General Settings Management  
-- Get settings  
+### 👥 Contacts
+
+#### Contact Folder Management
+- Create folders  
+- Delete folders  
+- Search folders  
+
+#### Contact Management
+- Search contacts  
+- Retrieve detailed contact information  
+- Create contacts  
+- Update contacts  
+- Delete contacts  
+
+---
+
+### ⚙️ Mailbox Settings
+
+#### General Settings Management
+- Retrieve settings  
 - Update settings  
 
-#### Available Specific Settings  
+#### Supported Settings
 - Automatic replies  
-- Time zone   
+- Time zone  
 - Working hours  
-
 
 ## Adding New Servers
 
