@@ -27,6 +27,17 @@ def create_contact_folder(folder_name: str) -> str:
     
     return response
 
+@mcp.tool()
+def get_contact_folders() -> str:
+    """Retrieves all contact folders from Microsoft Outlook.
+
+    Returns:
+        str: A JSON string containing the list of contact folders.
+    """
+    response = contact_folders_requests.get_contact_folders()
+    
+    return response
+
 if __name__ == "__main__":
     # Start the MCP server
     mcp.run()
