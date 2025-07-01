@@ -44,7 +44,7 @@ def get_contact_folders() -> str:
 
 @mcp.tool()
 def get_contacts(folder_id: Optional[str], name: str = None) -> str:
-    """Retrieves contacts from a specific folder in Microsoft Outlook.
+    """Retrieves contacts from a specific folder in Microsoft Outlook. If no folder ID is provided, it retrieves contacts from the default folder (this defaulf folder has no ID).
 
     Args:
         folder_id (Optional[str]): The ID of the contact folder.
@@ -58,8 +58,22 @@ def get_contacts(folder_id: Optional[str], name: str = None) -> str:
     return response
 
 @mcp.tool()
+def get_contact_info(contact_id: str) -> str:
+    """Retrieves detailed information about a specific contact by its ID.
+
+    Args:
+        contact_id (str): The ID of the contact to retrieve.
+
+    Returns:
+        str: A JSON string containing the details of the contact.
+    """
+    response = contacts.get_contact_info(contact_id)
+    
+    return response
+
+@mcp.tool()
 def create_contact(contact: Contact, folder_id: Optional[str]) -> str:
-    """Creates a new contact in a specific folder in Microsoft Outlook.
+    """Creates a new contact in a specific folder in Microsoft Outlook, if folder_id is None, it will be created in the default folder.
 
     Args:
         contact (Contact): The contact information to create.

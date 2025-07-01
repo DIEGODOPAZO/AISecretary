@@ -15,6 +15,7 @@ from ..param_types import Contact
 
 class MicrosoftContactsRequests(MicrosoftBaseRequest):
 
+    @handle_microsoft_errors
     def get_contacts(
         self, folder_id: Optional[str] = None, name: Optional[str] = None
     ) -> str:
@@ -35,8 +36,35 @@ class MicrosoftContactsRequests(MicrosoftBaseRequest):
         status_code, response = microsoft_get(
             url, self.token_manager.get_token(), params=params
         )
+        simplified_contacts = [
+            {
+                "id": contact.get("id"),
+                "givenName": contact.get("givenName"),
+                "surname": contact.get("surname"),
+            }
+            for contact in response.get("value", [])
+        ]
+
+        return json.dumps(simplified_contacts, indent=2)
+
+    @handle_microsoft_errors
+    def get_contact_info(self, contact_id: str) -> str:
+        """
+        Retrieves detailed information about a specific contact by its ID.
+
+        Args:
+            contact_id (str): The ID of the contact to retrieve.
+
+        Returns:
+            str: A JSON string containing the API response with the contact details.
+        """
+        url = f"{CONTACTS_URL}/{contact_id}"
+        status_code, response = microsoft_get(
+            url, self.token_manager.get_token()
+        )
         return json.dumps(response, indent=2)
 
+    @handle_microsoft_errors
     def create_contact(self, contact: Contact, folder_id: Optional[str] = None) -> str:
         """
         Creates a new contact in Microsoft Outlook.
