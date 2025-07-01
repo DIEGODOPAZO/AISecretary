@@ -65,3 +65,5 @@ class MicrosoftContactFoldersRequests(MicrosoftBaseRequest):
             response = {"message": "Contact folder deleted successfully."}
         elif status_code == 404:
             response = {"error": "Contact folder not found."}
+
+        return json.dumps(response, indent=2)
