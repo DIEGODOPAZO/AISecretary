@@ -169,7 +169,13 @@ class FolderParams:
     folder_id: Optional[str] = None
     parent_folder_id: Optional[str] = None
 
-
+PresetColor = Literal[
+    "preset0", "preset1", "preset2", "preset3", "preset4", "preset5",
+    "preset6", "preset7", "preset8", "preset9", "preset10", "preset11",
+    "preset12", "preset13", "preset14", "preset15", "preset16", "preset17",
+    "preset18", "preset19", "preset20", "preset21", "preset22", "preset23",
+    "preset24", "preset25"
+]
 @dataclass
 class CategoryParams:
     """
@@ -183,7 +189,8 @@ class CategoryParams:
 
     category_name: str
     category_id: Optional[str] = None
-    preset_color: str = "preset0"
+    preset_color: PresetColor = "preset0"
+
 
 
 @dataclass

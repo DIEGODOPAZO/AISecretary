@@ -29,7 +29,7 @@ def get_categores() -> str:
 @mcp.tool()
 def create_edit_category(category_params: CategoryParams) -> str:
     """
-    Creates or edits a category in Outlook.
+    Creates or edits a category in Outlook. In order to now the equivalence between colors and preset colors, you can use the tool get_preset_colors.
 
     Args:
         category_params (CategoryParams): The parameters for creating or editing a category.
@@ -85,6 +85,25 @@ def add_delete_category_to_event(
         str: A confirmation message or an error message.
     """
     return categories_requests.add_delete_category_to_event(handle_category_to_resource_params)
+
+@mcp.tool()
+def add_delete_category_to_task(
+    todo_list_id: str,
+    handle_category_to_resource_params: HandleCategoryToResourceParams,
+) -> str:
+    """
+    Adds or deletes a category to/from a task in the Outlook To Do list.
+
+    Args:
+        todo_list_id (str): The ID of the To Do list.
+        handle_category_to_resource_params (HandleCategoryToResourceParams): The parameters for adding or deleting a category to/from a task.
+
+    Returns:
+        str: A confirmation message or an error message.
+    """
+    return categories_requests.add_delete_category_to_task(
+        todo_list_id, handle_category_to_resource_params
+    )
 
 @mcp.tool()
 def get_preset_colors() -> str:

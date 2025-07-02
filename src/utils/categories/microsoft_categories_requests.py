@@ -3,7 +3,6 @@ import json
 from ..helper_functions.helpers_calendar import simplify_event
 from ..param_types import *
 from ..helper_functions.helpers_email import *
-from ..token_manager import TokenManager
 from ..helper_functions.general_helpers import (
     handle_microsoft_errors,
     microsoft_get,
@@ -11,7 +10,7 @@ from ..helper_functions.general_helpers import (
     microsoft_patch,
     microsoft_delete,
 )
-from ..constants import MASTER_CATEGORIES_URL, MESSAGES_URL, CALENDAR_EVENTS_URL
+from ..constants import MASTER_CATEGORIES_URL, MESSAGES_URL, CALENDAR_EVENTS_URL, TODO_TASK_BY_ID 
 from ..microsoft_base_request import MicrosoftBaseRequest
 
 
@@ -158,6 +157,37 @@ class MicrosoftCategoriesRequests(MicrosoftBaseRequest):
         )
         response = simplify_event(response)
         return json.dumps(response, indent=2)
+
+    @handle_microsoft_errors
+    def add_delete_category_to_task(
+        self, todo_list_id, handle_category_to_resource_params: HandleCategoryToResourceParams
+    ) -> str:
+        """
+        Adds or removes categories from a Microsoft To Do task.
+
+        Args:
+            todo_list_id (str): The ID of the To Do list containing the task.
+            handle_category_to_resource_params (HandleCategoryToResourceParams):
+                Parameters including resource_id, category_names, and remove flag.
+
+        Returns:
+            str: JSON-formatted response with the updated task.
+        """
+        url = TODO_TASK_BY_ID(todo_list_id, handle_category_to_resource_params.resource_id)
+        status_code, task_data = microsoft_get(url, self.token_manager.get_token())
+        existing_categories = set(task_data.get("categories", []))
+        new_categories = set(handle_category_to_resource_params.category_names)
+        updated_categories = (
+            list(existing_categories.difference(new_categories))
+            if handle_category_to_resource_params.remove
+            else list(existing_categories.union(new_categories))
+        )
+        data = {"categories": updated_categories}
+        status_code, response = microsoft_patch(
+            url, self.token_manager.get_token(), data
+        )
+        return json.dumps(response, indent=2)
+    
 
     def get_preset_color_equivalence_microsoft(self) -> str:
         """
