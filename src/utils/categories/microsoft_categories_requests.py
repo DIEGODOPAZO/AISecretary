@@ -19,10 +19,7 @@ class MicrosoftCategoriesRequests(MicrosoftBaseRequest):
     Handles Microsoft Outlook category operations via Microsoft Graph API.
 
     This class provides methods to get, create, edit, and delete categories, as well as add or remove categories from emails and calendar events.
-
-    Attributes:
-        url (str): Base URL for the master categories endpoint.
-        token_manager (TokenManager): Manages access tokens for Microsoft API requests.
+    Inherits from MicrosoftBaseRequest to manage authentication and token retrieval.
     """
 
     @handle_microsoft_errors

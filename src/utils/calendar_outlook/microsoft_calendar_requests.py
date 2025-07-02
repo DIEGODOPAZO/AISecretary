@@ -16,7 +16,10 @@ from ..microsoft_base_request import MicrosoftBaseRequest
 
 
 class MicrosoftCalendarRequests(MicrosoftBaseRequest):
-
+    """
+    Handles requests related to calendars in Microsoft Graph API.
+    Inherits from MicrosoftBaseRequest to manage authentication and token retrieval.
+    """
     def _get_url(self, calendar_group_id: str = None) -> str:
         """
         Constructs the URL for Microsoft Graph API requests.

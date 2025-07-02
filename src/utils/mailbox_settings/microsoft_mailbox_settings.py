@@ -13,7 +13,7 @@ from ..microsoft_base_request import MicrosoftBaseRequest
 class MicrosoftMailboxSettings(MicrosoftBaseRequest):
     """
     Handles operations related to Microsoft mailbox settings using Microsoft Graph API.
-
+    Inherits from MicrosoftBaseRequest to manage authentication and token retrieval.
     """
 
     @handle_microsoft_errors

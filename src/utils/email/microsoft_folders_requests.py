@@ -19,6 +19,7 @@ class MicrosoftFoldersRequests(MicrosoftBaseRequest):
     Handles Microsoft Graph API requests related to mail folders for a user's mailbox.
 
     This class provides methods to retrieve, create, edit, and delete mail folders using the Microsoft Graph API.
+    Inherits from MicrosoftBaseRequest to manage authentication and token retrieval.
     """
 
     @handle_microsoft_errors

@@ -64,3 +64,9 @@ Thumbs.db
 src/token_cache_microsoft.json
 
 todo.txt
+
+# Sphinx build output
+_build/
+build/
+html/
+doctrees/

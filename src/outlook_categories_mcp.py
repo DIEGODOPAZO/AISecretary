@@ -60,6 +60,7 @@ def add_delete_category_to_email(
 ) -> str:
     """
     Adds or deletes a category to/from an email in the Outlook mailbox.
+    You can use the tool get_categories to get the categories available in the Outlook mailbox.
 
     Args:
         handle_category_to_resource_params (HandleCategoryToResourceParams): The parameters for adding or deleting a category to/from an email.
@@ -77,6 +78,7 @@ def add_delete_category_to_event(
 ) -> str:
     """
     Adds or deletes a category to/from an event in the Outlook mailbox.
+    You can use the tool get_categories to get the categories available in the Outlook mailbox.
 
     Args:
         handle_category_to_resource_params (HandleCategoryToResourceParams): The parameters for adding or deleting a category to/from an event.
@@ -93,6 +95,7 @@ def add_delete_category_to_task(
 ) -> str:
     """
     Adds or deletes a category to/from a task in the Outlook To Do list.
+    You can use the tool get_categories to get the categories available in the Outlook mailbox.
 
     Args:
         todo_list_id (str): The ID of the To Do list.

@@ -15,11 +15,12 @@ from ..microsoft_base_request import MicrosoftBaseRequest
 
 
 class MicrosoftRulesRequests(MicrosoftBaseRequest):
-    """Handles Microsoft Graph API requests for Outlook message rules.
-
+    """
+    Handles Microsoft Graph API requests for Outlook message rules.
     This class provides methods to interact with the Microsoft Graph API for managing
     message rules in the user's inbox, including retrieving, creating, updating, and
     deleting rules.
+    Inherits from MicrosoftBaseRequest to manage authentication and token retrieval.
     """
 
     @handle_microsoft_errors

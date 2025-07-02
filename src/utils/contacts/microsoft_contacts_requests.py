@@ -16,7 +16,10 @@ from ..param_types import Contact
 
 
 class MicrosoftContactsRequests(MicrosoftBaseRequest):
-
+    """    
+    Handles Microsoft Graph API requests related to contacts for a user's mailbox.
+    Inherits from MicrosoftBaseRequest to manage authentication and token retrieval.
+    """
     @handle_microsoft_errors
     def get_contacts(
         self, folder_id: Optional[str] = None, name: Optional[str] = None

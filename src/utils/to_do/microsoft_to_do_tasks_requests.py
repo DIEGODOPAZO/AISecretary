@@ -15,7 +15,10 @@ from ..microsoft_base_request import MicrosoftBaseRequest
 
 
 class MicrosoftToDoTasksRequests(MicrosoftBaseRequest):
-
+    """
+    Handles requests related to Microsoft To-Do tasks using Microsoft Graph API.
+    Inherits from MicrosoftBaseRequest to manage authentication and token retrieval.
+    """
     @handle_microsoft_errors
     def get_tasks_in_list(self, todo_list_id: str, task_filter: TodoTaskFilter = None, top: int = 100) -> str:
         """

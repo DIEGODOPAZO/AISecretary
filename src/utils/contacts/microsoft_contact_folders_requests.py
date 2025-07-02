@@ -13,7 +13,7 @@ from ..microsoft_base_request import MicrosoftBaseRequest
 class MicrosoftContactFoldersRequests(MicrosoftBaseRequest):
     """
     Handles Microsoft Graph API requests related to contact folders for a user's mailbox.
-
+    Inherits from MicrosoftBaseRequest to manage authentication and token retrieval.
     """
 
     @handle_microsoft_errors

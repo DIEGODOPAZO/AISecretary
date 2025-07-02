@@ -5,8 +5,8 @@ class TokenManager:
     Manages access tokens, handling expiration and automatic refresh.
 
     Args:
-        token_json_path (str): Path to the token JSON file.
         get_access_token_func (Callable): Function to call to refresh the token.
+        get_expiration_time (Callable): Function to call to get the expiration time of the token.
         margin_seconds (int, optional): Time in seconds before actual expiration to consider token as 'expired'. Defaults to 500.
     """
     def __init__(self, get_access_token_func, get_expiration_time, margin_seconds: int = 500):
