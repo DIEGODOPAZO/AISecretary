@@ -38,6 +38,7 @@ def create_todo_list(list_name: str) -> str:
         str: JSON string containing the details of the created to-do list.
     """
     return to_do_lists_requests.create_todo_list(list_name)
+
 @mcp.tool()
 def delete_todo_list(list_id: str) -> str:
     """
@@ -51,6 +52,33 @@ def delete_todo_list(list_id: str) -> str:
     """
     return to_do_lists_requests.delete_todo_list(list_id)
 
+@mcp.tool()
+def get_tasks_in_list(todo_list_id: str, task_filter: Optional[TaskCreateRequest] = None, top: int = 100) -> str:
+    """
+    Retrieves tasks from a specified to-do list with optional filtering.
+
+    Args:
+        todo_list_id (str): ID of the to-do list.
+        task_filter (Optional[TaskCreateRequest]): Filter parameters for the tasks.
+        top (int): Maximum number of tasks to retrieve.
+
+    Returns:
+        str: JSON string containing the list of tasks in the specified to-do list.
+    """
+    return to_do_tasks_requests.get_tasks_in_list(todo_list_id, task_filter=task_filter, top=top)
+@mcp.tool()
+def get_task_in_list(todo_list_id: str, task_id: str) -> str:
+    """
+    Retrieves details of a specific task in a specified to-do list.
+
+    Args:
+        todo_list_id (str): ID of the to-do list.
+        task_id (str): ID of the task to retrieve.
+
+    Returns:
+        str: JSON string containing the details of the specified task.
+    """
+    return to_do_tasks_requests.get_task_in_list(todo_list_id, task_id)
 
 @mcp.tool()
 def create_update_task_in_list(todo_list_id: str, task_create_request: TaskCreateRequest, task_id: Optional[str]) -> str:

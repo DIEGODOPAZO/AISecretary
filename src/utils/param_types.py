@@ -1,5 +1,6 @@
 from dataclasses import asdict, dataclass, field
 from datetime import datetime as DateTime
+
 from typing import Any, Dict, List, Optional, Literal
 
 
@@ -777,7 +778,6 @@ class TaskCreateRequest:
     Args:
         title (str): The title of the task.
         body (Optional[ItemBody]): The body/content of the task.
-        categories (Optional[List[str]]): List of categories for the task.
         dueDateTime (Optional[DateTimeTimeZone]): Due date and time for the task.
         startDateTime (Optional[DateTimeTimeZone]): Start date and time for the task.
         completedDateTime (Optional[DateTimeTimeZone]): Completion date and time for the task.
@@ -789,7 +789,6 @@ class TaskCreateRequest:
     """
     title: str
     body: Optional[ItemBody] = None
-    categories: Optional[List[str]] = None
     dueDateTime: Optional[DateTimeTimeZone] = None
     startDateTime: Optional[DateTimeTimeZone] = None
     completedDateTime: Optional[DateTimeTimeZone] = None
@@ -803,9 +802,53 @@ class TaskCreateRequest:
         def serialize(obj):
             if isinstance(obj, list):
                 return [serialize(i) for i in obj]
-            elif hasattr(obj, "__dataclass_fields__"):  # Mejor que __dict__ para dataclasses
+            elif hasattr(obj, "__dataclass_fields__"):
                 return {k: serialize(v) for k, v in asdict(obj).items() if v is not None}
             else:
                 return obj
 
         return serialize(self)
+    
+
+@dataclass
+class TodoTaskFilter:
+    """
+    Filter parameters for querying Microsoft To Do tasks.
+
+    Args:
+        status (Optional[str]): Status of the task (e.g., 'notStarted', 'inProgress', 'completed', etc.).
+        importance (Optional[str]): Importance of the task (e.g., 'low', 'normal', 'high').
+        is_reminder_on (Optional[bool]): Whether the task has a reminder set.
+        due_before (Optional[datetiem]): Only include tasks due before this date/time.
+        due_after (Optional[datetime]): Only include tasks due after this date/time.
+        created_after (Optional[datetime]): Only include tasks created after this date/time.
+        created_before (Optional[datetime]): Only include tasks created before this date/time.
+    """
+    status: Optional[str] = None               
+    importance: Optional[str] = None           
+    is_reminder_on: Optional[bool] = None     
+    due_before: Optional[DateTime] = None      
+    due_after: Optional[DateTime] = None       
+    created_after: Optional[DateTime] = None   
+    created_before: Optional[DateTime] = None  
+
+    def to_odata_filter(self) -> Optional[str]:
+        """Builds the $filter string for Microsoft Graph from the provided fields."""
+        filters = []
+
+        if self.status:
+            filters.append(f"status eq '{self.status}'")
+        if self.importance:
+            filters.append(f"importance eq '{self.importance}'")
+        if self.is_reminder_on is not None:
+            filters.append(f"isReminderOn eq {str(self.is_reminder_on).lower()}")
+        if self.due_before:
+            filters.append(f"dueDateTime/dateTime lt {self.due_before.isoformat()}Z")
+        if self.due_after:
+            filters.append(f"dueDateTime/dateTime gt {self.due_after.isoformat()}Z")
+        if self.created_before:
+            filters.append(f"createdDateTime lt {self.created_before.isoformat()}Z")
+        if self.created_after:
+            filters.append(f"createdDateTime gt {self.created_after.isoformat()}Z")
+
+        return " and ".join(filters) if filters else None
