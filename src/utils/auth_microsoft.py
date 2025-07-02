@@ -5,6 +5,7 @@ Handles Microsoft authentication using MSAL and environment variables.
 This module loads environment variables from a .env file, manages token cache, and provides functions to obtain access tokens for Microsoft APIs.
 """
 
+import json
 import os
 from pathlib import Path
 import msal
@@ -95,6 +96,23 @@ def get_access_token(scopes=SCOPES):
         raise Exception(
             f"Error in the authentication: {result.get('error_description') if result else 'No token found'}"
         )
+
+
+def load_expiration_time_from_file():
+    """Loads the token expiration time from the token cache file.
+
+    Returns:
+        int: The expiration time in seconds since epoch.
+    """
+    if not os.path.exists(TOKEN_CACHE_FILE):
+        return 0
+
+    with open(TOKEN_CACHE_FILE, "r") as f:
+        data = json.load(f)
+
+    access_token_data = list(data["AccessToken"].values())[0]
+
+    return int(access_token_data["expires_on"])
 
 
 if __name__ == "__main__":
