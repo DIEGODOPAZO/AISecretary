@@ -1,6 +1,6 @@
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from datetime import datetime as DateTime
-from typing import List, Optional, Literal
+from typing import Any, Dict, List, Optional, Literal
 
 
 @dataclass
@@ -743,3 +743,69 @@ class Contact:
     emailAddresses: List[EmailAddressContact] = field(default_factory=list)
     businessPhones: List[str] = field(default_factory=list)
     mobilePhone: str = ""
+
+@dataclass
+class ItemBody:
+    """
+    Represents the body of a task or message.
+
+    Args:
+        content (str): The actual content of the body.
+        contentType (Literal["text", "html"]): The type of content, either "text" or "html". Default is "text".
+    """
+    content: str
+    contentType: Literal["text", "html"] = "text"
+
+@dataclass
+class PatternedRecurrence:
+    """
+    Represents a recurrence pattern for a task or event.
+
+    Args:
+        pattern (Dict[str, Any]): The recurrence pattern (e.g., daily, weekly, etc.).
+        range (Dict[str, Any]): The range of the recurrence (e.g., start/end dates, number of occurrences).
+    """
+    pattern: Dict[str, Any]
+    range: Dict[str, Any]
+
+
+@dataclass
+class TaskCreateRequest:
+    """
+    Represents the data required to create a Microsoft To Do task.
+
+    Args:
+        title (str): The title of the task.
+        body (Optional[ItemBody]): The body/content of the task.
+        categories (Optional[List[str]]): List of categories for the task.
+        dueDateTime (Optional[DateTimeTimeZone]): Due date and time for the task.
+        startDateTime (Optional[DateTimeTimeZone]): Start date and time for the task.
+        completedDateTime (Optional[DateTimeTimeZone]): Completion date and time for the task.
+        importance (Optional[Literal["low", "normal", "high"]]): Importance of the task. Default is "normal".
+        isReminderOn (Optional[bool]): Whether a reminder is set for the task.
+        reminderDateTime (Optional[DateTimeTimeZone]): Date and time for the reminder.
+        recurrence (Optional[PatternedRecurrence]): Recurrence pattern for the task.
+        status (Optional[Literal["notStarted", "inProgress", "completed", "waitingOnOthers", "deferred"]]): Status of the task. Default is "notStarted".
+    """
+    title: str
+    body: Optional[ItemBody] = None
+    categories: Optional[List[str]] = None
+    dueDateTime: Optional[DateTimeTimeZone] = None
+    startDateTime: Optional[DateTimeTimeZone] = None
+    completedDateTime: Optional[DateTimeTimeZone] = None
+    importance: Optional[Literal["low", "normal", "high"]] = "normal"
+    isReminderOn: Optional[bool] = None
+    reminderDateTime: Optional[DateTimeTimeZone] = None
+    recurrence: Optional[PatternedRecurrence] = None
+    status: Optional[Literal["notStarted", "inProgress", "completed", "waitingOnOthers", "deferred"]] = "notStarted"
+
+    def to_json_object(self):
+        def serialize(obj):
+            if isinstance(obj, list):
+                return [serialize(i) for i in obj]
+            elif hasattr(obj, "__dataclass_fields__"):  # Mejor que __dict__ para dataclasses
+                return {k: serialize(v) for k, v in asdict(obj).items() if v is not None}
+            else:
+                return obj
+
+        return serialize(self)

@@ -5,7 +5,7 @@ MAILBOX_SETTINGS_URL = f"{GRAPH_BASE_URL}/mailboxSettings"
 
 # To-Do
 TODO_LISTS_URL = f"{GRAPH_BASE_URL}/todo/lists"
-
+TODO_TASK = lambda todo_list_id : f"{TODO_LISTS_URL}/{todo_list_id}/tasks"
 # Calendars
 CALENDAR_GROUPS_URL = f"{GRAPH_BASE_URL}/calendarGroups"
 CALENDAR_URL = f"{GRAPH_BASE_URL}/calendar"

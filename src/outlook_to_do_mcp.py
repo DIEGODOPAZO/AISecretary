@@ -1,8 +1,9 @@
 from utils.token_manager import TokenManager
 from utils.auth_microsoft import get_access_token, load_expiration_time_from_file
 from mcp.server.fastmcp import FastMCP
-
+from utils.param_types import TaskCreateRequest
 from utils.to_do.microsoft_to_do_lists_requests import MicrosoftToDoListsRequests
+from utils.to_do.microsoft_to_do_tasks_requests import MicrosoftToDoTasksRequests
 
 # Create an MCP server
 mcp = FastMCP("ToDo-AISecretary-Outlook", dependencies=["mcp[cli]", "msal"])
@@ -12,6 +13,7 @@ token_manager = TokenManager(
 )
 
 to_do_lists_requests = MicrosoftToDoListsRequests(token_manager)
+to_do_tasks_requests = MicrosoftToDoTasksRequests(token_manager)
 
 @mcp.tool()
 def get_todo_lists() -> str:
@@ -47,6 +49,21 @@ def delete_todo_list(list_id: str) -> str:
         str: Confirmation message or error details.
     """
     return to_do_lists_requests.delete_todo_list(list_id)
+
+
+@mcp.tool()
+def create_task_in_list(todo_list_id: str, task_create_request: TaskCreateRequest) -> str:
+    """
+    Creates a new task in a specified to-do list.
+
+    Args:
+        todo_list_id (str): ID of the to-do list where the task will be created.
+        task_create_request (TaskCreateReques): the dataclass containing the details of the task to create.
+
+    Returns:
+        str: JSON string containing the details of the created task.
+    """
+    return to_do_tasks_requests.create_task_in_list(todo_list_id, task_create_request)
 
 if __name__ == "__main__":
     mcp.run()
