@@ -1,3 +1,4 @@
+from typing import Optional
 from utils.token_manager import TokenManager
 from utils.auth_microsoft import get_access_token, load_expiration_time_from_file
 from mcp.server.fastmcp import FastMCP
@@ -52,18 +53,18 @@ def delete_todo_list(list_id: str) -> str:
 
 
 @mcp.tool()
-def create_task_in_list(todo_list_id: str, task_create_request: TaskCreateRequest) -> str:
+def create_update_task_in_list(todo_list_id: str, task_create_request: TaskCreateRequest, task_id: Optional[str]) -> str:
     """
-    Creates a new task in a specified to-do list.
+    Creates or updates a new task in a specified to-do list.
 
     Args:
         todo_list_id (str): ID of the to-do list where the task will be created.
         task_create_request (TaskCreateReques): the dataclass containing the details of the task to create.
-
+        task_id (Optional[str]): ID of the task to update. If provided, it will update the existing task.
     Returns:
         str: JSON string containing the details of the created task.
     """
-    return to_do_tasks_requests.create_task_in_list(todo_list_id, task_create_request)
+    return to_do_tasks_requests.create_update_task_in_list(todo_list_id, task_create_request, task_id=task_id)
 
 if __name__ == "__main__":
     mcp.run()
