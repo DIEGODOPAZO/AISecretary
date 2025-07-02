@@ -64,4 +64,23 @@ class MicrosoftToDoTasksRequests(MicrosoftBaseRequest):
         )
 
         return json.dumps(response, indent=2)
-        
+
+    @handle_microsoft_errors
+    def delete_task_in_list(self, todo_list_id: str, task_id: str) -> str:
+        """
+        Delete a task from a specified to-do list.
+
+        Args:
+            todo_list_id (str): ID of the to-do list.
+            task_id (str): ID of the task to delete.
+
+        Returns:
+            str: Confirmation message or error details.
+        """
+        url = TODO_TASK_BY_ID(todo_list_id, task_id)
+
+        status_code, response = microsoft_delete(
+            url, self.token_manager.get_token()
+        )
+
+        return json.dumps(response, indent=2) if response else "Task deleted successfully."

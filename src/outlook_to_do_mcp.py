@@ -66,5 +66,19 @@ def create_update_task_in_list(todo_list_id: str, task_create_request: TaskCreat
     """
     return to_do_tasks_requests.create_update_task_in_list(todo_list_id, task_create_request, task_id=task_id)
 
+@mcp.tool()
+def delete_task_in_list(todo_list_id: str, task_id: str) -> str:
+    """
+    Deletes a task from a specified to-do list.
+
+    Args:
+        todo_list_id (str): ID of the to-do list.
+        task_id (str): ID of the task to delete.
+
+    Returns:
+        str: Confirmation message or error details.
+    """
+    return to_do_tasks_requests.delete_task_in_list(todo_list_id, task_id)
+
 if __name__ == "__main__":
     mcp.run()
