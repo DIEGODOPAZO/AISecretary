@@ -4,7 +4,7 @@ from utils.calendar_outlook.microsoft_calendar_groups_requests import (
     MicrosoftCalendarGroupsRequests,
 )
 from utils.token_manager import TokenManager
-from utils.auth_microsoft import get_access_token, get_token_cache_path
+from utils.auth_microsoft import get_access_token, load_expiration_time_from_file
 from utils.calendar_outlook.microsoft_events_requests import MicrosoftEventsRequests
 from utils.param_types import (
     CalendarUpdateParams,
@@ -21,7 +21,7 @@ from mcp.server.fastmcp import FastMCP
 mcp = FastMCP("Calendar-AISecretary-Outlook", dependencies=["mcp[cli]", "msal"])
 
 token_manager = TokenManager(
-    get_token_cache_path(), get_access_token_func=get_access_token
+    get_access_token_func=get_access_token, get_expiration_time=load_expiration_time_from_file
 )
 events_requests = MicrosoftEventsRequests(token_manager)
 calendar_groups = MicrosoftCalendarGroupsRequests(token_manager)

@@ -31,7 +31,7 @@ class MicrosoftEventsRequests(MicrosoftBaseRequest):
     """Handles Microsoft Graph API requests for calendar events.
 
     This class provides methods to interact with Microsoft Outlook calendar events, including creating, retrieving, updating, and deleting events, as well as managing event invitations and attachments.
-
+    Inherits from MicrosoftBaseRequest to manage authentication and token retrieval.
     """
 
     def _get_url(self, calendar_id: str = None) -> str:

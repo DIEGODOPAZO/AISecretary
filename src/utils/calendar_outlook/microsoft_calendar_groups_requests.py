@@ -14,6 +14,10 @@ from ..constants import CALENDAR_GROUPS_URL
 
 
 class MicrosoftCalendarGroupsRequests(MicrosoftBaseRequest):
+    """
+    Handles requests related to calendar groups in Microsoft Graph API. 
+    Inherits from MicrosoftBaseRequest to manage authentication and token retrieval.
+    """
     @handle_microsoft_errors
     def get_calendar_groups(self, calendar_group_params: CalendarGroupParams) -> str:
         """

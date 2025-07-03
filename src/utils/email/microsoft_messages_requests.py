@@ -39,10 +39,10 @@ from ..microsoft_base_request import MicrosoftBaseRequest
 
 
 class MicrosoftMessagesRequests(MicrosoftBaseRequest):
-    """Handles Microsoft Graph API requests related to email messages.
-
+    """
+    Handles Microsoft Graph API requests related to email messages.
     This class provides methods to interact with Microsoft Outlook messages, including retrieving, sending, editing, deleting, and managing attachments for emails using the Microsoft Graph API.
-
+    Inherits from MicrosoftBaseRequest to manage authentication and token retrieval.
     """
 
     @handle_microsoft_errors

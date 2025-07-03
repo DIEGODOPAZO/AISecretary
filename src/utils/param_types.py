@@ -1,6 +1,7 @@
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from datetime import datetime as DateTime
-from typing import List, Optional, Literal
+
+from typing import Any, Dict, List, Optional, Literal
 
 
 @dataclass
@@ -168,7 +169,13 @@ class FolderParams:
     folder_id: Optional[str] = None
     parent_folder_id: Optional[str] = None
 
-
+PresetColor = Literal[
+    "preset0", "preset1", "preset2", "preset3", "preset4", "preset5",
+    "preset6", "preset7", "preset8", "preset9", "preset10", "preset11",
+    "preset12", "preset13", "preset14", "preset15", "preset16", "preset17",
+    "preset18", "preset19", "preset20", "preset21", "preset22", "preset23",
+    "preset24", "preset25"
+]
 @dataclass
 class CategoryParams:
     """
@@ -182,7 +189,8 @@ class CategoryParams:
 
     category_name: str
     category_id: Optional[str] = None
-    preset_color: str = "preset0"
+    preset_color: PresetColor = "preset0"
+
 
 
 @dataclass
@@ -564,21 +572,25 @@ class WorkingHours:
     endTime: str    
     timeZone: TimeZoneSettings
 
-
+Status = Literal[
+    "disabled",
+    "alwaysEnabled",
+    "scheduled"
+]
 @dataclass
 class AutomaticRepliesSetting:
     """
     Represents automatic replies settings for mailbox configuration.
 
     Args:
-        status (str): Status of automatic replies ("disabled", "alwaysEnabled", "scheduled").
+        status (Status): Status of automatic replies ("disabled", "alwaysEnabled", "scheduled").
         externalAudience (str): Audience for external replies ("none", "contactsOnly", "all").
         internalReplyMessage (str): Message for internal automatic replies.
         externalReplyMessage (str): Message for external automatic replies.
         scheduledStartDateTime (DateTimeTimeZone): Start date and time for scheduled automatic replies.
         scheduledEndDateTime (DateTimeTimeZone): End date and time for scheduled automatic replies.
     """
-    status: str 
+    status: Status 
     externalAudience: str  
     internalReplyMessage: str
     externalReplyMessage: str
@@ -739,3 +751,111 @@ class Contact:
     emailAddresses: List[EmailAddressContact] = field(default_factory=list)
     businessPhones: List[str] = field(default_factory=list)
     mobilePhone: str = ""
+
+@dataclass
+class ItemBody:
+    """
+    Represents the body of a task or message.
+
+    Args:
+        content (str): The actual content of the body.
+        contentType (Literal["text", "html"]): The type of content, either "text" or "html". Default is "text".
+    """
+    content: str
+    contentType: Literal["text", "html"] = "text"
+
+@dataclass
+class PatternedRecurrence:
+    """
+    Represents a recurrence pattern for a task or event.
+
+    Args:
+        pattern (Dict[str, Any]): The recurrence pattern (e.g., daily, weekly, etc.).
+        range (Dict[str, Any]): The range of the recurrence (e.g., start/end dates, number of occurrences).
+    """
+    pattern: Dict[str, Any]
+    range: Dict[str, Any]
+
+
+@dataclass
+class TaskCreateRequest:
+    """
+    Represents the data required to create a Microsoft To Do task.
+
+    Args:
+        title (str): The title of the task.
+        body (Optional[ItemBody]): The body/content of the task.
+        dueDateTime (Optional[DateTimeTimeZone]): Due date and time for the task.
+        startDateTime (Optional[DateTimeTimeZone]): Start date and time for the task.
+        completedDateTime (Optional[DateTimeTimeZone]): Completion date and time for the task.
+        importance (Optional[Literal["low", "normal", "high"]]): Importance of the task. Default is "normal".
+        isReminderOn (Optional[bool]): Whether a reminder is set for the task.
+        reminderDateTime (Optional[DateTimeTimeZone]): Date and time for the reminder.
+        recurrence (Optional[PatternedRecurrence]): Recurrence pattern for the task.
+        status (Optional[Literal["notStarted", "inProgress", "completed", "waitingOnOthers", "deferred"]]): Status of the task. Default is "notStarted".
+    """
+    title: str
+    body: Optional[ItemBody] = None
+    dueDateTime: Optional[DateTimeTimeZone] = None
+    startDateTime: Optional[DateTimeTimeZone] = None
+    completedDateTime: Optional[DateTimeTimeZone] = None
+    importance: Optional[Literal["low", "normal", "high"]] = "normal"
+    isReminderOn: Optional[bool] = None
+    reminderDateTime: Optional[DateTimeTimeZone] = None
+    recurrence: Optional[PatternedRecurrence] = None
+    status: Optional[Literal["notStarted", "inProgress", "completed", "waitingOnOthers", "deferred"]] = "notStarted"
+
+    def to_json_object(self):
+        def serialize(obj):
+            if isinstance(obj, list):
+                return [serialize(i) for i in obj]
+            elif hasattr(obj, "__dataclass_fields__"):
+                return {k: serialize(v) for k, v in asdict(obj).items() if v is not None}
+            else:
+                return obj
+
+        return serialize(self)
+    
+
+@dataclass
+class TodoTaskFilter:
+    """
+    Filter parameters for querying Microsoft To Do tasks.
+
+    Args:
+        status (Optional[str]): Status of the task (e.g., 'notStarted', 'inProgress', 'completed', etc.).
+        importance (Optional[str]): Importance of the task (e.g., 'low', 'normal', 'high').
+        is_reminder_on (Optional[bool]): Whether the task has a reminder set.
+        due_before (Optional[datetiem]): Only include tasks due before this date/time.
+        due_after (Optional[datetime]): Only include tasks due after this date/time.
+        created_after (Optional[datetime]): Only include tasks created after this date/time.
+        created_before (Optional[datetime]): Only include tasks created before this date/time.
+    """
+    status: Optional[str] = None               
+    importance: Optional[str] = None           
+    is_reminder_on: Optional[bool] = None     
+    due_before: Optional[DateTime] = None      
+    due_after: Optional[DateTime] = None       
+    created_after: Optional[DateTime] = None   
+    created_before: Optional[DateTime] = None  
+
+    def to_odata_filter(self) -> Optional[str]:
+        """Builds the $filter string for Microsoft Graph from the provided fields."""
+        filters = []
+
+        if self.status:
+            filters.append(f"status eq '{self.status}'")
+        if self.importance:
+            filters.append(f"importance eq '{self.importance}'")
+        if self.is_reminder_on is not None:
+            filters.append(f"isReminderOn eq {str(self.is_reminder_on).lower()}")
+        if self.due_before:
+            filters.append(f"dueDateTime/dateTime lt {self.due_before.isoformat()}Z")
+        if self.due_after:
+            filters.append(f"dueDateTime/dateTime gt {self.due_after.isoformat()}Z")
+        if self.created_before:
+            filters.append(f"createdDateTime lt {self.created_before.isoformat()}Z")
+        if self.created_after:
+            filters.append(f"createdDateTime gt {self.created_after.isoformat()}Z")
+
+        return " and ".join(filters) if filters else None

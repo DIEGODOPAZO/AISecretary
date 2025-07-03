@@ -1,7 +1,7 @@
 from utils.categories.microsoft_categories_requests import MicrosoftCategoriesRequests
 from utils.param_types import *
 from utils.token_manager import TokenManager
-from utils.auth_microsoft import get_access_token, get_token_cache_path
+from utils.auth_microsoft import get_access_token, load_expiration_time_from_file
 
 
 # server.py
@@ -10,9 +10,8 @@ from mcp.server.fastmcp import FastMCP
 mcp = FastMCP("Categories-AISecretary-Outlook", dependencies=["mcp[cli]", "msal"])
 
 token_manager = TokenManager(
-    get_token_cache_path(), get_access_token_func=get_access_token
+    get_access_token_func=get_access_token, get_expiration_time=load_expiration_time_from_file
 )
-
 categories_requests = MicrosoftCategoriesRequests(token_manager)
 
 
@@ -30,7 +29,7 @@ def get_categores() -> str:
 @mcp.tool()
 def create_edit_category(category_params: CategoryParams) -> str:
     """
-    Creates or edits a category in Outlook.
+    Creates or edits a category in Outlook. In order to now the equivalence between colors and preset colors, you can use the tool get_preset_colors.
 
     Args:
         category_params (CategoryParams): The parameters for creating or editing a category.
@@ -61,6 +60,7 @@ def add_delete_category_to_email(
 ) -> str:
     """
     Adds or deletes a category to/from an email in the Outlook mailbox.
+    You can use the tool get_categories to get the categories available in the Outlook mailbox.
 
     Args:
         handle_category_to_resource_params (HandleCategoryToResourceParams): The parameters for adding or deleting a category to/from an email.
@@ -78,6 +78,7 @@ def add_delete_category_to_event(
 ) -> str:
     """
     Adds or deletes a category to/from an event in the Outlook mailbox.
+    You can use the tool get_categories to get the categories available in the Outlook mailbox.
 
     Args:
         handle_category_to_resource_params (HandleCategoryToResourceParams): The parameters for adding or deleting a category to/from an event.
@@ -86,6 +87,26 @@ def add_delete_category_to_event(
         str: A confirmation message or an error message.
     """
     return categories_requests.add_delete_category_to_event(handle_category_to_resource_params)
+
+@mcp.tool()
+def add_delete_category_to_task(
+    todo_list_id: str,
+    handle_category_to_resource_params: HandleCategoryToResourceParams,
+) -> str:
+    """
+    Adds or deletes a category to/from a task in the Outlook To Do list.
+    You can use the tool get_categories to get the categories available in the Outlook mailbox.
+
+    Args:
+        todo_list_id (str): The ID of the To Do list.
+        handle_category_to_resource_params (HandleCategoryToResourceParams): The parameters for adding or deleting a category to/from a task.
+
+    Returns:
+        str: A confirmation message or an error message.
+    """
+    return categories_requests.add_delete_category_to_task(
+        todo_list_id, handle_category_to_resource_params
+    )
 
 @mcp.tool()
 def get_preset_colors() -> str:
