@@ -66,8 +66,10 @@ Other option to install your server in Claude Desktop is to edit the configurati
 }
 ```
 
-If you want all the MCP servers you can just also run the script `src/claude_setup.py`.
-
+If you want all the MCP servers you can just also run the script `claude_setup.py` wity `uv`.
+```
+uv run python claude_setup.py
+```
 #### Alternative: Running with OpenWebUI
 
 If you're using platforms like OpenWebUI:
@@ -169,6 +171,22 @@ These are the available functionalities for each of the MCP servers:
 
 #### Availability Lookup
 - Retrieve free/busy schedule  
+
+---
+
+### ✅ Task Management
+
+#### Task List Management
+- Retrieve lists
+- Create lists
+- Delete lists
+
+#### Task Management
+- Retrieve tasks
+- Retrieve specific task
+- Create tasks
+- Update tasks
+- Delete tasks 
 
 ---
 

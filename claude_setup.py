@@ -19,4 +19,4 @@ if __name__ == "__main__":
         )
         print(result.stdout)
         if result.stderr:
-            print("Error:", result.stderr)
+            print("Result:", result.stderr)

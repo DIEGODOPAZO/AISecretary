@@ -59,7 +59,7 @@ Create a `.env` file in your project’s `/` directory with the following conten
 # Microsoft Graph API Configuration
 CLIENT_ID=your_application_client_id
 TENANT_ID=common
-SCOPES=User.Read,Mail.Read,Mail.Send,Mail.ReadWrite,MailboxSettings.ReadWrite
+SCOPES=User.Read,Mail.Read,Mail.Send,Mail.ReadWrite,MailboxSettings.ReadWrite,Calendars.Read,Calendars.ReadWrite,Calendars.Read.Shared,Calendars.ReadWrite.Shared,Contacts.Read,Contacts.ReadWrite,Tasks.ReadWrite
 TOKEN_CACHE_FILE=src/token_cache_microsoft.json
 ```
 
