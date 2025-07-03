@@ -10,8 +10,8 @@ class DateFilter:
     Filter for date ranges.
 
     Args:
-        start_date (Optional[DateTime]): Start date for the filter. Example: 2025-06-19T23:59:59.000Z
-        end_date (Optional[DateTime]): End date for the filter. Example: 2025-06-19T23:59:59.000Z
+        start_date (Optional[datetime]): Start date for the filter. Example: 2025-06-19T23:59:59.000Z
+        end_date (Optional[datetime]): End date for the filter. Example: 2025-06-19T23:59:59.000Z
     """
 
     start_date: Optional[DateTime] = None
