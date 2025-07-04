@@ -18,7 +18,7 @@ Before you begin, make sure you have the following:
 4. Fill out the form:
    - **Name**: Choose any name (e.g., `MCP Email Integration`).
    - **Supported account types**: Choose *Accounts in any organizational directory and personal Microsoft accounts (e.g. Skype, Xbox)* for broader support.
-   - **Redirect URI**: Choose *Web* and set it to:  
+   - **Redirect URI**: Choose *Public client/native (mobile & desktop)* and set it to:  
      `http://localhost:{your_port}`  
      (e.g., `http://localhost:3000`)
 
@@ -26,6 +26,8 @@ Before you begin, make sure you have the following:
    ![Set Redirection URI](img/set_redirection_uri.png)
 
 5. Click **Register**.
+
+After registration, go to the *Authentication* tab and enable the option: *Allow public client flows*
 
 ---
 
