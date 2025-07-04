@@ -4,6 +4,7 @@ AISecretary is a collection of MCP servers designed to automate the tasks of a v
 - Outlook Mail
 - Outlook Calendar
 - Outlook Contacts
+- Outlook To Do
 - Outlook Mailbox Settings
 - Categories
 
