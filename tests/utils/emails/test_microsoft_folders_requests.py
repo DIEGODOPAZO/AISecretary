@@ -13,7 +13,7 @@ def mock_token_manager():
     return mock
 
 
-@patch("src.utils.email.microsoft_folders_requests.microsoft_get")
+@patch.object(MicrosoftFoldersRequests, "microsoft_get")
 def test_get_folder_names(mock_get, mock_token_manager):
     mock_get.return_value = (
         200,
@@ -34,7 +34,7 @@ def test_get_folder_names(mock_get, mock_token_manager):
     assert response["nextLink"] == "https://next.link"
 
 
-@patch("src.utils.email.microsoft_folders_requests.microsoft_get")
+@patch.object(MicrosoftFoldersRequests, "microsoft_get")
 def test_get_subfolders(mock_get, mock_token_manager):
     mock_get.return_value = (
         200,
@@ -48,7 +48,7 @@ def test_get_subfolders(mock_get, mock_token_manager):
     assert response["folders"][0]["folder_id"] == "sub1"
 
 
-@patch("src.utils.email.microsoft_folders_requests.microsoft_post")
+@patch.object(MicrosoftFoldersRequests, "microsoft_post")
 def test_create_folder(mock_post, mock_token_manager):
     mock_post.return_value = (201, {"id": "new123", "displayName": "NewFolder"})
 
@@ -59,7 +59,7 @@ def test_create_folder(mock_post, mock_token_manager):
     assert response["id"] == "new123"
 
 
-@patch("src.utils.email.microsoft_folders_requests.microsoft_patch")
+@patch.object(MicrosoftFoldersRequests, "microsoft_patch")
 def test_edit_folder(mock_patch, mock_token_manager):
     mock_patch.return_value = (200, {"id": "edit123", "displayName": "EditedFolder"})
 
@@ -70,7 +70,7 @@ def test_edit_folder(mock_patch, mock_token_manager):
     assert response["id"] == "edit123"
 
 
-@patch("src.utils.email.microsoft_folders_requests.microsoft_post")
+@patch.object(MicrosoftFoldersRequests, "microsoft_post")
 def test_create_subfolder(mock_post, mock_token_manager):
     mock_post.return_value = (201, {"id": "sub123", "displayName": "SubFolder"})
 
@@ -81,7 +81,7 @@ def test_create_subfolder(mock_post, mock_token_manager):
     assert response["id"] == "sub123"
 
 
-@patch("src.utils.email.microsoft_folders_requests.microsoft_delete")
+@patch.object(MicrosoftFoldersRequests, "microsoft_delete")
 def test_delete_folder_success(mock_delete, mock_token_manager):
     mock_delete.return_value = (204, {})
 
@@ -92,7 +92,7 @@ def test_delete_folder_success(mock_delete, mock_token_manager):
     assert "deleted successfully" in response["message"]
 
 
-@patch("src.utils.email.microsoft_folders_requests.microsoft_delete")
+@patch.object(MicrosoftFoldersRequests, "microsoft_delete")
 def test_delete_folder_failure(mock_delete, mock_token_manager):
     mock_delete.return_value = (400, {"error": "Failed"})
 

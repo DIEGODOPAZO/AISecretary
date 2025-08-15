@@ -10,8 +10,7 @@ def mock_token_manager():
     mock.get_token.return_value = "fake_token"
     return mock
 
-
-@patch("src.utils.contacts.microsoft_contact_folders_requests.microsoft_post")
+@patch.object(MicrosoftContactFoldersRequests, "microsoft_post")
 def test_create_contact_folder(mock_post, mock_token_manager):
     mock_post.return_value = (
         201,
@@ -25,7 +24,7 @@ def test_create_contact_folder(mock_post, mock_token_manager):
     assert response["displayName"] == "Clientes"
 
 
-@patch("src.utils.contacts.microsoft_contact_folders_requests.microsoft_get")
+@patch.object(MicrosoftContactFoldersRequests, "microsoft_get")
 def test_get_contact_folders(mock_get, mock_token_manager):
     mock_get.return_value = (
         200,
@@ -46,7 +45,7 @@ def test_get_contact_folders(mock_get, mock_token_manager):
     assert response["value"][0]["id"] == "folder1"
 
 
-@patch("src.utils.contacts.microsoft_contact_folders_requests.microsoft_delete")
+@patch.object(MicrosoftContactFoldersRequests, "microsoft_delete")
 def test_delete_contact_folder_success(mock_delete, mock_token_manager):
     mock_delete.return_value = (204, None)
 
@@ -56,7 +55,7 @@ def test_delete_contact_folder_success(mock_delete, mock_token_manager):
     assert response["message"] == "Contact folder deleted successfully."
 
 
-@patch("src.utils.contacts.microsoft_contact_folders_requests.microsoft_delete")
+@patch.object(MicrosoftContactFoldersRequests, "microsoft_delete")
 def test_delete_contact_folder_not_found(mock_delete, mock_token_manager):
     mock_delete.return_value = (404, None)
 

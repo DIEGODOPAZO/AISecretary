@@ -1,12 +1,6 @@
 import json
 
 from ..helper_functions.helpers_email import *
-from ..helper_functions.general_helpers import (
-    handle_microsoft_errors,
-    microsoft_get,
-    microsoft_post,
-    microsoft_delete,
-)
 from ..constants import TODO_LISTS_URL
 from ..microsoft_base_request import MicrosoftBaseRequest
 
@@ -17,7 +11,7 @@ class MicrosoftToDoListsRequests(MicrosoftBaseRequest):
     Inherits from MicrosoftBaseRequest to manage authentication and token retrieval.
     """
 
-    @handle_microsoft_errors
+    @MicrosoftBaseRequest.handle_microsoft_errors
     def get_todo_lists(self) -> str:
         """
         Get the list of to-do lists.
@@ -25,11 +19,11 @@ class MicrosoftToDoListsRequests(MicrosoftBaseRequest):
         Returns:
             list: List of to-do lists.
         """
-        status_code, response = microsoft_get(TODO_LISTS_URL, self.token_manager.get_token())
+        status_code, response = self.microsoft_get(TODO_LISTS_URL, self.token_manager.get_token())
 
         return json.dumps(response, indent=2)
 
-    @handle_microsoft_errors
+    @MicrosoftBaseRequest.handle_microsoft_errors
     def create_todo_list(self, list_name: str) -> str:
         """
         Create a new to-do list.
@@ -41,11 +35,11 @@ class MicrosoftToDoListsRequests(MicrosoftBaseRequest):
             str: JSON response with the created to-do list details.
         """
         data = {"displayName": list_name}
-        status_code, response = microsoft_post(TODO_LISTS_URL, self.token_manager.get_token(), data=data)
+        status_code, response = self.microsoft_post(TODO_LISTS_URL, self.token_manager.get_token(), data=data)
 
         return json.dumps(response, indent=2)
     
-    @handle_microsoft_errors
+    @MicrosoftBaseRequest.handle_microsoft_errors
     def delete_todo_list(self, list_id: str) -> str:
         """
         Delete a to-do list by its ID.
@@ -57,7 +51,7 @@ class MicrosoftToDoListsRequests(MicrosoftBaseRequest):
             str: Confirmation message or error details.
         """
         url = f"{TODO_LISTS_URL}/{list_id}"
-        status_code, response = microsoft_delete(url, self.token_manager.get_token())
+        status_code, response = self.microsoft_delete(url, self.token_manager.get_token())
 
         if status_code == 204:
             return json.dumps({"message": "To-do list deleted successfully."}, indent=2)

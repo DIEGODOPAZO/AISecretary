@@ -1,11 +1,5 @@
 import json
 from ..param_types import MailboxSettingsParams
-from ..token_manager import TokenManager
-from ..helper_functions.general_helpers import (
-    microsoft_get,
-    microsoft_patch,
-    handle_microsoft_errors,
-)
 from ..constants import MAILBOX_SETTINGS_URL
 from ..microsoft_base_request import MicrosoftBaseRequest
 
@@ -16,7 +10,7 @@ class MicrosoftMailboxSettings(MicrosoftBaseRequest):
     Inherits from MicrosoftBaseRequest to manage authentication and token retrieval.
     """
 
-    @handle_microsoft_errors
+    @MicrosoftBaseRequest.handle_microsoft_errors
     def get_mailbox_settings(self) -> str:
         """
         Retrieves the mailbox settings from Microsoft Graph API.
@@ -24,13 +18,13 @@ class MicrosoftMailboxSettings(MicrosoftBaseRequest):
         Returns:
             str: A JSON string containing the mailbox settings.
         """
-        status_code, response = microsoft_get(
+        status_code, response = self.microsoft_get(
             MAILBOX_SETTINGS_URL, self.token_manager.get_token()
         )
 
         return json.dumps(response, indent=2)
 
-    @handle_microsoft_errors
+    @MicrosoftBaseRequest.handle_microsoft_errors
     def update_mailbox_settings(
         self, mailbox_settings_params: MailboxSettingsParams
     ) -> str:
@@ -76,7 +70,7 @@ class MicrosoftMailboxSettings(MicrosoftBaseRequest):
                 },
             }
 
-        status_code, response = microsoft_patch(
+        status_code, response = self.microsoft_patch(
             MAILBOX_SETTINGS_URL, self.token_manager.get_token(), data=data
         )
 

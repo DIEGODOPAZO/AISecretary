@@ -13,7 +13,7 @@ def mock_token_manager():
     return mock
 
 
-@patch("src.utils.mailbox_settings.microsoft_mailbox_settings.microsoft_get")
+@patch.object(MicrosoftMailboxSettings, "microsoft_get")
 def test_get_mailbox_settings_success(mock_get, mock_token_manager):
     expected_response = {
         "timeZone": "Pacific Standard Time",
@@ -27,8 +27,8 @@ def test_get_mailbox_settings_success(mock_get, mock_token_manager):
     result = json.loads(client.get_mailbox_settings())
     assert result == expected_response
 
-@patch("src.utils.mailbox_settings.microsoft_mailbox_settings.microsoft_patch")
-@patch("src.utils.mailbox_settings.microsoft_mailbox_settings.microsoft_get")
+@patch.object(MicrosoftMailboxSettings, "microsoft_patch")
+@patch.object(MicrosoftMailboxSettings, "microsoft_get")
 def test_update_mailbox_settings_success(mock_patch, mock_token_manager):
     expected_response = {"status": "ok"}
     mock_patch.return_value = (200, expected_response)

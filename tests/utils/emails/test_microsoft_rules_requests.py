@@ -16,8 +16,7 @@ def token_manager_mock():
 def client(token_manager_mock):
     return MicrosoftRulesRequests(token_manager_mock)
 
-
-@patch("src.utils.email.microsoft_rules_requests.microsoft_get")
+@patch.object(MicrosoftRulesRequests, "microsoft_get")
 def test_get_message_rules_microsoft_api(mock_get, client):
     fake_response = {"value": [{"id": "rule1", "displayName": "Rule 1"}]}
     mock_get.return_value = (200, fake_response)
@@ -30,7 +29,7 @@ def test_get_message_rules_microsoft_api(mock_get, client):
     assert data["value"][0]["id"] == "rule1"
 
 
-@patch("src.utils.email.microsoft_rules_requests.microsoft_post")
+@patch.object(MicrosoftRulesRequests, "microsoft_post")
 def test_create_message_rule_microsoft_api_post(mock_post, client):
     mail_rule = MailRule("Test Rule", 1, conditions={}, actions={})
     fake_response = {"id": "new_rule", "displayName": "Test Rule"}
@@ -43,7 +42,7 @@ def test_create_message_rule_microsoft_api_post(mock_post, client):
     assert data["id"] == "new_rule"
 
 
-@patch("src.utils.email.microsoft_rules_requests.microsoft_patch")
+@patch.object(MicrosoftRulesRequests, "microsoft_patch")
 def test_create_message_rule_microsoft_api_patch(mock_patch, client):
     mail_rule = MailRule("Test Rule", 1, conditions={}, actions={})
     fake_response = {"id": "rule123", "displayName": "Test Rule"}
@@ -56,7 +55,7 @@ def test_create_message_rule_microsoft_api_patch(mock_patch, client):
     assert data["id"] == "rule123"
 
 
-@patch("src.utils.email.microsoft_rules_requests.microsoft_delete")
+@patch.object(MicrosoftRulesRequests, "microsoft_delete")
 def test_delete_message_rule_microsoft_api_success(mock_delete, client):
     mock_delete.return_value = (204, None)
 
@@ -67,8 +66,7 @@ def test_delete_message_rule_microsoft_api_success(mock_delete, client):
     assert "message" in data
     assert "rule123" in data["message"]
 
-
-@patch("src.utils.email.microsoft_rules_requests.microsoft_delete")
+@patch.object(MicrosoftRulesRequests, "microsoft_delete")
 def test_delete_message_rule_microsoft_api_failure(mock_delete, client):
     mock_delete.return_value = (400, {"error": "Bad Request"})
 
@@ -79,7 +77,7 @@ def test_delete_message_rule_microsoft_api_failure(mock_delete, client):
     assert "error" in data
 
 
-@patch("src.utils.email.microsoft_rules_requests.microsoft_get")
+@patch.object(MicrosoftRulesRequests, "microsoft_get")
 def test_get_next_link_microsoft_api(mock_get, client):
     fake_response = {"value": [{"id": "rule2"}]}
     mock_get.return_value = (200, fake_response)

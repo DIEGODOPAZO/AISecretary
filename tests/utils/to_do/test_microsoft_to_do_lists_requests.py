@@ -11,7 +11,8 @@ def mock_token_manager():
     return mock
 
 
-@patch("src.utils.to_do.microsoft_to_do_lists_requests.microsoft_get")
+
+@patch.object(MicrosoftToDoListsRequests, "microsoft_get")
 def test_get_todo_lists(mock_get, mock_token_manager):
     mock_get.return_value = (
         200,
@@ -29,7 +30,7 @@ def test_get_todo_lists(mock_get, mock_token_manager):
     assert response[1]["displayName"] == "List2"
 
 
-@patch("src.utils.to_do.microsoft_to_do_lists_requests.microsoft_post")
+@patch.object(MicrosoftToDoListsRequests, "microsoft_post")
 def test_create_todo_list(mock_post, mock_token_manager):
     mock_post.return_value = (201, {"id": "new123", "displayName": "NewList"})
 
@@ -40,7 +41,7 @@ def test_create_todo_list(mock_post, mock_token_manager):
     assert response["displayName"] == "NewList"
 
 
-@patch("src.utils.to_do.microsoft_to_do_lists_requests.microsoft_delete")
+@patch.object(MicrosoftToDoListsRequests, "microsoft_delete")
 def test_delete_todo_list_success(mock_delete, mock_token_manager):
     mock_delete.return_value = (204, {})
 
@@ -51,7 +52,7 @@ def test_delete_todo_list_success(mock_delete, mock_token_manager):
     assert "deleted successfully" in response["message"]
 
 
-@patch("src.utils.to_do.microsoft_to_do_lists_requests.microsoft_delete")
+@patch.object(MicrosoftToDoListsRequests, "microsoft_delete")
 def test_delete_todo_list_failure(mock_delete, mock_token_manager):
     mock_delete.return_value = (400, {"error": "Failed to delete"})
 

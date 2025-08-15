@@ -1,11 +1,4 @@
 import json
-from ..token_manager import TokenManager
-from ..helper_functions.general_helpers import (
-    handle_microsoft_errors,
-    microsoft_post,
-    microsoft_get,
-    microsoft_delete,
-)
 from ..constants import CONTACT_FOLDERS_URL
 from ..microsoft_base_request import MicrosoftBaseRequest
 
@@ -16,7 +9,7 @@ class MicrosoftContactFoldersRequests(MicrosoftBaseRequest):
     Inherits from MicrosoftBaseRequest to manage authentication and token retrieval.
     """
 
-    @handle_microsoft_errors
+    @MicrosoftBaseRequest.handle_microsoft_errors
     def create_contact_folder(self, folder_name: str) -> str:
         """
         Creates a new contact folder in Microsoft Outlook.
@@ -29,12 +22,12 @@ class MicrosoftContactFoldersRequests(MicrosoftBaseRequest):
         """
         data = {"displayName": folder_name}
 
-        status_code, response = microsoft_post(
+        status_code, response = self.microsoft_post(
             CONTACT_FOLDERS_URL, self.token_manager.get_token(), data=data
         )
         return json.dumps(response, indent=2)
 
-    @handle_microsoft_errors
+    @MicrosoftBaseRequest.handle_microsoft_errors
     def get_contact_folders(self) -> str:
         """
         Retrieves all contact folders from Microsoft Outlook.
@@ -42,12 +35,12 @@ class MicrosoftContactFoldersRequests(MicrosoftBaseRequest):
         Returns:
             str: A JSON string containing the API response with the list of contact folders.
         """
-        status_code, response = microsoft_get(
+        status_code, response = self.microsoft_get(
             CONTACT_FOLDERS_URL, self.token_manager.get_token()
         )
         return json.dumps(response, indent=2)
 
-    @handle_microsoft_errors
+    @MicrosoftBaseRequest.handle_microsoft_errors
     def delete_contact_folder(self, folder_id: str) -> str:
         """
         Deletes a contact folder by its ID.
@@ -59,7 +52,7 @@ class MicrosoftContactFoldersRequests(MicrosoftBaseRequest):
             str: A JSON string containing the API response confirming the deletion.
         """
         url = f"{CONTACT_FOLDERS_URL}/{folder_id}"
-        status_code, response = microsoft_delete(url, self.token_manager.get_token())
+        status_code, response = self.microsoft_delete(url, self.token_manager.get_token())
 
         if status_code == 204:
             response = {"message": "Contact folder deleted successfully."}

@@ -11,8 +11,7 @@ def mock_token_manager():
     mock.get_token.return_value = "mocked_token"
     return mock
 
-
-@patch("src.utils.calendar_outlook.microsoft_events_requests.microsoft_get")
+@patch.object(MicrosoftEventsRequests, "microsoft_get")
 @patch("src.utils.calendar_outlook.microsoft_events_requests.event_query_to_graph_params")
 @patch("src.utils.calendar_outlook.microsoft_events_requests.simplify_event")
 def test_get_events_dates(mock_simplify, mock_query_params, mock_get, mock_token_manager):
@@ -29,7 +28,7 @@ def test_get_events_dates(mock_simplify, mock_query_params, mock_get, mock_token
     assert result == [{"id": "1"}]
 
 
-@patch("src.utils.calendar_outlook.microsoft_events_requests.microsoft_post")
+@patch.object(MicrosoftEventsRequests, "microsoft_post")
 @patch("src.utils.calendar_outlook.microsoft_events_requests.event_params_to_dict")
 @patch("src.utils.calendar_outlook.microsoft_events_requests.simplify_event")
 def test_create_event_success(mock_simplify, mock_params_to_dict, mock_post, mock_token_manager):
@@ -48,7 +47,7 @@ def test_create_event_success(mock_simplify, mock_params_to_dict, mock_post, moc
     assert result == {"id": "123"}
 
 
-@patch("src.utils.calendar_outlook.microsoft_events_requests.microsoft_patch")
+@patch.object(MicrosoftEventsRequests, "microsoft_patch")
 @patch("src.utils.calendar_outlook.microsoft_events_requests.event_params_to_dict")
 @patch("src.utils.calendar_outlook.microsoft_events_requests.simplify_event")
 def test_update_event_success(mock_simplify, mock_params_to_dict, mock_patch, mock_token_manager):
@@ -67,7 +66,7 @@ def test_update_event_success(mock_simplify, mock_params_to_dict, mock_patch, mo
     assert result == {"id": "123"}
 
 
-@patch("src.utils.calendar_outlook.microsoft_events_requests.microsoft_delete")
+@patch.object(MicrosoftEventsRequests, "microsoft_delete")
 def test_delete_event_success(mock_delete, mock_token_manager):
     mock_delete.return_value = (204, {})
     client = MicrosoftEventsRequests(mock_token_manager)
@@ -75,16 +74,16 @@ def test_delete_event_success(mock_delete, mock_token_manager):
     assert result == {"message": "Event deleted successfully"}
 
 
-@patch("src.utils.calendar_outlook.microsoft_events_requests.microsoft_delete")
+@patch.object(MicrosoftEventsRequests, "microsoft_delete")
 def test_delete_event_attachment_failure(mock_delete, mock_token_manager):
     mock_delete.return_value = (500, {})
     client = MicrosoftEventsRequests(mock_token_manager)
     result = json.loads(client.delete_event_attachment("event-id", "attachment-id"))
     assert result == {"error": "Failed to delete attachment"}
 
-@patch("src.utils.calendar_outlook.microsoft_events_requests.download_attachments")
+@patch.object(MicrosoftEventsRequests, "download_attachments")
 @patch("src.utils.calendar_outlook.microsoft_events_requests.simplify_event_with_attachment_names")
-@patch("src.utils.calendar_outlook.microsoft_events_requests.microsoft_get")
+@patch.object(MicrosoftEventsRequests, "microsoft_get")
 def test_get_event_success(mock_get, mock_simplify, mock_download, mock_token_manager):
     # Primer GET (event)
     mock_get.side_effect = [
@@ -101,7 +100,7 @@ def test_get_event_success(mock_get, mock_simplify, mock_download, mock_token_ma
     assert result["attachments"] == ["file1.pdf"]
 
 
-@patch("src.utils.calendar_outlook.microsoft_events_requests.microsoft_post")
+@patch.object(MicrosoftEventsRequests, "microsoft_post")
 def test_accept_event_invitation_success(mock_post, mock_token_manager):
     mock_post.return_value = (202, {})
     client = MicrosoftEventsRequests(mock_token_manager)
@@ -109,7 +108,7 @@ def test_accept_event_invitation_success(mock_post, mock_token_manager):
     assert response == {"message": "Event invitation accepted"}
 
 
-@patch("src.utils.calendar_outlook.microsoft_events_requests.microsoft_post")
+@patch.object(MicrosoftEventsRequests, "microsoft_post")
 def test_decline_event_invitation_success(mock_post, mock_token_manager):
     mock_post.return_value = (202, {})
     client = MicrosoftEventsRequests(mock_token_manager)
@@ -117,14 +116,14 @@ def test_decline_event_invitation_success(mock_post, mock_token_manager):
     assert response == {"message": "Event invitation declined"}
 
 
-@patch("src.utils.calendar_outlook.microsoft_events_requests.microsoft_post")
+@patch.object(MicrosoftEventsRequests, "microsoft_post")
 def test_tentative_accept_event_invitation_success(mock_post, mock_token_manager):
     mock_post.return_value = (202, {})
     client = MicrosoftEventsRequests(mock_token_manager)
     response = json.loads(client.tentatively_accept_event_invitation("event123", EventChangesParams(event_response_params=EventResponseParams(send_response=True, comment="Maybe"))))
     assert response == {"message": "Event invitation tentatively accepted"}  
 
-@patch("src.utils.calendar_outlook.microsoft_events_requests.microsoft_post")
+@patch.object(MicrosoftEventsRequests, "microsoft_post")
 def test_cancel_event_success(mock_post, mock_token_manager):
     mock_post.return_value = (202, {})
     client = MicrosoftEventsRequests(mock_token_manager)
@@ -132,10 +131,10 @@ def test_cancel_event_success(mock_post, mock_token_manager):
     assert response == {"message": "Event canceled"}
 
 
-@patch("src.utils.calendar_outlook.microsoft_events_requests.microsoft_post")
+@patch.object(MicrosoftEventsRequests, "microsoft_post")
 @patch("src.utils.calendar_outlook.microsoft_events_requests.event_params_to_dict")
 @patch("src.utils.calendar_outlook.microsoft_events_requests.simplify_event")
-@patch("src.utils.calendar_outlook.microsoft_events_requests.read_file_and_encode_base64")
+@patch.object(MicrosoftEventsRequests, "read_file_and_encode_base64")
 def test_create_event_attachment_failure(mock_encode, mock_simplify, mock_params_to_dict, mock_post, mock_token_manager):
     mock_params_to_dict.return_value = {"subject": "Test"}
     mock_post.side_effect = [
