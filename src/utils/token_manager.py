@@ -1,39 +1,98 @@
+import os
+import json
 import time
+from pathlib import Path
+import msal
+from dotenv import load_dotenv
 
 class TokenManager:
     """
-    Manages access tokens, handling expiration and automatic refresh.
+    Manages Microsoft authentication, token caching, and automatic refresh.
 
-    Args:
-        get_access_token_func (Callable): Function to call to refresh the token.
-        get_expiration_time (Callable): Function to call to get the expiration time of the token.
-        margin_seconds (int, optional): Time in seconds before actual expiration to consider token as 'expired'. Defaults to 500.
+    Loads configuration from .env automatically.
     """
-    def __init__(self, get_access_token_func, get_expiration_time, margin_seconds: int = 500):
-        """
-        Initializes the TokenManager and loads the initial token and expiration time.
 
-        Args:
-            get_access_token_func (Callable): Function to call to refresh the token.
-            get_expiration_time (Callable): Function to call to get the expiration time of the token.
-            margin_seconds (int, optional): Time in seconds before actual expiration to consider token as 'expired'. Defaults to 500.
+    def __init__(self, margin_seconds: int = 500):
         """
-        self.get_access_token_func = get_access_token_func
-        self.get_expiration_time = get_expiration_time
+        Initializes the TokenManager, loads environment variables and token cache.
+        
+        Args:
+            margin_seconds (int, optional): Time in seconds before actual expiration to refresh the token. Defaults to 500.
+        """
+        # Load .env
+        dotenv_path = Path(__file__).resolve().parents[2] / ".env"
+        load_dotenv(dotenv_path=dotenv_path)
+        self.ENV_BASE_DIR = dotenv_path.parent
+
+        # Config
+        self.CLIENT_ID = os.getenv("CLIENT_ID")
+        self.TENANT_ID = os.getenv("TENANT_ID", "common")
+        self.AUTHORITY = f"https://login.microsoftonline.com/{self.TENANT_ID}"
+        self.SCOPES = os.getenv("SCOPES", "User.Read,Mail.ReadWrite").split(",")
+        raw_token_cache_path = os.getenv("TOKEN_CACHE_FILE", "token_cache.json")
+        self.TOKEN_CACHE_FILE = (self.ENV_BASE_DIR / raw_token_cache_path).resolve()
+
         self.margin_seconds = margin_seconds
-        # Load on init
-        self.token = self.get_access_token_func()
-        self.expires_on = self.get_expiration_time()
+
+        # Load cache
+        self.cache = self._load_cache()
+
+        # Load initial token
+        self.token = self._get_access_token()
+        self.expires_on = self._load_expiration_time_from_file()
+
+    def _load_cache(self):
+        """Loads the token cache from file if it exists."""
+        cache = msal.SerializableTokenCache()
+        if os.path.exists(self.TOKEN_CACHE_FILE):
+            with open(self.TOKEN_CACHE_FILE, "r") as f:
+                cache.deserialize(f.read())
+        return cache
+
+    def _save_cache(self):
+        """Saves the token cache if it changed."""
+        if self.cache.has_state_changed:
+            with open(self.TOKEN_CACHE_FILE, "w") as f:
+                f.write(self.cache.serialize())
+
+    def _get_access_token(self):
+        """Obtains an access token, using the cache if possible."""
+        app = msal.PublicClientApplication(
+            self.CLIENT_ID, authority=self.AUTHORITY, token_cache=self.cache
+        )
+
+        accounts = app.get_accounts()
+        if accounts:
+            result = app.acquire_token_silent(self.SCOPES, account=accounts[0])
+        else:
+            result = app.acquire_token_interactive(self.SCOPES)
+
+        self._save_cache()
+
+        if result and "access_token" in result:
+            return result["access_token"]
+        else:
+            raise Exception(
+                f"Error in authentication: {result.get('error_description') if result else 'No token found'}"
+            )
+
+    def _load_expiration_time_from_file(self):
+        """Loads token expiration time from cache."""
+        if not os.path.exists(self.TOKEN_CACHE_FILE):
+            return 0
+        with open(self.TOKEN_CACHE_FILE, "r") as f:
+            data = json.load(f)
+        access_token_data = list(data.get("AccessToken", {}).values())
+        if access_token_data:
+            return int(access_token_data[0]["expires_on"])
+        return 0
 
     def get_token(self) -> str:
         """
-        Returns the current access token, refreshing it if it is close to expiration.
-
-        Returns:
-            str: The current (possibly refreshed) access token.
+        Returns the current token, refreshing it if close to expiration.
         """
         now = int(time.time())
         if now + self.margin_seconds >= self.expires_on:
-            self.token = self.get_access_token_func()
-            self.expires_on = self.get_expiration_time()
+            self.token = self._get_access_token()
+            self.expires_on = self._load_expiration_time_from_file()
         return self.token

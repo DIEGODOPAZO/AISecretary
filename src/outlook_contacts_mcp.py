@@ -1,6 +1,5 @@
 from typing import Optional
 from utils.token_manager import TokenManager
-from utils.auth_microsoft import get_access_token, load_expiration_time_from_file
 from utils.contacts.microsoft_contact_folders_requests import (
     MicrosoftContactFoldersRequests,
 )
@@ -13,9 +12,7 @@ from mcp.server.fastmcp import FastMCP
 # Create an MCP server
 mcp = FastMCP("Contacts-AISecretary-Outlook", dependencies=["mcp[cli]", "msal"])
 
-token_manager = TokenManager(
-    get_access_token_func=get_access_token, get_expiration_time=load_expiration_time_from_file
-)
+token_manager = TokenManager()
 contact_folders_requests = MicrosoftContactFoldersRequests(token_manager)
 contacts = MicrosoftContactsRequests(token_manager)
 

@@ -1,6 +1,5 @@
 from typing import Optional
 from utils.token_manager import TokenManager
-from utils.auth_microsoft import get_access_token, load_expiration_time_from_file
 from mcp.server.fastmcp import FastMCP
 from utils.param_types import TaskCreateRequest
 from utils.to_do.microsoft_to_do_lists_requests import MicrosoftToDoListsRequests
@@ -9,9 +8,7 @@ from utils.to_do.microsoft_to_do_tasks_requests import MicrosoftToDoTasksRequest
 # Create an MCP server
 mcp = FastMCP("ToDo-AISecretary-Outlook", dependencies=["mcp[cli]", "msal"])
 
-token_manager = TokenManager(
-    get_access_token_func=get_access_token, get_expiration_time=load_expiration_time_from_file
-)
+token_manager = TokenManager()
 
 to_do_lists_requests = MicrosoftToDoListsRequests(token_manager)
 to_do_tasks_requests = MicrosoftToDoTasksRequests(token_manager)
