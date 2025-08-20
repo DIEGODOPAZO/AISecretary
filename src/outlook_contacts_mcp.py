@@ -10,7 +10,7 @@ from utils.param_types import Contact
 from mcp.server.fastmcp import FastMCP
 
 # Create an MCP server
-mcp = FastMCP("Contacts-AISecretary-Outlook", dependencies=["mcp[cli]", "msal"])
+mcp = FastMCP("Contacts-AISecretary-Outlook", dependencies=["mcp[cli]", "msal", "filelock"])
 
 token_manager = TokenManager()
 contact_folders_requests = MicrosoftContactFoldersRequests(token_manager)

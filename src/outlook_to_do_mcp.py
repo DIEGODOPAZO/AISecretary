@@ -6,7 +6,7 @@ from utils.to_do.microsoft_to_do_lists_requests import MicrosoftToDoListsRequest
 from utils.to_do.microsoft_to_do_tasks_requests import MicrosoftToDoTasksRequests
 
 # Create an MCP server
-mcp = FastMCP("ToDo-AISecretary-Outlook", dependencies=["mcp[cli]", "msal"])
+mcp = FastMCP("ToDo-AISecretary-Outlook", dependencies=["mcp[cli]", "msal", "filelock"])
 
 token_manager = TokenManager()
 

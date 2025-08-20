@@ -3,7 +3,7 @@ from mcp.server.fastmcp import FastMCP
 from utils.mailbox_settings.microsoft_mailbox_settings import MicrosoftMailboxSettings
 from utils.param_types import MailboxSettingsParams
 # Create an MCP server
-mcp = FastMCP("MailboxSettings-AISecretary-Outlook", dependencies=["mcp[cli]", "msal"])
+mcp = FastMCP("MailboxSettings-AISecretary-Outlook", dependencies=["mcp[cli]", "msal", "filelock"])
 
 token_manager = TokenManager()
 mailbox_settings = MicrosoftMailboxSettings(token_manager)
@@ -30,3 +30,7 @@ def update_mailbox_settings(mailbox_settings_params: MailboxSettingsParams) -> s
         str: JSON string containing the updated mailbox settings.
     """
     return mailbox_settings.update_mailbox_settings(mailbox_settings_params)
+
+if __name__ == "__main__":
+    # Start the MCP server
+    mcp.run()

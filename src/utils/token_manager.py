@@ -4,6 +4,7 @@ import time
 from pathlib import Path
 import msal
 from dotenv import load_dotenv
+from filelock import FileLock, Timeout
 
 class TokenManager:
     """
@@ -41,22 +42,25 @@ class TokenManager:
         self.token = self._get_access_token()
         self.expires_on = self._load_expiration_time_from_file()
 
+    def _save_cache(self):
+        if self.cache.has_state_changed:
+            lock_path = str(self.TOKEN_CACHE_FILE) + ".lock"
+            with FileLock(lock_path):
+                with open(self.TOKEN_CACHE_FILE, "w") as f:
+                    f.write(self.cache.serialize())
+
     def _load_cache(self):
-        """Loads the token cache from file if it exists."""
         cache = msal.SerializableTokenCache()
         if os.path.exists(self.TOKEN_CACHE_FILE):
-            with open(self.TOKEN_CACHE_FILE, "r") as f:
-                cache.deserialize(f.read())
+            lock_path = str(self.TOKEN_CACHE_FILE) + ".lock"
+            with FileLock(lock_path):
+                with open(self.TOKEN_CACHE_FILE, "r") as f:
+                    cache.deserialize(f.read())
         return cache
-
-    def _save_cache(self):
-        """Saves the token cache if it changed."""
-        if self.cache.has_state_changed:
-            with open(self.TOKEN_CACHE_FILE, "w") as f:
-                f.write(self.cache.serialize())
 
     def _get_access_token(self):
         """Obtains an access token, using the cache if possible."""
+        self.cache = self._load_cache()
         app = msal.PublicClientApplication(
             self.CLIENT_ID, authority=self.AUTHORITY, token_cache=self.cache
         )
@@ -77,22 +81,33 @@ class TokenManager:
             )
 
     def _load_expiration_time_from_file(self):
-        """Loads token expiration time from cache."""
         if not os.path.exists(self.TOKEN_CACHE_FILE):
             return 0
-        with open(self.TOKEN_CACHE_FILE, "r") as f:
-            data = json.load(f)
+
+        lock_path = str(self.TOKEN_CACHE_FILE) + ".lock"
+        try:
+            with FileLock(lock_path, timeout=5):
+                with open(self.TOKEN_CACHE_FILE, "r") as f:
+                    data = json.load(f)
+        except Timeout:
+            # Si no puede obtener lock en 5 seg, leer sin lock como fallback
+            with open(self.TOKEN_CACHE_FILE, "r") as f:
+                data = json.load(f)
+
         access_token_data = list(data.get("AccessToken", {}).values())
         if access_token_data:
             return int(access_token_data[0]["expires_on"])
         return 0
 
     def get_token(self) -> str:
-        """
-        Returns the current token, refreshing it if close to expiration.
-        """
         now = int(time.time())
         if now + self.margin_seconds >= self.expires_on:
-            self.token = self._get_access_token()
-            self.expires_on = self._load_expiration_time_from_file()
+            lock_path = str(self.TOKEN_CACHE_FILE) + ".lock"
+            with FileLock(lock_path):
+                # recarga la expiración después de obtener lock
+                self.expires_on = self._load_expiration_time_from_file()
+                now = int(time.time())
+                if now + self.margin_seconds >= self.expires_on:
+                    self.token = self._get_access_token()
+                    self.expires_on = self._load_expiration_time_from_file()
         return self.token

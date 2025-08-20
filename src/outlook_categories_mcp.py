@@ -6,7 +6,7 @@ from utils.token_manager import TokenManager
 # server.py
 from mcp.server.fastmcp import FastMCP
 
-mcp = FastMCP("Categories-AISecretary-Outlook", dependencies=["mcp[cli]", "msal"])
+mcp = FastMCP("Categories-AISecretary-Outlook", dependencies=["mcp[cli]", "msal", "filelock"])
 
 token_manager = TokenManager()
 categories_requests = MicrosoftCategoriesRequests(token_manager)
@@ -154,3 +154,7 @@ def create_edit_category_prompt(
         str: The id of the created or edited category with more information, or an error message.
     """
     return f"Use the tool get_preset_colors to get the equivalence of the preset colors to colors. Then use the tool get_categories to get the categoires, if the category provided is very similar to one category, edit it, otherwise create it. The name of the category is {category_name} and the color is {category_color}."
+
+if __name__ == "__main__":
+    # Start the MCP server
+    mcp.run()

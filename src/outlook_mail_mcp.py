@@ -10,7 +10,7 @@ from utils.token_manager import TokenManager
 from mcp.server.fastmcp import FastMCP
 
 # Create an MCP server
-mcp = FastMCP("Mail-AISecretary-Outlook", dependencies=["mcp[cli]", "msal"])
+mcp = FastMCP("Mail-AISecretary-Outlook", dependencies=["mcp[cli]", "msal", "filelock"])
 
 token_manager = TokenManager()
 
