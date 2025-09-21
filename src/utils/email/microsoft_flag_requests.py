@@ -2,8 +2,6 @@ import json
 
 from ..param_types import *
 from ..helper_functions.helpers_email import *
-from ..token_manager import TokenManager
-from ..helper_functions.general_helpers import handle_microsoft_errors, microsoft_patch
 from ..constants import MESSAGES_URL
 from ..microsoft_base_request import MicrosoftBaseRequest
 
@@ -14,7 +12,7 @@ class MicrosoftFlagRequests(MicrosoftBaseRequest):
     Inherits from MicrosoftBaseRequest to manage authentication and token retrieval.
     """
 
-    @handle_microsoft_errors
+    @MicrosoftBaseRequest.handle_microsoft_errors
     def manage_flags_microsoft_api(self, email_id: str, flag: str):
         """
         Sets or updates the flag status of an email message.
@@ -32,7 +30,7 @@ class MicrosoftFlagRequests(MicrosoftBaseRequest):
 
         data = {"flag": {"flagStatus": f"{flag}"}}
 
-        status_code, response = microsoft_patch(
+        status_code, response = self.microsoft_patch(
             url, self.token_manager.get_token(), data=data
         )
         response = microsoft_simplify_message(response)

@@ -25,7 +25,8 @@ def client(mock_token_manager):
     return MicrosoftMessagesRequests(mock_token_manager)
 
 
-@patch("src.utils.email.microsoft_messages_requests.microsoft_get")
+
+@patch.object(MicrosoftMessagesRequests, "microsoft_get")
 @patch("src.utils.email.microsoft_messages_requests.microsoft_simplify_message")
 def test_get_messages_from_folder(mock_simplify, mock_get, client):
     # Simula dos mensajes con el mismo ID para probar que se eliminan duplicados
@@ -48,8 +49,8 @@ def test_get_messages_from_folder(mock_simplify, mock_get, client):
     assert response["messages"][0]["id"] == "msg1"
 
 
-@patch("src.utils.email.microsoft_messages_requests.microsoft_patch")
-@patch("src.utils.email.microsoft_messages_requests.microsoft_get")
+@patch.object(MicrosoftMessagesRequests, "microsoft_patch")
+@patch.object(MicrosoftMessagesRequests, "microsoft_get")
 def test_mark_as_read(mock_get, mock_patch, client):
     mock_get.return_value = (200, {"id": "msg1", "subject": "Hi"})
     with patch(
@@ -62,7 +63,7 @@ def test_mark_as_read(mock_get, mock_patch, client):
     assert response["id"] == "msg1"
 
 
-@patch("src.utils.email.microsoft_messages_requests.microsoft_get")
+@patch.object(MicrosoftMessagesRequests, "microsoft_get")
 def test_get_conversation_messages(mock_get, client):
     mock_get.return_value = (200, {"value": [{"id": "conv1"}]})
     with patch(
@@ -73,8 +74,8 @@ def test_get_conversation_messages(mock_get, client):
     assert response["messages"][0]["id"] == "conv1"
 
 
-@patch("src.utils.email.microsoft_messages_requests.microsoft_get")
-@patch("src.utils.email.microsoft_messages_requests.microsoft_patch")
+@patch.object(MicrosoftMessagesRequests, "microsoft_get")
+@patch.object(MicrosoftMessagesRequests, "microsoft_patch")
 def test_create_edit_draft(mock_patch, mock_get, client):
     mock_patch.return_value = (200, {"id": "draft123"})
     data = DraftEmailData(
@@ -88,15 +89,14 @@ def test_create_edit_draft(mock_patch, mock_get, client):
     assert response["id"] == "draft123"
 
 
-@patch("src.utils.email.microsoft_messages_requests.microsoft_post")
+@patch.object(MicrosoftMessagesRequests, "microsoft_post")
 def test_send_draft_email(mock_post, client):
     mock_post.return_value = (202, {})
     response = json.loads(client.send_draft_email_microsoft_api("draft123"))
     assert response["message"] == "Email sent successfully."
 
-
-@patch("src.utils.email.microsoft_messages_requests.read_file_and_encode_base64")
-@patch("src.utils.email.microsoft_messages_requests.microsoft_post")
+@patch.object(MicrosoftMessagesRequests, "read_file_and_encode_base64")
+@patch.object(MicrosoftMessagesRequests, "microsoft_post")
 def test_add_attachment_to_draft(mock_post, mock_read, client):
     mock_read.return_value = ("file.txt", "base64encoded")
     mock_post.return_value = (
@@ -111,7 +111,7 @@ def test_add_attachment_to_draft(mock_post, mock_read, client):
     assert response["attachment_id"] == "att123"
 
 
-@patch("src.utils.email.microsoft_messages_requests.microsoft_post")
+@patch.object(MicrosoftMessagesRequests, "microsoft_post")
 def test_forward_email(mock_post, client):
     mock_post.return_value = (200, {"status": "ok"})
     params = EmailForwardParams(
@@ -125,7 +125,7 @@ def test_forward_email(mock_post, client):
     assert response["status"] == "ok"
 
 
-@patch("src.utils.email.microsoft_messages_requests.microsoft_post")
+@patch.object(MicrosoftMessagesRequests, "microsoft_post")
 def test_reply_to_email(mock_post, client):
     mock_post.return_value = (200, {"id": "reply1"})
     params = EmailReplyParams(
@@ -135,7 +135,7 @@ def test_reply_to_email(mock_post, client):
     assert response["id"] == "reply1"
 
 
-@patch("src.utils.email.microsoft_messages_requests.microsoft_post")
+@patch.object(MicrosoftMessagesRequests, "microsoft_post")
 def test_move_email(mock_post, client):
     mock_post.return_value = (200, {"id": "movedEmail"})
     params = EmailOperationParams(
@@ -145,7 +145,7 @@ def test_move_email(mock_post, client):
     assert response["id"] == "movedEmail"
 
 
-@patch("src.utils.email.microsoft_messages_requests.microsoft_delete")
+@patch.object(MicrosoftMessagesRequests, "microsoft_delete")
 def test_delete_message(mock_delete, client):
     mock_delete.return_value = (204, {})
     response = json.loads(client.delete_message_microsoft_api("msg123"))

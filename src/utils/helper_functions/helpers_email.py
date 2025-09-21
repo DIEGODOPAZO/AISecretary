@@ -257,6 +257,8 @@ def build_filter_params(filters) -> dict:
             parts.append(date_filter)
     if filters.importance:
         parts.append(f"importance eq '{filters.importance}'")
+    if filters.senderName:
+        parts.append(f"from/emailAddress/name eq '{filters.senderName}'")
     if filters.sender:
         parts.append(f"from/emailAddress/address eq '{filters.sender}'")
     if filters.unread_only:

@@ -41,6 +41,7 @@ class EmailFilters:
         date_filter (Optional[DateFilter]): Filter for date ranges.
         importance (Optional[str]): Importance level of the email ('high', 'normal', 'low').
         sender (Optional[str]): Email address of the sender to filter by.
+        senderName (Optional[str]): Name of the sender to filter by.
         unread_only (bool): If True, filters only unread emails.
         has_attachments (bool): If True, filters emails that have attachments.
         categories (Optional[List[str]]): List of category names to filter by.
@@ -49,6 +50,7 @@ class EmailFilters:
     date_filter: Optional[DateFilter] = None
     importance: Optional[str] = None  # 'high', 'normal', 'low'
     sender: Optional[str] = None
+    senderName: Optional[str] = None
     unread_only: bool = False
     has_attachments: bool = False
     categories: Optional[List[str]] = None

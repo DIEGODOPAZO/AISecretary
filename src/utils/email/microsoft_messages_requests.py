@@ -1,6 +1,5 @@
-import base64
 import json
-import os
+
 
 from ..helper_functions.helpers_email import (
     build_filter_params,
@@ -8,18 +7,7 @@ from ..helper_functions.helpers_email import (
     microsoft_simplify_message,
     remove_duplicate_messages,
 )
-from ..helper_functions.general_helpers import (
-    download_attachments,
-    handle_microsoft_errors,
-    microsoft_get,
-    microsoft_post,
-    microsoft_patch,
-    microsoft_delete,
-    read_file_and_encode_base64,
-)
-
 from ..param_types import *
-from ..token_manager import TokenManager
 from ..constants import (
     ADD_ATTACHMENT_TO_DRAFT_URL,
     ATTACHMENT_BY_ID_URL,
@@ -45,7 +33,7 @@ class MicrosoftMessagesRequests(MicrosoftBaseRequest):
     Inherits from MicrosoftBaseRequest to manage authentication and token retrieval.
     """
 
-    @handle_microsoft_errors
+    @MicrosoftBaseRequest.handle_microsoft_errors
     def get_messages_from_folder_microsoft_api(
         self,
         email_query: Optional[EmailQuery] = None,
@@ -122,7 +110,7 @@ class MicrosoftMessagesRequests(MicrosoftBaseRequest):
 
         return self._get_and_format_messages(final_params, email_query.folder_id)
 
-    @handle_microsoft_errors
+    @MicrosoftBaseRequest.handle_microsoft_errors
     def get_conversation_messages_microsoft_api(self, params: dict) -> str:
         """Retrieves messages in a conversation based on provided parameters.
 
@@ -132,7 +120,7 @@ class MicrosoftMessagesRequests(MicrosoftBaseRequest):
         Returns:
             str: A JSON string containing the conversation messages.
         """
-        (status_code, response) = microsoft_get(
+        (status_code, response) = self.microsoft_get(
             MESSAGES_URL, self.token_manager.get_token(), params=params
         )
         messages = response.get("value", [])
@@ -142,7 +130,7 @@ class MicrosoftMessagesRequests(MicrosoftBaseRequest):
             result["nextLink"] = response["@odata.nextLink"]
         return json.dumps(result, indent=2)
 
-    @handle_microsoft_errors
+    @MicrosoftBaseRequest.handle_microsoft_errors
     def mark_as_read_unread_microsoft_api(
         self, message_id: str, is_read: bool = True
     ) -> str:
@@ -157,11 +145,11 @@ class MicrosoftMessagesRequests(MicrosoftBaseRequest):
         """
         url = MESSAGE_BY_ID_URL(message_id)
         data = {"isRead": is_read}
-        microsoft_patch(url, self.token_manager.get_token(), data)
-        (status_code, response) = microsoft_get(url, self.token_manager.token)
+        self.microsoft_patch(url, self.token_manager.get_token(), data)
+        (status_code, response) = self.microsoft_get(url, self.token_manager.token)
         return json.dumps(microsoft_simplify_message(response), indent=2)
 
-    @handle_microsoft_errors
+    @MicrosoftBaseRequest.handle_microsoft_errors
     def get_full_message_and_attachments(self, message_id: str) -> str:
         """Retrieves a full message and its attachments.
 
@@ -173,15 +161,15 @@ class MicrosoftMessagesRequests(MicrosoftBaseRequest):
         """
         base_url = MESSAGE_BY_ID_URL(message_id)
 
-        (status_code, msg_data) = microsoft_get(
+        (status_code, msg_data) = self.microsoft_get(
             base_url, self.token_manager.get_token()
         )
         attachments_url = MESSAGE_ATTACHMENTS_URL(message_id)
-        (att_status, att_data) = microsoft_get(
+        (att_status, att_data) = self.microsoft_get(
             attachments_url, self.token_manager.get_token()
         )
         attachments = att_data.get("value", [])
-        downloaded_attachments = download_attachments(attachments)
+        downloaded_attachments = self.download_attachments(attachments)
         return json.dumps(
             microsoft_simplify_message(
                 msg_data,
@@ -192,7 +180,7 @@ class MicrosoftMessagesRequests(MicrosoftBaseRequest):
             indent=2,
         )
 
-    @handle_microsoft_errors
+    @MicrosoftBaseRequest.handle_microsoft_errors
     def delete_message_microsoft_api(self, message_id: str) -> str:
         """Deletes a message by its ID.
 
@@ -204,14 +192,14 @@ class MicrosoftMessagesRequests(MicrosoftBaseRequest):
         """
         url = MESSAGE_BY_ID_URL(message_id)
 
-        (status_code, response) = microsoft_delete(url, self.token_manager.get_token())
+        (status_code, response) = self.microsoft_delete(url, self.token_manager.get_token())
         if status_code != 204:
             return json.dumps({"error": response}, indent=2)
         return json.dumps(
             {"message": f"Message with ID {message_id} deleted successfully."}, indent=2
         )
 
-    @handle_microsoft_errors
+    @MicrosoftBaseRequest.handle_microsoft_errors
     def create_edit_draft_microsoft_api(self, draft_email_data: DraftEmailData) -> str:
         """Creates or edits a draft email message.
 
@@ -251,16 +239,16 @@ class MicrosoftMessagesRequests(MicrosoftBaseRequest):
         }
         if draft_email_data.draft_id:
             url = DRAFT_BY_ID_URL(draft_email_data.draft_id)
-            (status_code, response) = microsoft_patch(
+            (status_code, response) = self.microsoft_patch(
                 url, self.token_manager.get_token(), data
             )
         else:
-            (status_code, response) = microsoft_post(
+            (status_code, response) = self.microsoft_post(
                 url, self.token_manager.get_token(), data
             )
         return json.dumps(response, indent=2)
 
-    @handle_microsoft_errors
+    @MicrosoftBaseRequest.handle_microsoft_errors
     def add_attachment_to_draft_microsoft_api(
         self, draft_id: str, attachment_path: str, content_type: str
     ) -> str:
@@ -276,7 +264,7 @@ class MicrosoftMessagesRequests(MicrosoftBaseRequest):
         """
         url = ADD_ATTACHMENT_TO_DRAFT_URL(draft_id)
         try:
-            attachment_name, attachment_content = read_file_and_encode_base64(
+            attachment_name, attachment_content = self.read_file_and_encode_base64(
                 attachment_path
             )
         except FileNotFoundError as e:
@@ -287,7 +275,7 @@ class MicrosoftMessagesRequests(MicrosoftBaseRequest):
             "contentBytes": attachment_content,
             "contentType": content_type,
         }
-        status_code, response = microsoft_post(
+        status_code, response = self.microsoft_post(
             url, self.token_manager.get_token(), data
         )
         response_data = {
@@ -298,7 +286,7 @@ class MicrosoftMessagesRequests(MicrosoftBaseRequest):
         }
         return json.dumps(response_data, indent=2)
 
-    @handle_microsoft_errors
+    @MicrosoftBaseRequest.handle_microsoft_errors
     def send_draft_email_microsoft_api(self, draft_id: str) -> str:
         """Sends a draft email message.
 
@@ -309,12 +297,12 @@ class MicrosoftMessagesRequests(MicrosoftBaseRequest):
             str: A JSON string indicating the result of the send operation.
         """
 
-        (status_code, response) = microsoft_post(
+        (status_code, response) = self.microsoft_post(
             SEND_DRAFT_URL(draft_id), self.token_manager.get_token(), data={}
         )
         return json.dumps({"message": "Email sent successfully."}, indent=2)
 
-    @handle_microsoft_errors
+    @MicrosoftBaseRequest.handle_microsoft_errors
     def delete_attachment_from_draft_microsoft_api(
         self, draft_id: str, attachment_id: str
     ) -> str:
@@ -328,7 +316,7 @@ class MicrosoftMessagesRequests(MicrosoftBaseRequest):
             str: A JSON string indicating the result of the deletion.
         """
 
-        (status_code, response) = microsoft_delete(
+        (status_code, response) = self.microsoft_delete(
             ATTACHMENT_BY_ID_URL(draft_id, attachment_id),
             self.token_manager.get_token(),
         )
@@ -339,7 +327,7 @@ class MicrosoftMessagesRequests(MicrosoftBaseRequest):
             indent=2,
         )
 
-    @handle_microsoft_errors
+    @MicrosoftBaseRequest.handle_microsoft_errors
     def move_or_copy_email_microsoft_api(
         self, email_operation_params: EmailOperationParams
     ) -> str:
@@ -357,12 +345,12 @@ class MicrosoftMessagesRequests(MicrosoftBaseRequest):
             else COPY_EMAIL_URL(email_operation_params.email_id)
         )
         data = {"destinationId": email_operation_params.destination_folder_id}
-        (status_code, response) = microsoft_post(
+        (status_code, response) = self.microsoft_post(
             url, self.token_manager.get_token(), data
         )
         return json.dumps(response, indent=2)
 
-    @handle_microsoft_errors
+    @MicrosoftBaseRequest.handle_microsoft_errors
     def reply_to_email_microsoft_api(self, email_reply_params: EmailReplyParams) -> str:
         """Replies to an email message.
 
@@ -378,12 +366,12 @@ class MicrosoftMessagesRequests(MicrosoftBaseRequest):
             else CREATE_REPLY_URL(email_reply_params.email_id)
         )
         data = {"comment": email_reply_params.body}
-        (status_code, response) = microsoft_post(
+        (status_code, response) = self.microsoft_post(
             url, self.token_manager.get_token(), data
         )
         return json.dumps(response, indent=2)
 
-    @handle_microsoft_errors
+    @MicrosoftBaseRequest.handle_microsoft_errors
     def forward_email_microsoft_api(
         self, email_forward_params: EmailForwardParams
     ) -> str:
@@ -415,7 +403,7 @@ class MicrosoftMessagesRequests(MicrosoftBaseRequest):
             ),
             "comment": email_forward_params.comment,
         }
-        (status_code, response) = microsoft_post(
+        (status_code, response) = self.microsoft_post(
             url, self.token_manager.get_token(), data
         )
         return json.dumps(response, indent=2)
@@ -426,7 +414,7 @@ class MicrosoftMessagesRequests(MicrosoftBaseRequest):
 
         base_url = MESSAGES_IN_FOLDER_URL(folder_id) if folder_id else MESSAGES_URL
 
-        status_code, response = microsoft_get(
+        status_code, response = self.microsoft_get(
             base_url, self.token_manager.get_token(), params=params
         )
         messages = response.get("value", [])

@@ -12,7 +12,7 @@ def mock_token_manager():
     return mock
 
 @patch("src.utils.email.microsoft_flag_requests.microsoft_simplify_message")
-@patch("src.utils.email.microsoft_flag_requests.microsoft_patch")
+@patch.object(MicrosoftFlagRequests, "microsoft_patch")
 def test_manage_flags_valid_flag(mock_patch, mock_simplify, mock_token_manager):
     # Setup
     email_id = "12345"

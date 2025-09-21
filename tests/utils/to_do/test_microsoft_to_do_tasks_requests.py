@@ -13,7 +13,7 @@ def mock_token_manager():
     return mock
 
 
-@patch("src.utils.to_do.microsoft_to_do_tasks_requests.microsoft_get")
+@patch.object(MicrosoftToDoTasksRequests, "microsoft_get")
 def test_get_tasks_in_list(mock_get, mock_token_manager):
     mock_get.return_value = (
         200,
@@ -33,7 +33,7 @@ def test_get_tasks_in_list(mock_get, mock_token_manager):
     assert response[1]["status"] == "completed"
 
 
-@patch("src.utils.to_do.microsoft_to_do_tasks_requests.microsoft_get")
+@patch.object(MicrosoftToDoTasksRequests, "microsoft_get")
 def test_get_task_in_list(mock_get, mock_token_manager):
     mock_get.return_value = (
         200,
@@ -48,7 +48,7 @@ def test_get_task_in_list(mock_get, mock_token_manager):
     assert response["status"] == "inProgress"
 
 
-@patch("src.utils.to_do.microsoft_to_do_tasks_requests.microsoft_post")
+@patch.object(MicrosoftToDoTasksRequests, "microsoft_post")
 def test_create_task_in_list(mock_post, mock_token_manager):
     mock_post.return_value = (
         201,
@@ -68,7 +68,7 @@ def test_create_task_in_list(mock_post, mock_token_manager):
     assert response["title"] == "New Task"
 
 
-@patch("src.utils.to_do.microsoft_to_do_tasks_requests.microsoft_patch")
+@patch.object(MicrosoftToDoTasksRequests, "microsoft_patch")
 def test_update_task_in_list(mock_patch, mock_token_manager):
     mock_patch.return_value = (
         200,
@@ -88,7 +88,7 @@ def test_update_task_in_list(mock_patch, mock_token_manager):
     assert response["title"] == "Updated Task"
 
 
-@patch("src.utils.to_do.microsoft_to_do_tasks_requests.microsoft_delete")
+@patch.object(MicrosoftToDoTasksRequests, "microsoft_delete")
 def test_delete_task_in_list(mock_delete, mock_token_manager):
     mock_delete.return_value = (204, {})
 

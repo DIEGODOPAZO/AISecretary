@@ -1,20 +1,10 @@
 from typing import List, Optional
 import json
-from ..token_manager import TokenManager
 from ..param_types import (
     EventChangesParams,
     EventParams,
     EventQuery,
     EventResponseParams,
-)
-from ..helper_functions.general_helpers import (
-    download_attachments,
-    handle_microsoft_errors,
-    microsoft_get,
-    microsoft_post,
-    microsoft_patch,
-    microsoft_delete,
-    read_file_and_encode_base64,
 )
 from ..helper_functions.helpers_calendar import (
     construct_data_for_response_events,
@@ -44,7 +34,7 @@ class MicrosoftEventsRequests(MicrosoftBaseRequest):
         self, url: str, response_id: str, attachments: List[str]
     ) -> int:
         for file in attachments:
-            file_name, encoded_content = read_file_and_encode_base64(file)
+            file_name, encoded_content = self.read_file_and_encode_base64(file)
             attachment = {
                 "@odata.type": "#microsoft.graph.fileAttachment",
                 "name": file_name,
@@ -54,12 +44,12 @@ class MicrosoftEventsRequests(MicrosoftBaseRequest):
 
             url_attachment = f"{url}/{response_id}/attachments"
 
-            status_code, response_attachment = microsoft_post(
+            status_code, response_attachment = self.microsoft_post(
                 url_attachment, self.token_manager.get_token(), data=attachment
             )
             return status_code
 
-    @handle_microsoft_errors
+    @MicrosoftBaseRequest.handle_microsoft_errors
     def get_events(self, event_query: EventQuery, calendar_id: str = None) -> str:
         """Retrieve events from a calendar based on query parameters.
 
@@ -85,7 +75,7 @@ class MicrosoftEventsRequests(MicrosoftBaseRequest):
                 for k, v in params.items()
                 if k not in ("search", "startDateTime", "endDateTime")
             }
-            status_code, response_filter = microsoft_get(
+            status_code, response_filter = self.microsoft_get(
                 url, self.token_manager.get_token(), params=filter_params
             )
             response_filter = [
@@ -101,7 +91,7 @@ class MicrosoftEventsRequests(MicrosoftBaseRequest):
                 )
             else:
                 calendar_url = f"https://graph.microsoft.com/v1.0/me/calendarView"
-            status_code, response_dates = microsoft_get(
+            status_code, response_dates = self.microsoft_get(
                 calendar_url, self.token_manager.get_token(), params=date_params
             )
             response_dates = [
@@ -118,14 +108,14 @@ class MicrosoftEventsRequests(MicrosoftBaseRequest):
         elif has_dates:
             response_final = response_dates
         else:
-            status_code, response = microsoft_get(
+            status_code, response = self.microsoft_get(
                 url, self.token_manager.get_token(), params=params
             )
             response_final = [simplify_event(e) for e in response.get("value", [])]
 
         return json.dumps(response_final, indent=2)
 
-    @handle_microsoft_errors
+    @MicrosoftBaseRequest.handle_microsoft_errors
     def get_event(self, event_id: str):
         """Retrieve a single event by its ID, including its attachments.
 
@@ -137,21 +127,21 @@ class MicrosoftEventsRequests(MicrosoftBaseRequest):
         """
         url = self._get_url()
         url = f"{url}/{event_id}"
-        status_code, response = microsoft_get(url, self.token_manager.get_token())
+        status_code, response = self.microsoft_get(url, self.token_manager.get_token())
         response = simplify_event_with_attachment_names(
             response, self.token_manager.get_token()
         )
 
         attachments_url = f"{url}/attachments"
-        status_code, attachments_response = microsoft_get(
+        status_code, attachments_response = self.microsoft_get(
             attachments_url, self.token_manager.get_token()
         )
         attachments = attachments_response.get("value", [])
 
-        response["attachments"] = download_attachments(attachments)
+        response["attachments"] = self.download_attachments(attachments)
         return json.dumps(response, indent=2)
 
-    @handle_microsoft_errors
+    @MicrosoftBaseRequest.handle_microsoft_errors
     def create_event(self, event_params: EventParams, calendar_id: str = None) -> str:
         """Create a new event in a calendar.
 
@@ -165,7 +155,7 @@ class MicrosoftEventsRequests(MicrosoftBaseRequest):
         url = self._get_url(calendar_id)
 
         data = event_params_to_dict(event_params)
-        status_code, response = microsoft_post(
+        status_code, response = self.microsoft_post(
             url, self.token_manager.get_token(), data=data
         )
         response = simplify_event(response)
@@ -180,7 +170,7 @@ class MicrosoftEventsRequests(MicrosoftBaseRequest):
                 return json.dumps({"error": "Failed to add attachments"}, indent=2)
         return json.dumps(response, indent=2)
 
-    @handle_microsoft_errors
+    @MicrosoftBaseRequest.handle_microsoft_errors
     def update_event(self, event_id: str, event_params: EventParams) -> str:
         """Update an existing event.
 
@@ -194,7 +184,7 @@ class MicrosoftEventsRequests(MicrosoftBaseRequest):
         url = self._get_url()
 
         data = event_params_to_dict(event_params)
-        status_code, response = microsoft_patch(
+        status_code, response = self.microsoft_patch(
             f"{url}/{event_id}", self.token_manager.get_token(), data=data
         )
 
@@ -209,7 +199,7 @@ class MicrosoftEventsRequests(MicrosoftBaseRequest):
                 return json.dumps({"error": "Failed to add attachments"}, indent=2)
         return json.dumps(response, indent=2)
 
-    @handle_microsoft_errors
+    @MicrosoftBaseRequest.handle_microsoft_errors
     def delete_event_attachment(self, event_id: str, attachment_id: str) -> str:
         """Delete an attachment from an event.
 
@@ -222,7 +212,7 @@ class MicrosoftEventsRequests(MicrosoftBaseRequest):
         """
         url = self._get_url()
 
-        status_code, response = microsoft_delete(
+        status_code, response = self.microsoft_delete(
             f"{url}/{event_id}/attachments/{attachment_id}",
             self.token_manager.get_token(),
         )
@@ -232,7 +222,7 @@ class MicrosoftEventsRequests(MicrosoftBaseRequest):
         else:
             return json.dumps({"error": "Failed to delete attachment"}, indent=2)
 
-    @handle_microsoft_errors
+    @MicrosoftBaseRequest.handle_microsoft_errors
     def delete_event(self, event_id: str) -> str:
         """Delete an event by its ID.
 
@@ -244,7 +234,7 @@ class MicrosoftEventsRequests(MicrosoftBaseRequest):
         """
         url = self._get_url()
 
-        status_code, response = microsoft_delete(
+        status_code, response = self.microsoft_delete(
             f"{url}/{event_id}", self.token_manager.get_token()
         )
 
@@ -253,7 +243,7 @@ class MicrosoftEventsRequests(MicrosoftBaseRequest):
         else:
             return json.dumps({"error": "Failed to delete event"}, indent=2)
 
-    @handle_microsoft_errors
+    @MicrosoftBaseRequest.handle_microsoft_errors
     def accept_event_invitation(
         self, event_id: str, event_response_params: EventResponseParams
     ) -> str:
@@ -269,7 +259,7 @@ class MicrosoftEventsRequests(MicrosoftBaseRequest):
         data = {"sendResponse": event_response_params.send_response}
         if event_response_params.comment is not None:
             data["comment"] = event_response_params.comment
-        status_code, response = microsoft_post(
+        status_code, response = self.microsoft_post(
             f"{CALENDAR_EVENTS_URL}/{event_id}/accept",
             self.token_manager.get_token(),
             data=data,
@@ -279,7 +269,7 @@ class MicrosoftEventsRequests(MicrosoftBaseRequest):
         else:
             return json.dumps({"error": "Failed to accept event invitation"}, indent=2)
 
-    @handle_microsoft_errors
+    @MicrosoftBaseRequest.handle_microsoft_errors
     def decline_event_invitation(
         self, event_id: str, event_changes_params: EventChangesParams
     ) -> str:
@@ -294,7 +284,7 @@ class MicrosoftEventsRequests(MicrosoftBaseRequest):
         """
         data = construct_data_for_response_events(event_changes_params)
 
-        status_code, response = microsoft_post(
+        status_code, response = self.microsoft_post(
             f"{CALENDAR_EVENTS_URL}/{event_id}/decline",
             self.token_manager.get_token(),
             data=data,
@@ -305,7 +295,7 @@ class MicrosoftEventsRequests(MicrosoftBaseRequest):
         else:
             return json.dumps({"error": "Failed to accept event invitation"}, indent=2)
 
-    @handle_microsoft_errors
+    @MicrosoftBaseRequest.handle_microsoft_errors
     def tentatively_accept_event_invitation(
         self, event_id: str, event_changes_params: EventChangesParams
     ):
@@ -320,7 +310,7 @@ class MicrosoftEventsRequests(MicrosoftBaseRequest):
         """
         data = construct_data_for_response_events(event_changes_params)
 
-        status_code, response = microsoft_post(
+        status_code, response = self.microsoft_post(
             f"{CALENDAR_EVENTS_URL}/{event_id}/tentativelyAccept",
             self.token_manager.get_token(),
             data=data,
@@ -335,7 +325,7 @@ class MicrosoftEventsRequests(MicrosoftBaseRequest):
                 {"error": "Failed to tentatively accept event invitation"}, indent=2
             )
 
-    @handle_microsoft_errors
+    @MicrosoftBaseRequest.handle_microsoft_errors
     def cancel_event(self, event_id: str, comment: Optional[str] = None) -> str:
         """Cancel an event.
 
@@ -351,7 +341,7 @@ class MicrosoftEventsRequests(MicrosoftBaseRequest):
         if comment:
             data["comment"] = comment
 
-        status_code, response = microsoft_post(
+        status_code, response = self.microsoft_post(
             f"{CALENDAR_EVENTS_URL}/{event_id}/cancel",
             self.token_manager.get_token(),
             data=data,

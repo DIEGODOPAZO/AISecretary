@@ -16,7 +16,8 @@ def token_manager():
 def service(token_manager):
     return MicrosoftCategoriesRequests(token_manager)
 
-@patch("src.utils.categories.microsoft_categories_requests.microsoft_get")
+
+@patch.object(MicrosoftCategoriesRequests, "microsoft_get")
 def test_get_categories(mock_get, service):
     mock_get.return_value = (
         200,
@@ -33,7 +34,7 @@ def test_get_categories(mock_get, service):
     assert isinstance(data, list)
     assert data[0]["displayName"] == "Category 1"
 
-@patch("src.utils.categories.microsoft_categories_requests.microsoft_post")
+@patch.object(MicrosoftCategoriesRequests, "microsoft_post")
 def test_create_category(mock_post, service):
     mock_post.return_value = (201, {"id": "123", "displayName": "New Category"})
 
@@ -43,7 +44,7 @@ def test_create_category(mock_post, service):
     data = json.loads(result)
     assert data["id"] == "123"
 
-@patch("src.utils.categories.microsoft_categories_requests.microsoft_patch")
+@patch.object(MicrosoftCategoriesRequests, "microsoft_patch")
 def test_edit_category(mock_patch, service):
     mock_patch.return_value = (200, {"id": "123", "displayName": "Updated Category"})
 
@@ -53,7 +54,7 @@ def test_edit_category(mock_patch, service):
     data = json.loads(result)
     assert data["displayName"] == "Updated Category"
 
-@patch("src.utils.categories.microsoft_categories_requests.microsoft_delete")
+@patch.object(MicrosoftCategoriesRequests, "microsoft_delete")
 def test_delete_category(mock_delete, service):
     mock_delete.return_value = (204, {})
 
@@ -61,8 +62,8 @@ def test_delete_category(mock_delete, service):
     data = json.loads(result)
     assert "deleted successfully" in data["message"]
 
-@patch("src.utils.categories.microsoft_categories_requests.microsoft_get")
-@patch("src.utils.categories.microsoft_categories_requests.microsoft_patch")
+@patch.object(MicrosoftCategoriesRequests, "microsoft_get")
+@patch.object(MicrosoftCategoriesRequests, "microsoft_patch")
 def test_add_category_to_resource(mock_patch, mock_get, service):
     mock_get.return_value = (200, {"categories": ["Old"]})
     mock_patch.return_value = (200, {"categories": ["Old", "New"]})

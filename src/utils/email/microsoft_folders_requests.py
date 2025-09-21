@@ -2,14 +2,6 @@ import json
 
 from ..param_types import *
 from ..helper_functions.helpers_email import *
-from ..token_manager import TokenManager
-from ..helper_functions.general_helpers import (
-    handle_microsoft_errors,
-    microsoft_get,
-    microsoft_post,
-    microsoft_patch,
-    microsoft_delete,
-)
 from ..constants import MAIL_FOLDER_CHILDREN_URL, MAIL_FOLDERS_URL
 from ..microsoft_base_request import MicrosoftBaseRequest
 
@@ -22,7 +14,7 @@ class MicrosoftFoldersRequests(MicrosoftBaseRequest):
     Inherits from MicrosoftBaseRequest to manage authentication and token retrieval.
     """
 
-    @handle_microsoft_errors
+    @MicrosoftBaseRequest.handle_microsoft_errors
     def get_folder_names(self) -> str:
         """
         Retrieves the names and details of all mail folders in the user's mailbox.
@@ -30,7 +22,7 @@ class MicrosoftFoldersRequests(MicrosoftBaseRequest):
         Returns:
             str: A JSON-formatted string containing a list of folders with their IDs, display names, and item counts. Includes '@odata.nextLink' if pagination is required.
         """
-        (status_code, response) = microsoft_get(
+        (status_code, response) = self.microsoft_get(
             MAIL_FOLDERS_URL, self.token_manager.get_token()
         )
         folders = response.get("value", [])
@@ -52,7 +44,7 @@ class MicrosoftFoldersRequests(MicrosoftBaseRequest):
 
         return json.dumps(result, indent=2)
 
-    @handle_microsoft_errors
+    @MicrosoftBaseRequest.handle_microsoft_errors
     def get_subfolders_microsoft_api(self, folder_id: str) -> str:
         """
         Retrieves the subfolders of a specified mail folder.
@@ -64,7 +56,7 @@ class MicrosoftFoldersRequests(MicrosoftBaseRequest):
             str: A JSON-formatted string containing a list of subfolders with their IDs, display names, and item counts. Includes '@odata.nextLink' if pagination is required.
         """
         url = MAIL_FOLDER_CHILDREN_URL(folder_id)
-        (status_code, response) = microsoft_get(url, self.token_manager.get_token())
+        (status_code, response) = self.microsoft_get(url, self.token_manager.get_token())
         folders = response.get("value", [])
         simplified_folders = []
 
@@ -83,7 +75,7 @@ class MicrosoftFoldersRequests(MicrosoftBaseRequest):
 
         return json.dumps(result, indent=2)
 
-    @handle_microsoft_errors
+    @MicrosoftBaseRequest.handle_microsoft_errors
     def create_edit_folder_microsoft_api(self, folder_params: FolderParams) -> str:
         """
         Creates a new mail folder or edits an existing one in the user's mailbox.
@@ -105,22 +97,22 @@ class MicrosoftFoldersRequests(MicrosoftBaseRequest):
 
         if folder_params.parent_folder_id:
             url = MAIL_FOLDER_CHILDREN_URL(folder_params.parent_folder_id)
-            (status_code, response) = microsoft_post(
+            (status_code, response) = self.microsoft_post(
                 url, self.token_manager.get_token(), data
             )
         elif folder_params.folder_id:
             url = f"{url}/{folder_params.folder_id}"
-            (status_code, response) = microsoft_patch(
+            (status_code, response) = self.microsoft_patch(
                 url, self.token_manager.get_token(), data
             )
         else:
-            (status_code, response) = microsoft_post(
+            (status_code, response) = self.microsoft_post(
                 url, self.token_manager.get_token(), data
             )
 
         return json.dumps(response, indent=2)
 
-    @handle_microsoft_errors
+    @MicrosoftBaseRequest.handle_microsoft_errors
     def delete_folder_microsoft_api(self, folder_id: str) -> str:
         """
         Deletes a mail folder from the user's mailbox.
@@ -132,7 +124,7 @@ class MicrosoftFoldersRequests(MicrosoftBaseRequest):
             str: A JSON-formatted string indicating success or an error message if the deletion fails.
         """
         url = f"{MAIL_FOLDERS_URL}/{folder_id}"
-        (status_code, response) = microsoft_delete(url, self.token_manager.get_token())
+        (status_code, response) = self.microsoft_delete(url, self.token_manager.get_token())
         if status_code != 204:
             return json.dumps({"error": response}, indent=2)
         return json.dumps(

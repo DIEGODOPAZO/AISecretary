@@ -1,14 +1,6 @@
 import json
 
 from ..param_types import CalendarGroupParams
-from ..token_manager import TokenManager
-from ..helper_functions.general_helpers import (
-    microsoft_get,
-    handle_microsoft_errors,
-    microsoft_post,
-    microsoft_patch,
-    microsoft_delete,
-)
 from ..microsoft_base_request import MicrosoftBaseRequest
 from ..constants import CALENDAR_GROUPS_URL
 
@@ -18,7 +10,7 @@ class MicrosoftCalendarGroupsRequests(MicrosoftBaseRequest):
     Handles requests related to calendar groups in Microsoft Graph API. 
     Inherits from MicrosoftBaseRequest to manage authentication and token retrieval.
     """
-    @handle_microsoft_errors
+    @MicrosoftBaseRequest.handle_microsoft_errors
     def get_calendar_groups(self, calendar_group_params: CalendarGroupParams) -> str:
         """
         Retrieves calendar groups from Microsoft Graph API.
@@ -37,13 +29,13 @@ class MicrosoftCalendarGroupsRequests(MicrosoftBaseRequest):
                 else None
             ),
         }
-        status_code, response = microsoft_get(
+        status_code, response = self.microsoft_get(
             CALENDAR_GROUPS_URL, self.token_manager.get_token(), params=params
         )
 
         return json.dumps(response.get("value", []), indent=2)
 
-    @handle_microsoft_errors
+    @MicrosoftBaseRequest.handle_microsoft_errors
     def create_calendar_group(self, calendar_group_name: str) -> str:
         """
         Creates a new calendar group in Microsoft Graph API.
@@ -56,13 +48,13 @@ class MicrosoftCalendarGroupsRequests(MicrosoftBaseRequest):
         """
         data = {"name": calendar_group_name}
 
-        status_code, response = microsoft_post(
+        status_code, response = self.microsoft_post(
             CALENDAR_GROUPS_URL, self.token_manager.get_token(), data=data
         )
 
         return json.dumps(response, indent=2)
 
-    @handle_microsoft_errors
+    @MicrosoftBaseRequest.handle_microsoft_errors
     def update_calendar_group(
         self, calendar_group_id: str, calendar_group_name: str
     ) -> str:
@@ -79,12 +71,12 @@ class MicrosoftCalendarGroupsRequests(MicrosoftBaseRequest):
         url = f"{CALENDAR_GROUPS_URL}/{calendar_group_id}"
         data = {"name": calendar_group_name}
 
-        status_code, response = microsoft_patch(
+        status_code, response = self.microsoft_patch(
             url, self.token_manager.get_token(), data=data
         )
 
         return json.dumps(response, indent=2)
-
+    @MicrosoftBaseRequest.handle_microsoft_errors
     def delete_calendar_group(self, calendar_group_id: str) -> str:
         """
         Deletes a calendar group in Microsoft Graph API.
@@ -97,7 +89,7 @@ class MicrosoftCalendarGroupsRequests(MicrosoftBaseRequest):
         """
         url = f"{CALENDAR_GROUPS_URL}/{calendar_group_id}"
 
-        status_code, response = microsoft_delete(url, self.token_manager.get_token())
+        status_code, response = self.microsoft_delete(url, self.token_manager.get_token())
 
         return (
             json.dumps(response, indent=2)

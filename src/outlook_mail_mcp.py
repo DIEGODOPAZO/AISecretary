@@ -1,4 +1,3 @@
-from utils.helper_functions.helpers_email import build_search_params, build_filter_params
 from utils.param_types import *
 from utils.email.microsoft_folders_requests import MicrosoftFoldersRequests
 from utils.email.microsoft_messages_requests import MicrosoftMessagesRequests
@@ -6,17 +5,14 @@ from utils.email.microsoft_rules_requests import MicrosoftRulesRequests
 from utils.email.microsoft_flag_requests import MicrosoftFlagRequests
 from utils.categories.microsoft_categories_requests import MicrosoftCategoriesRequests
 from utils.token_manager import TokenManager
-from utils.auth_microsoft import get_access_token, load_expiration_time_from_file
 
 # server.py
 from mcp.server.fastmcp import FastMCP
 
 # Create an MCP server
-mcp = FastMCP("Mail-AISecretary-Outlook", dependencies=["mcp[cli]", "msal"])
+mcp = FastMCP("Mail-AISecretary-Outlook", dependencies=["mcp[cli]", "msal", "filelock"])
 
-token_manager = TokenManager(
-    get_access_token_func=get_access_token, get_expiration_time=load_expiration_time_from_file
-)
+token_manager = TokenManager()
 
 filter_dateTime = "receivedDateTime ge 2016-01-01T00:00:00Z"  # Needed to have the params of orderBy in the filter
 

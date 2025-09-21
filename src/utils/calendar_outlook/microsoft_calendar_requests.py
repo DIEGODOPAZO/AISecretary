@@ -3,14 +3,6 @@ import json
 
 from ..helper_functions.helpers_calendar import simplify_calendar
 from ..param_types import CalendarUpdateParams, ScheduleParams
-from ..token_manager import TokenManager
-from ..helper_functions.general_helpers import (
-    microsoft_get,
-    handle_microsoft_errors,
-    microsoft_post,
-    microsoft_patch,
-    microsoft_delete,
-)
 from ..constants import CALENDAR_SCHEDULES_URL, GRAPH_BASE_URL
 from ..microsoft_base_request import MicrosoftBaseRequest
 
@@ -34,7 +26,7 @@ class MicrosoftCalendarRequests(MicrosoftBaseRequest):
             return f"{GRAPH_BASE_URL}/calendarGroups/{calendar_group_id}/calendars"
         return f"{GRAPH_BASE_URL}/calendars"
 
-    @handle_microsoft_errors
+    @MicrosoftBaseRequest.handle_microsoft_errors
     def get_calendars(self, calendar_group_id: str = None, name: str = None) -> str:
         """
         Retrieves calendars from Microsoft Graph API.
@@ -49,7 +41,7 @@ class MicrosoftCalendarRequests(MicrosoftBaseRequest):
 
         final_url = self._get_url(calendar_group_id)
 
-        status_code, response = microsoft_get(final_url, self.token_manager.get_token())
+        status_code, response = self.microsoft_get(final_url, self.token_manager.get_token())
 
         if name:
             response["value"] = [
@@ -63,7 +55,7 @@ class MicrosoftCalendarRequests(MicrosoftBaseRequest):
             simplify_calendars.append(simplify_calendar(calendar))
         return json.dumps({"calendars: ": simplify_calendars}, indent=2)
 
-    @handle_microsoft_errors
+    @MicrosoftBaseRequest.handle_microsoft_errors
     def get_calendar(self, calendar_id: str) -> str:
         """
         Retrieves a specific calendar from Microsoft Graph API.
@@ -76,11 +68,11 @@ class MicrosoftCalendarRequests(MicrosoftBaseRequest):
         """
         url = f"{self._get_url()}/{calendar_id}"
 
-        status_code, response = microsoft_get(url, self.token_manager.get_token())
+        status_code, response = self.microsoft_get(url, self.token_manager.get_token())
 
         return json.dumps(response, indent=2)
 
-    @handle_microsoft_errors
+    @MicrosoftBaseRequest.handle_microsoft_errors
     def create_calendar(self, calendar_name: str, calendar_group_id: str = None) -> str:
         """
         Creates a new calendar in Microsoft Graph API.
@@ -96,13 +88,13 @@ class MicrosoftCalendarRequests(MicrosoftBaseRequest):
 
         data = {"name": calendar_name}
 
-        status_code, response = microsoft_post(
+        status_code, response = self.microsoft_post(
             final_url, self.token_manager.get_token(), data=data
         )
 
         return json.dumps(response, indent=2)
 
-    @handle_microsoft_errors
+    @MicrosoftBaseRequest.handle_microsoft_errors
     def update_calendar(
         self, calendar_id: str, calendar_update_params: CalendarUpdateParams
     ) -> str:
@@ -124,13 +116,13 @@ class MicrosoftCalendarRequests(MicrosoftBaseRequest):
         if calendar_update_params.isDefaultCalendar:
             data["isDefaultCalendar"] = calendar_update_params.isDefaultCalendar
 
-        status_code, response = microsoft_patch(
+        status_code, response = self.microsoft_patch(
             url, self.token_manager.get_token(), data=data
         )
 
         return json.dumps(response, indent=2)
 
-    @handle_microsoft_errors
+    @MicrosoftBaseRequest.handle_microsoft_errors
     def delete_calendar(self, calendar_id: str) -> str:
         """
         Deletes a calendar from Microsoft Graph API.
@@ -143,7 +135,7 @@ class MicrosoftCalendarRequests(MicrosoftBaseRequest):
         """
         url = f"{self._get_url()}/{calendar_id}"
 
-        status_code, response = microsoft_delete(url, self.token_manager.get_token())
+        status_code, response = self.microsoft_delete(url, self.token_manager.get_token())
         if status_code != 204:
             return json.dumps({"error": "Failed to delete calendar"}, indent=2)
         response = {
@@ -152,7 +144,7 @@ class MicrosoftCalendarRequests(MicrosoftBaseRequest):
         }
         return json.dumps(response, indent=2)
 
-    @handle_microsoft_errors
+    @MicrosoftBaseRequest.handle_microsoft_errors
     def get_schedule(self, schedule_params: ScheduleParams) -> str:
         """
         Retrieves the schedule of a user or a list of users.
@@ -170,7 +162,7 @@ class MicrosoftCalendarRequests(MicrosoftBaseRequest):
             "availabilityViewInterval": schedule_params.availability_view_interval,
         }
 
-        status_code, response = microsoft_post(
+        status_code, response = self.microsoft_post(
             CALENDAR_SCHEDULES_URL, self.token_manager.get_token(), data=data
         )
 

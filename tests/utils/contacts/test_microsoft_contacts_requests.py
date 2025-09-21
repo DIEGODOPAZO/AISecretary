@@ -13,7 +13,7 @@ def mock_token_manager():
     return mock
 
 
-@patch("src.utils.contacts.microsoft_contacts_requests.microsoft_get")
+@patch.object(MicrosoftContactsRequests, "microsoft_get")
 def test_get_contacts(mock_get, mock_token_manager):
     mock_get.return_value = (
         200,
@@ -33,7 +33,7 @@ def test_get_contacts(mock_get, mock_token_manager):
     assert response[1]["surname"] == "García"
 
 
-@patch("src.utils.contacts.microsoft_contacts_requests.microsoft_get")
+@patch.object(MicrosoftContactsRequests, "microsoft_get")
 def test_get_contacts_with_name_filter(mock_get, mock_token_manager):
     mock_get.return_value = (
         200,
@@ -52,7 +52,7 @@ def test_get_contacts_with_name_filter(mock_get, mock_token_manager):
     assert response[0]["givenName"] == "Pedro"
 
 
-@patch("src.utils.contacts.microsoft_contacts_requests.microsoft_get")
+@patch.object(MicrosoftContactsRequests, "microsoft_get")
 def test_get_contact_info(mock_get, mock_token_manager):
     mock_get.return_value = (
         200,
@@ -65,8 +65,7 @@ def test_get_contact_info(mock_get, mock_token_manager):
     assert response["id"] == "abc123"
     assert response["givenName"] == "Laura"
 
-
-@patch("src.utils.contacts.microsoft_contacts_requests.microsoft_post")
+@patch.object(MicrosoftContactsRequests, "microsoft_post")
 def test_create_contact(mock_post, mock_token_manager):
     mock_post.return_value = (
         201,
@@ -88,7 +87,7 @@ def test_create_contact(mock_post, mock_token_manager):
     assert response["surname"] == "Ruiz"
 
 
-@patch("src.utils.contacts.microsoft_contacts_requests.microsoft_patch")
+@patch.object(MicrosoftContactsRequests, "microsoft_patch")
 def test_edit_contact(mock_patch, mock_token_manager):
     mock_patch.return_value = (
         200,
@@ -110,7 +109,7 @@ def test_edit_contact(mock_patch, mock_token_manager):
     assert response["id"] == "c123"
 
 
-@patch("src.utils.contacts.microsoft_contacts_requests.microsoft_delete")
+@patch.object(MicrosoftContactsRequests, "microsoft_delete")
 def test_delete_contact_success(mock_delete, mock_token_manager):
     mock_delete.return_value = (204, None)
 
@@ -120,7 +119,7 @@ def test_delete_contact_success(mock_delete, mock_token_manager):
     assert response["message"] == "Contact deleted successfully."
 
 
-@patch("src.utils.contacts.microsoft_contacts_requests.microsoft_delete")
+@patch.object(MicrosoftContactsRequests, "microsoft_delete")
 def test_delete_contact_failure(mock_delete, mock_token_manager):
     mock_delete.return_value = (404, None)
 

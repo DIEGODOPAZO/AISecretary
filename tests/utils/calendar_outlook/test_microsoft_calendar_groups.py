@@ -13,7 +13,7 @@ def mock_token_manager():
     return mock
 
 
-@patch("src.utils.calendar_outlook.microsoft_calendar_groups_requests.microsoft_get")
+@patch.object(MicrosoftCalendarGroupsRequests, "microsoft_get")
 def test_get_calendar_groups(mock_get, mock_token_manager):
     mock_get.return_value = (
         200,
@@ -34,7 +34,7 @@ def test_get_calendar_groups(mock_get, mock_token_manager):
     assert response[0]["id"] == "group1"
 
 
-@patch("src.utils.calendar_outlook.microsoft_calendar_groups_requests.microsoft_get")
+@patch.object(MicrosoftCalendarGroupsRequests, "microsoft_get")
 def test_get_calendar_groups_with_filter(mock_get, mock_token_manager):
     mock_get.return_value = (
         200,
@@ -54,7 +54,7 @@ def test_get_calendar_groups_with_filter(mock_get, mock_token_manager):
     assert response[0]["name"] == "Eventos"
 
 
-@patch("src.utils.calendar_outlook.microsoft_calendar_groups_requests.microsoft_post")
+@patch.object(MicrosoftCalendarGroupsRequests, "microsoft_post")
 def test_create_calendar_group(mock_post, mock_token_manager):
     mock_post.return_value = (
         201,
@@ -67,8 +67,7 @@ def test_create_calendar_group(mock_post, mock_token_manager):
     assert response["id"] == "new123"
     assert response["name"] == "Nuevo Grupo"
 
-
-@patch("src.utils.calendar_outlook.microsoft_calendar_groups_requests.microsoft_patch")
+@patch.object(MicrosoftCalendarGroupsRequests, "microsoft_patch")
 def test_update_calendar_group(mock_patch, mock_token_manager):
     mock_patch.return_value = (
         200,
@@ -81,8 +80,7 @@ def test_update_calendar_group(mock_patch, mock_token_manager):
     assert response["id"] == "grp123"
     assert response["name"] == "Nombre Actualizado"
 
-
-@patch("src.utils.calendar_outlook.microsoft_calendar_groups_requests.microsoft_delete")
+@patch.object(MicrosoftCalendarGroupsRequests, "microsoft_delete")
 def test_delete_calendar_group_success(mock_delete, mock_token_manager):
     mock_delete.return_value = (204, None)
 

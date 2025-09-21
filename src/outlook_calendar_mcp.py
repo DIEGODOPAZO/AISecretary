@@ -4,7 +4,6 @@ from utils.calendar_outlook.microsoft_calendar_groups_requests import (
     MicrosoftCalendarGroupsRequests,
 )
 from utils.token_manager import TokenManager
-from utils.auth_microsoft import get_access_token, load_expiration_time_from_file
 from utils.calendar_outlook.microsoft_events_requests import MicrosoftEventsRequests
 from utils.param_types import (
     CalendarUpdateParams,
@@ -18,11 +17,9 @@ from utils.param_types import (
 from mcp.server.fastmcp import FastMCP
 
 # Create an MCP server
-mcp = FastMCP("Calendar-AISecretary-Outlook", dependencies=["mcp[cli]", "msal"])
+mcp = FastMCP("Calendar-AISecretary-Outlook", dependencies=["mcp[cli]", "msal", "filelock"])
 
-token_manager = TokenManager(
-    get_access_token_func=get_access_token, get_expiration_time=load_expiration_time_from_file
-)
+token_manager = TokenManager()
 events_requests = MicrosoftEventsRequests(token_manager)
 calendar_groups = MicrosoftCalendarGroupsRequests(token_manager)
 calendars = MicrosoftCalendarRequests(token_manager)
@@ -375,3 +372,7 @@ def create_event_at_calendar_prompt(
         str: A prompt string for creating an event.
     """
     return f"Fisrtly I want you to look for a calendar with a similar name to {calendar_name} and obtain its id, you can do this by geting the information about the calendars with the tool get_calendars. Then: Create an event named '{event_name}' starting at {start_time} and ending at {end_time}. Location: {location if location else 'No location provided'}. Description: {description if description else 'No description provided'}. The event will be created in the calendar with the id obtained from the previous step. The day of the event is {day}, the month is {month}, and the year is {year}. If you cannot find a calendar with a similar name, create a new calendar with that name and then create the event in it."
+
+if __name__ == "__main__":
+    # Start the MCP server
+    mcp.run()

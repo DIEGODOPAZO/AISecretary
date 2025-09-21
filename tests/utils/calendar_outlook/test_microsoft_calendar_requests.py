@@ -13,7 +13,7 @@ def mock_token_manager():
     return mock
 
 
-@patch("src.utils.calendar_outlook.microsoft_calendar_requests.microsoft_get")
+@patch.object(MicrosoftCalendarRequests, "microsoft_get")
 def test_get_calendars(mock_get, mock_token_manager):
     mock_get.return_value = (
         200,
@@ -32,7 +32,7 @@ def test_get_calendars(mock_get, mock_token_manager):
     assert result["calendars: "][0]["id"] == "1"
 
 
-@patch("src.utils.calendar_outlook.microsoft_calendar_requests.microsoft_get")
+@patch.object(MicrosoftCalendarRequests, "microsoft_get")
 def test_get_calendars_with_name_filter(mock_get, mock_token_manager):
     mock_get.return_value = (
         200,
@@ -51,7 +51,7 @@ def test_get_calendars_with_name_filter(mock_get, mock_token_manager):
     assert result["calendars: "][0]["name"] == "Filtrado"
 
 
-@patch("src.utils.calendar_outlook.microsoft_calendar_requests.microsoft_get")
+@patch.object(MicrosoftCalendarRequests, "microsoft_get")
 def test_get_calendar(mock_get, mock_token_manager):
     mock_get.return_value = (
         200,
@@ -65,7 +65,7 @@ def test_get_calendar(mock_get, mock_token_manager):
     assert result["name"] == "Personal"
 
 
-@patch("src.utils.calendar_outlook.microsoft_calendar_requests.microsoft_post")
+@patch.object(MicrosoftCalendarRequests, "microsoft_post")
 def test_create_calendar(mock_post, mock_token_manager):
     mock_post.return_value = (
         201,
@@ -79,7 +79,7 @@ def test_create_calendar(mock_post, mock_token_manager):
     assert result["name"] == "Nuevo Calendario"
 
 
-@patch("src.utils.calendar_outlook.microsoft_calendar_requests.microsoft_patch")
+@patch.object(MicrosoftCalendarRequests, "microsoft_patch")
 def test_update_calendar(mock_patch, mock_token_manager):
     mock_patch.return_value = (
         200,
@@ -94,7 +94,7 @@ def test_update_calendar(mock_patch, mock_token_manager):
     assert result["name"] == "Actualizado"
 
 
-@patch("src.utils.calendar_outlook.microsoft_calendar_requests.microsoft_delete")
+@patch.object(MicrosoftCalendarRequests, "microsoft_delete")
 def test_delete_calendar_success(mock_delete, mock_token_manager):
     mock_delete.return_value = (204, None)
 
@@ -105,7 +105,7 @@ def test_delete_calendar_success(mock_delete, mock_token_manager):
     assert result["status_code"] == 204
 
 
-@patch("src.utils.calendar_outlook.microsoft_calendar_requests.microsoft_post")
+@patch.object(MicrosoftCalendarRequests, "microsoft_post")
 def test_get_schedule(mock_post, mock_token_manager):
     mock_post.return_value = (
         200,

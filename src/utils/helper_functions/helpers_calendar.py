@@ -1,6 +1,5 @@
-from  .general_helpers import microsoft_get
 from ..param_types import EventChangesParams, EventParams, EventQuery
-
+from ..microsoft_base_request import MicrosoftBaseRequest
 
 def event_params_to_dict(event_params: EventParams) -> dict:
     """Converts EventParams object to a dictionary suitable for Microsoft Graph API.
@@ -204,7 +203,7 @@ def simplify_event_with_attachment_names(event: dict, token: str) -> dict:
         event_id = event["id"]
         url = f"https://graph.microsoft.com/v1.0/me/events/{event_id}/attachments"
        
-        status_code, response = microsoft_get(url, token)
+        status_code, response = MicrosoftBaseRequest.microsoft_get(url, token)
         if status_code == 200:
             for attachment in response.get("value", []):
                 simplified_event["attachment_names"].append(attachment.get("name"))
